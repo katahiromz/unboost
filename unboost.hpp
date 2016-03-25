@@ -273,8 +273,9 @@
 // conversion between number and string
 
 #ifndef UNBOOST_NO_CONVERSION
+    #include <cstdlib>
+    #include <string>
     #ifdef UNBOOST_USE_CXX11
-        #include <string>
         namespace unboost {
             using std::stoi;
             using std::stol;
