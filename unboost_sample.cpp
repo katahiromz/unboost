@@ -16,11 +16,35 @@
     //static_assert(0, "NG");
 #endif
 
+#ifdef UNBOOST_USE_TUPLE
+    template <typename TUP, size_t N>
+    struct TuplePrinter {
+        static void print(const TUP& tup) {
+            TuplePrinter<TUP, N - 1>::print(tup);
+            std::cout << ", " << std::get<N - 1>(tup);
+        }
+    };
+    template <typename TUP>
+    struct TuplePrinter<TUP,1> {
+        static void print(const TUP& tup) {
+            std::cout << std::get<0>(tup);
+        }
+    };
+    template <typename TUP>
+    void print_taple(const TUP& tup) {
+        const size_t count = unboost::tuple_size<TUP>::value;
+        TuplePrinter<TUP, count> printer;
+        printer.print(tup);
+    }
+#endif  // def UNBOOST_USE_TUPLE
+
 //////////////////////////////////////////////////////////////////////////////
 
-void thread_proc(void) {
-    std::cout << "in thread_proc" << std::endl;
-}
+#ifdef UNBOOST_USE_THREAD
+    void thread_proc(void) {
+        std::cout << "in thread_proc" << std::endl;
+    }
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -121,7 +145,7 @@ int main(void) {
         {
             unboost::unordered_map<int, int>::iterator it, end = um.end();
             for (it = um.begin(); it != end; ++it) {
-                std::cout << it->first << "," << it->second << std::endl;
+                std::cout << it->first << ", " << it->second << std::endl;
             }
         }
     #endif
@@ -146,10 +170,8 @@ int main(void) {
         std::cout << "tuple" << std::endl;
         unboost::tuple<int, const char *, std::string> tup;
         tup = unboost::make_tuple<int, const char *, std::string>(2, "This is", "a test");
-        std::cout << unboost::get<0>(tup) << std::endl;
-        std::cout << unboost::get<1>(tup) << std::endl;
-        std::cout << unboost::get<2>(tup) << std::endl;
-        std::cout << unboost::tuple_size<unboost::tuple<int, const char *, std::string> >::value << std::endl;
+        print_taple(tup);
+        std::cout << std::endl;
     #endif
 
     #ifdef UNBOOST_USE_ASSERT
