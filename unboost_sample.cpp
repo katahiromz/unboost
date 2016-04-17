@@ -65,8 +65,10 @@ int main(void) {
         std::cout << "conversion" << std::endl;
         std::cout << unboost::to_string(unboost::stoi("2016")) << std::endl;
         std::cout << unboost::lexical_cast<int>("123") << std::endl;
-        std::cout << unboost::lexical_cast<std::string>(123) << std::endl;
-        std::cout << unboost::stod("123") << std::endl;
+        std::cout << unboost::lexical_cast<std::string>(456) << std::endl;
+        std::cout << unboost::lexical_cast<unsigned int>(-789) << std::endl;
+        std::cout << unboost::stod("999.99999999999999999999999") << std::endl;
+        std::cout << unboost::stoull("100000000000000") << std::endl;
     #endif
 
     #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS

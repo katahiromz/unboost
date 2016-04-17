@@ -542,29 +542,40 @@
                 }
                 return static_cast<int>(n);
             }
-            #ifdef UNBOOST_CXX11    // C++11
-                inline long long stoll(const std::string& str) {
-                    std::stringstream stream;
-                    stream << str;
-                    long long result;
-                    stream >> result;
-                    if (stream.fail()) {
+            #if 0 //def UNBOOST_CXX11    // C++11
+                inline long long
+                stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
+                    long long ret;
+                    size_t npos;
+                    if (pos == NULL) {
+                        pos = &npos;
+                    }
+                    char *end = NULL;
+                    ret = std::strtoll(str.c_str(), &end, base);
+                    *pos = end - str.c_str();
+                    if (*pos == 0) {
                         throw std::invalid_argument("stoll");
                     }
-                    return result;
+                    return ret;
                 }
-                inline unsigned long long stoull(const std::string& str) {
-                    std::stringstream stream;
-                    stream << str;
-                    unsigned long long result;
-                    stream >> result;
-                    if (stream.fail()) {
+                inline unsigned long long
+                stoull(const std::string& str, size_t *pos = NULL, int base = 10) {
+                    unsigned long long ret;
+                    size_t npos;
+                    if (pos == NULL) {
+                        pos = &npos;
+                    }
+                    char *end = NULL;
+                    ret = std::strtoull(str.c_str(), &end, base);
+                    *pos = end - str.c_str();
+                    if (*pos == 0) {
                         throw std::invalid_argument("stoull");
                     }
-                    return result;
+                    return ret;
                 }
             #else   // ndef UNBOOST_CXX11
                 inline __int64 stoll(const std::string& str) {
+                    // TODO: support pos and base
                     std::stringstream stream;
                     stream << str;
                     __int64 result;
@@ -575,6 +586,7 @@
                     return result;
                 }
                 inline unsigned __int64 stoull(const std::string& str) {
+                    // TODO: support pos and base
                     std::stringstream stream;
                     stream << str;
                     unsigned __int64 result;
