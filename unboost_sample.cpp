@@ -2,6 +2,7 @@
 // This file is public domain software (PDS).
 //////////////////////////////////////////////////////////////////////////////
 
+#define UNBOOST_USE_ALL
 #include "unboost.hpp"
 
 #include <iostream>
