@@ -469,13 +469,24 @@
     #include <sstream>      // for std::stringstream
     // Adapt choosed one
     #ifdef UNBOOST_USE_CXX11_CONVERSION
+        #include <typeinfo> // for std::bad_cast
         namespace unboost {
+            class bad_lexical_cast : public std::bad_cast {
+            public:
+                bad_lexical_cast() { }
+            };
             template <typename T, typename U>
             inline T lexical_cast(const U& value) {
-                std::stringstream ss;
-                ss << value;
+                std::stringstream stream;
+                stream << value;
+                if (stream.fail()) {
+                    throw bad_lexical_cast();
+                }
                 T result;
-                ss >> result;
+                stream >> result;
+                if (stream.fail()) {
+                    throw bad_lexical_cast();
+                }
                 return result;
             }
             using std::stoi;
@@ -533,42 +544,42 @@
             }
             #ifdef UNBOOST_CXX11    // C++11
                 inline long long stoll(const std::string& str) {
-                    std::stringstream ss;
-                    ss << str;
+                    std::stringstream stream;
+                    stream << str;
                     long long result;
-                    ss >> result;
-                    if (ss.fail()) {
+                    stream >> result;
+                    if (stream.fail()) {
                         throw std::invalid_argument("stoll");
                     }
                     return result;
                 }
                 inline unsigned long long stoull(const std::string& str) {
-                    std::stringstream ss;
-                    ss << str;
+                    std::stringstream stream;
+                    stream << str;
                     unsigned long long result;
-                    ss >> result;
-                    if (ss.fail()) {
+                    stream >> result;
+                    if (stream.fail()) {
                         throw std::invalid_argument("stoull");
                     }
                     return result;
                 }
             #else   // ndef UNBOOST_CXX11
                 inline __int64 stoll(const std::string& str) {
-                    std::stringstream ss;
-                    ss << str;
+                    std::stringstream stream;
+                    stream << str;
                     __int64 result;
-                    ss >> result;
-                    if (ss.fail()) {
+                    stream >> result;
+                    if (stream.fail()) {
                         throw std::invalid_argument("stoll");
                     }
                     return result;
                 }
                 inline unsigned __int64 stoull(const std::string& str) {
-                    std::stringstream ss;
-                    ss << str;
+                    std::stringstream stream;
+                    stream << str;
                     unsigned __int64 result;
-                    ss >> result;
-                    if (ss.fail()) {
+                    stream >> result;
+                    if (stream.fail()) {
                         throw std::invalid_argument("stoull");
                     }
                     return result;
