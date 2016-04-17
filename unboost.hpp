@@ -465,10 +465,19 @@
         #endif
     #endif
     #include <cstdlib>
-    #include <string>
+    #include <string>       // for std::string, std::wstring
+    #include <sstream>      // for std::stringstream
     // Adapt choosed one
     #ifdef UNBOOST_USE_CXX11_CONVERSION
         namespace unboost {
+            template <typename T, typename U>
+            inline T lexical_cast(const U& value) {
+                std::stringstream ss;
+                ss << value;
+                T result;
+                ss >> result;
+                return result;
+            }
             using std::stoi;
             using std::stol;
             using std::stoul;
@@ -481,108 +490,119 @@
             using std::to_wstring;
         } // namespace unboost
     #elif defined(UNBOOST_USE_BOOST_CONVERSION)
-        #include <boost/lexical_cast.hpp>
-        #include <boost/exception/to_string.hpp>
+        #include <boost/lexical_cast.hpp>           // for lexical_cast
+        #include <boost/exception/to_string.hpp>    // for boost::to_string
+        #include <climits>      // for INT_MAX, INT_MIN, FLT_MAX, ...
+        #include <stdexcept>    // for std::invalid_argument, ...
         namespace unboost {
+            using boost::lexical_cast;
             inline long stol(const std::string& str, size_t *pos = NULL, int base = 10) {
                 long ret;
-                if (pos || (base != 10)) {
-                    char *end = NULL;
-                    ret = std::strtol(str.c_str(), &end, base);
-                    *pos = end - str.c_str();
-                } else {
-                    ret = std::atol(str.c_str());
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                ret = std::strtol(str.c_str(), &end, base);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stol");
                 }
                 return ret;
             }
             inline long stoul(const std::string& str, size_t *pos = NULL, int base = 10) {
                 long ret;
-                if (pos) {
-                    char *end = NULL;
-                    ret = std::strtoul(str.c_str(), &end, base);
-                    *pos = end - str.c_str();
-                } else {
-                    ret = std::strtoul(str.c_str(), NULL, base);
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                ret = std::strtoul(str.c_str(), &end, base);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stoul");
                 }
                 return ret;
             }
             inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
-                return static_cast<int>(unboost::stol(str, pos, base));
+                long n = unboost::stol(str, pos, base);
+                if (n > INT_MAX || n < INT_MIN) {
+                    throw std::out_of_range("stoi");
+                }
+                return static_cast<int>(n);
             }
             #ifdef UNBOOST_CXX11    // C++11
-                inline long long stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
-                    long long ret;
-                    if (pos) {
-                        char *end = NULL;
-                        ret = std::strtoll(str.c_str(), &end, base);
-                        *pos = end - str.c_str();
-                    } else {
-                        ret = std::strtoll(str.c_str(), NULL, base);
+                inline long long stoll(const std::string& str) {
+                    std::stringstream ss;
+                    ss << str;
+                    long long result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw std::invalid_argument("stoll");
                     }
-                    return ret;
+                    return result;
                 }
-                inline unsigned long long stoull(const std::string& str, size_t *pos = NULL, int base = 10) {
-                    unsigned long long ret;
-                    if (pos) {
-                        char *end = NULL;
-                        ret = std::strtoull(str.c_str(), &end, base);
-                        *pos = end - str.c_str();
-                    } else {
-                        ret = std::strtoull(str.c_str(), NULL, base);
+                inline unsigned long long stoull(const std::string& str) {
+                    std::stringstream ss;
+                    ss << str;
+                    unsigned long long result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw std::invalid_argument("stoull");
                     }
-                    return ret;
+                    return result;
                 }
-                inline float stof(const std::string& str, size_t *pos = NULL) {
-                    float ret;
-                    if (pos) {
-                        char *end = NULL;
-                        ret = std::strtof(str.c_str(), &end);
-                        *pos = end - str.c_str();
-                    } else {
-                        ret = static_cast<float>(std::atof(str.c_str()));
-                    }
-                    return ret;
-                }
-                inline long double stold(const std::string& str, size_t *pos = NULL) {
-                    long double ret;
-                    if (pos) {
-                        char *end = NULL;
-                        ret = std::strtold(str.c_str(), &end);
-                        *pos = end - str.c_str();
-                    } else {
-                        ret = std::strtold(str.c_str(), NULL);
-                    }
-                    return ret;
-                }
-            #else   // not C++11
+            #else   // ndef UNBOOST_CXX11
                 inline __int64 stoll(const std::string& str) {
-                    // TODO: support pos and base parameters
-                    return boost::lexical_cast<__int64>(str.c_str());
+                    std::stringstream ss;
+                    ss << str;
+                    __int64 result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw std::invalid_argument("stoll");
+                    }
+                    return result;
                 }
                 inline unsigned __int64 stoull(const std::string& str) {
-                    // TODO: support pos and base parameters
-                    return boost::lexical_cast<unsigned __int64>(str.c_str());
-                }
-                inline float stof(const std::string& str, size_t *pos = NULL) {
-                    float ret;
-                    if (pos) {
-                        char *end = NULL;
-                        ret = static_cast<float>(std::strtod(str.c_str(), &end));
-                        *pos = end - str.c_str();
-                    } else {
-                        ret = static_cast<float>(std::atof(str.c_str()));
+                    std::stringstream ss;
+                    ss << str;
+                    unsigned __int64 result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw std::invalid_argument("stoull");
                     }
-                    return ret;
+                    return result;
                 }
-            #endif  // not C++11
+            #endif  // ndef UNBOOST_CXX11
+            inline float stof(const std::string& str, size_t *pos = NULL) {
+                double d;
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                d = std::strtod(str.c_str(), &end);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stof");
+                }
+                if (d > FLT_MAX || d < -FLT_MAX) {
+                    throw std::out_of_range("stof");
+                }
+                float ret = static_cast<float>(d);
+                return ret;
+            }
             inline double stod(const std::string& str, size_t *pos = NULL) {
                 double ret;
-                if (pos) {
-                    char *end = NULL;
-                    ret = std::strtod(str.c_str(), &end);
-                    *pos = end - str.c_str();
-                } else {
-                    ret = std::atof(str.c_str());
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                ret = std::strtod(str.c_str(), &end);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stod");
                 }
                 return ret;
             }

@@ -64,6 +64,9 @@ int main(void) {
     #ifdef UNBOOST_USE_CONVERSION
         std::cout << "conversion" << std::endl;
         std::cout << unboost::to_string(unboost::stoi("2016")) << std::endl;
+        std::cout << unboost::lexical_cast<int>("123") << std::endl;
+        std::cout << unboost::lexical_cast<std::string>(123) << std::endl;
+        std::cout << unboost::stod("123") << std::endl;
     #endif
 
     #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
