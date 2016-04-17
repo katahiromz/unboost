@@ -542,7 +542,7 @@
                 }
                 return static_cast<int>(n);
             }
-            #if 0 //def UNBOOST_CXX11    // C++11
+            #ifdef UNBOOST_CXX11    // C++11
                 inline long long
                 stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
                     long long ret;
