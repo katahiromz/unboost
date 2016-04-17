@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    5 // Version 5
+#define UNBOOST_HPP_    6 // Version 6
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -52,6 +52,9 @@
     #endif
     #ifndef UNBOOST_USE_UNORDERED_MAP
         #define UNBOOST_USE_UNORDERED_MAP
+    #endif
+    #ifndef UNBOOST_USE_FOREACH
+        #define UNBOOST_USE_FOREACH
     #endif
 #endif
 
@@ -938,6 +941,34 @@
         #error Your compiler is not supported yet. You lose.
     #endif
 #endif  // def UNBOOST_USE_UNORDERED_MAP
+
+//////////////////////////////////////////////////////////////////////////////
+
+#ifdef UNBOOST_USE_FOREACH
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_FOREACH) + defined(UNBOOST_USE_BOOST_FOREACH)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_FOREACH
+        #elif UNBOOST_USE_BOOST
+            #define UNBOOST_USE_BOOST_FOREACH
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_FOREACH
+            #else
+                #define UNBOOST_USE_BOOST_FOREACH
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_FOREACH
+        #define UNBOOST_FOREACH(x,y) for (x : y)
+    #elif defined(UNBOOST_USE_BOOST_FOREACH)
+        #include <boost/foreach.hpp>
+        #define UNBOOST_FOREACH BOOST_FOREACH
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_FOREACH
 
 //////////////////////////////////////////////////////////////////////////////
 
