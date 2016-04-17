@@ -5,7 +5,7 @@
 // Assume C++11 compiler if defined:
 #undef UNBOOST_CXX11
 
-// Choose one or none of:
+// Define one or none of:
 #undef UNBOOST_USE_CXX11
 #undef UNBOOST_USE_STD_TR1
 #undef UNBOOST_USE_BOOST
