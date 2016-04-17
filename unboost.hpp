@@ -260,7 +260,7 @@
             using std::array;
         }
     #elif defined(UNBOOST_USE_TR1_ARRAY)
-        #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
+        #if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
             // GCC 4.0 to 4.2
             #include <tr1/array>
         #else
