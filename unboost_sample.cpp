@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-// TODO: add more sample code
-
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef UNBOOST_USE_STATIC_ASSERT
@@ -33,11 +31,68 @@ int main(void) {
         std::cout << *spi << std::endl;
     #endif
 
+    #ifdef UNBOOST_USE_THREAD
+        std::cout << "thread" << std::endl;
+        unboost::thread t(thread_proc);
+        t.join();
+    #endif
+
     #ifdef UNBOOST_USE_ARRAY
         std::cout << "array" << std::endl;
         unboost::array<int,2> a = {2, 3};
         std::cout << a[0] << std::endl;
         std::cout << a[1] << std::endl;
+    #endif
+
+    #ifdef UNBOOST_USE_REGEX
+        std::cout << "regex" << std::endl;
+        std::vector<std::string> fnames;
+        fnames.push_back("foo.txt");
+        fnames.push_back("bar.txt");
+        fnames.push_back("baz.dat");
+        fnames.push_back("zoidberg");
+        using unboost::regex;
+        regex txt_regex("[a-z]+\\.txt");
+     
+        for (size_t i = 0; i < fnames.size(); ++i) {
+            using namespace unboost;
+            std::string& fname = fnames[i];
+            std::cout << fname << ": " << regex_match(fname, txt_regex) << '\n';
+        }
+    #endif
+
+    #ifdef UNBOOST_USE_CONVERSION
+        std::cout << "conversion" << std::endl;
+        std::cout << unboost::to_string(unboost::stoi("2016")) << std::endl;
+    #endif
+
+    #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
+        std::cout << "complex functions" << std::endl;
+        std::cout << unboost::math::asin(std::complex<double>(2, 3)).real() << std::endl;
+    #endif
+
+    #ifdef UNBOOST_USE_RANDOM
+        std::cout << "random" << std::endl;
+        {
+            using namespace unboost::random;
+            mt19937 engine;
+            uniform_int_distribution<int> distribution(1, 6);
+            for (int i = 0; i < 5; ++i) {
+                std::cout << distribution(engine) << std::endl;
+            }
+        }
+    #endif
+
+    #ifdef UNBOOST_USE_CHRONO
+        std::cout << "chrono" << std::endl;
+        {
+            using namespace unboost::chrono;
+            seconds sec(1);
+            std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
+            std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
+            std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
+            std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
+        }
     #endif
 
     #ifdef UNBOOST_USE_UNORDERED_SET
@@ -64,34 +119,6 @@ int main(void) {
                 std::cout << it->first << "," << it->second << std::endl;
             }
         }
-    #endif
-
-    #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
-        std::cout << "complex functions" << std::endl;
-        std::cout << unboost::math::asin(std::complex<double>(2, 3)).real() << std::endl;
-    #endif
-
-    #ifdef UNBOOST_USE_REGEX
-        std::cout << "regex" << std::endl;
-        std::vector<std::string> fnames;
-        fnames.push_back("foo.txt");
-        fnames.push_back("bar.txt");
-        fnames.push_back("baz.dat");
-        fnames.push_back("zoidberg");
-        using unboost::regex;
-        regex txt_regex("[a-z]+\\.txt");
-     
-        for (size_t i = 0; i < fnames.size(); ++i) {
-            using namespace unboost;
-            std::string& fname = fnames[i];
-            std::cout << fname << ": " << regex_match(fname, txt_regex) << '\n';
-        }
-    #endif
-
-    #ifdef UNBOOST_USE_THREAD
-        std::cout << "thread" << std::endl;
-        unboost::thread t(thread_proc);
-        t.join();
     #endif
 
     return 0;

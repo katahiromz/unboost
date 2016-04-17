@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    4 // Version 4
+#define UNBOOST_HPP_    5 // Version 5
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -783,6 +783,7 @@
         namespace unboost {
             namespace chrono {
                 using std::chrono::duration;
+                using std::chrono::duration_cast;
                 using std::chrono::system_clock;
                 using std::chrono::steady_clock;
                 using std::chrono::high_resolution_clock;
@@ -803,6 +804,7 @@
         namespace unboost {
             namespace chrono {
                 using boost::chrono::duration;
+                using boost::chrono::duration_cast;
                 using boost::chrono::system_clock;
                 using boost::chrono::steady_clock;
                 using boost::chrono::high_resolution_clock;
