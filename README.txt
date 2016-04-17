@@ -1,7 +1,7 @@
                  ----- Unboost -----
       ----- Time to say good-bye to Boost -----
 
-This is "Unboost", that is a convenient library for C++.
+This is "Unboost", that is a convenience library for C++.
 Unboost enables you to switch codes to C++11 or Boost smartly.
 
 See source for more details.

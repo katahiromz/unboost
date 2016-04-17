@@ -3,7 +3,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    1 /* Version 1 */
+#define UNBOOST_HPP_    2 // Version 2
+
+#ifndef __cplusplus
+    #error Unboost needs C++ compiler. You lose.
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // Unboost configuration (optional)
@@ -13,49 +17,69 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// UNBOOST_USE_CXX11 or UNBOOST_USE_BOOST?
+// Use all?
 
-#ifndef UNBOOST_CXX11
-    #if (__cplusplus >= 201103L) // C++11
-        #ifndef UNBOOST_CXX03
-            #define UNBOOST_CXX11
-        #endif
+#ifdef UNBOOST_USE_ALL
+    #ifndef UNBOOST_USE_STATIC_ASSERT
+        #define UNBOOST_USE_STATIC_ASSERT
+    #endif
+    #ifndef UNBOOST_USE_SMART_PTR
+        #define UNBOOST_USE_SMART_PTR
+    #endif
+    #ifndef UNBOOST_USE_THREAD
+        #define UNBOOST_USE_THREAD
+    #endif
+    #ifndef UNBOOST_USE_ARRAY
+        #define UNBOOST_USE_ARRAY
+    #endif
+    #ifndef UNBOOST_USE_REGEX
+        #define UNBOOST_USE_REGEX
+    #endif
+    #ifndef UNBOOST_USE_CONVERSION
+        #define UNBOOST_USE_CONVERSION
+    #endif
+    #ifndef UNBOOST_USE_COMPLEX_FUNCTIONS
+        #define UNBOOST_USE_COMPLEX_FUNCTIONS
+    #endif
+    #ifndef UNBOOST_USE_RANDOM
+        #define UNBOOST_USE_RANDOM
+    #endif
+    #ifndef UNBOOST_USE_CHRONO
+        #define UNBOOST_USE_CHRONO
+    #endif
+    #ifndef UNBOOST_USE_UNORDERED_SET
+        #define UNBOOST_USE_UNORDERED_SET
+    #endif
+    #ifndef UNBOOST_USE_UNORDERED_MAP
+        #define UNBOOST_USE_UNORDERED_MAP
     #endif
 #endif
 
-#if !defined(UNBOOST_USE_BOOST)
-    #if defined(UNBOOST_CXX11) && !defined(UNBOOST_USE_CXX11)
-        #define UNBOOST_USE_CXX11
+//////////////////////////////////////////////////////////////////////////////
+// Is Unboost in C++11? (UNBOOST_CXX11)
+
+#ifndef UNBOOST_CXX11
+    #if (__cplusplus >= 201103L)    // C++11
+        #define UNBOOST_CXX11
     #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // consistency checks
 
-#if defined(UNBOOST_CXX11) && defined(UNBOOST_CXX03)
-    #error Choose either UNBOOST_CXX11 or UNBOOST_CXX03. You lose.
-#endif
-
-#if defined(UNBOOST_USE_CXX11) && defined(UNBOOST_USE_BOOST)
-    #error Choose either UNBOOST_USE_CXX11 or UNBOOST_USE_BOOST. You lose.
-#endif
-
-#if defined(UNBOOST_USE_CXX11) && !defined(UNBOOST_CXX11)
-    #error Please #define UNBOOST_CXX11 before #inclusion of "unboost.hpp". You lose.
+#if ((defined(UNBOOST_USE_CXX11) + defined(UNBOOST_USE_TR1) + defined(UNBOOST_USE_BOOST)) >= 2)
+    #error Choose one or none of UNBOOST_USE_CXX11, UNBOOST_USE_TR1 and UNBOOST_USE_BOOST. You lose.
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // static_assert
 
-#ifndef UNBOOST_NO_STATIC_ASSERT
-    #ifdef UNBOOST_USE_CXX11
-        // NOTE: In C++11, static_assert is available.
-    #else
-        #ifndef UNBOOST_CXX11
-            #include <boost/static_assert.hpp>
-            #ifndef static_assert
-                #define static_assert BOOST_STATIC_ASSERT_MSG
-            #endif
+#ifdef UNBOOST_USE_STATIC_ASSERT
+    #ifndef UNBOOST_CXX11   // not C++11
+        // Use Boost
+        #include <boost/static_assert.hpp>
+        #ifndef static_assert
+            #define static_assert BOOST_STATIC_ASSERT_MSG
         #endif
     #endif
 #endif
@@ -63,22 +87,75 @@
 //////////////////////////////////////////////////////////////////////////////
 // smart pointers
 
-#ifndef UNBOOST_NO_SMARTPTR
-    #include <memory>       // for std::shared_ptr, ...
-
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_SMART_PTR
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_SMART_PTR
+        #elif defined(UNBOOST_USE_TR1)
+            #define UNBOOST_USE_TR1_SMART_PTR
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_SMART_PTR
+        #else
+            #ifdef UNBOOST_CXX11
+                // C++11
+                #define UNBOOST_USE_CXX11_SMART_PTR
+            #elif defined(_MSC_VER)
+                #if (1500 <= _MSC_VER) && (_MSC_VER <= 1600)
+                    // Visual C++ 2008 SP1 and 2010
+                    #define UNBOOST_USE_TR1_SMART_PTR
+                    // NOTE: On MSVC 2008, you needs SP1.
+                #elif (_MSC_VER >= 1700)
+                    // Visual C++ 2012 and later
+                    #define UNBOOST_USE_CXX11_SMART_PTR
+                #else
+                    // Boost
+                    #define UNBOOST_USE_BOOST_SMART_PTR
+                #endif
+            #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
+                // GCC 4.0 to 4.2
+                #define UNBOOST_USE_TR1_SMART_PTR
+            #else
+                // Boost
+                #define UNBOOST_USE_BOOST_SMART_PTR
+            #endif
+        #endif  // ndef UNBOOST_USE_CXX11
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_SMART_PTR
+        #include <memory>       // for std::shared_ptr, ...
         namespace unboost {
             using std::shared_ptr;
             using std::make_shared;
             using std::static_pointer_cast;
             using std::dynamic_pointer_cast;
             using std::unique_ptr;
+            using std::weak_ptr;
         } // namespace unboost
-    #else   // ndef UNBOOST_USE_CXX11
+    #elif defined(UNBOOST_USE_TR1_SMART_PTR)
+        #if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
+            #include <tr1/memory>   // for std::tr1::shared_ptr, ...
+        #else
+            #include <memory>       // for std::tr1::shared_ptr, ...
+        #endif
+        namespace unboost {
+            using std::tr1::shared_ptr;
+            template <typename T>
+            inline shared_ptr<T> make_shared(const T& value) {
+                shared_ptr<T> ptr(new T(value));
+                return ptr;
+            }
+            using std::tr1::static_pointer_cast;
+            using std::tr1::dynamic_pointer_cast;
+            // NOTE: There is no unique_ptr for TR1
+            using std::tr1::weak_ptr;
+        } // namespace unboost
+    #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
         #include <boost/shared_ptr.hpp>
         #include <boost/make_shared.hpp>
         #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
         #include <boost/checked_delete.hpp>
+        #include <boost/weak_ptr.hpp>
         #ifdef UNBOOST_FIX_UNIQUE_PTR
             namespace boost {
                 namespace interprocess {
@@ -86,7 +163,6 @@
                     struct default_delete : checked_deleter<T> { };
                     template<typename T>
                     struct default_delete<T[]> : checked_array_deleter<T> { };
-
                     template<typename T, typename D = default_delete<T> >
                     class unique_ptr;
                 } // namespace interprocess
@@ -98,49 +174,130 @@
             using boost::static_pointer_cast;
             using boost::dynamic_pointer_cast;
             using boost::interprocess::unique_ptr;
+            using boost::weak_ptr;
         } // namespace unboost
-    #endif  // ndef UNBOOST_USE_CXX11
-#endif  // ndef UNBOOST_NO_SMARTPTR
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_SMART_PTR
 
 //////////////////////////////////////////////////////////////////////////////
 // modern thread
 
-#ifndef UNBOOST_NO_THREAD
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_THREAD
+    // If not choosed, choose one
+    #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_THREAD
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_THREAD
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_THREAD
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1800)
+                    // Visual C++ 2013 and later
+                    #define UNBOOST_USE_CXX11_THREAD
+                #else
+                    #define UNBOOST_USE_BOOST_THREAD
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_THREAD
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_THREAD
         #include <thread>
         namespace unboost {
             using std::thread;
         }
-    #else
+    #elif defined(UNBOOST_USE_BOOST_THREAD)
         #include <boost/thread.hpp>
         namespace unboost {
             using boost::thread;
         }
+    #else
+        #error Your compiler is not supported yet. You lose.
     #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // modern array
 
-#ifndef UNBOOST_NO_ARRAY
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_ARRAY
+    // If not choosed, choose one
+    #if (defined(UNBOOST_USE_CXX11_ARRAY) + defined(UNBOOST_USE_TR1_ARRAY) + defined(UNBOOST_USE_BOOST_ARRAY) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_ARRAY
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_ARRAY
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_ARRAY
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_ARRAY
+                #elif (1500 <= _MSC_VER) && (_MSC_VER < 1600)
+                    // Visual C++ 2008
+                    #define UNBOOST_USE_TR1_ARRAY
+                #else
+                    #define UNBOOST_USE_BOOST_ARRAY
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_ARRAY
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_ARRAY
         #include <array>
         namespace unboost {
             using std::array;
         }
-    #else
+    #elif defined(UNBOOST_USE_TR1_ARRAY)
+        #include <array>
+        namespace unboost {
+            using std::tr1::array;
+        }
+    #elif defined(UNBOOST_USE_BOOST_ARRAY)
         #include <boost/array.hpp>
         namespace unboost {
             using boost::array;
         }
+    #else
+        #error Your compiler is not supported yet. You lose.
     #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // regular expression (regex)
 
-#ifndef UNBOOST_NO_REGEX
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_REGEX
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_REGEX) + defined(UNBOOST_USE_BOOST_REGEX)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_REGEX
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_REGEX
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_REGEX
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_REGEX
+                #else
+                    #define UNBOOST_USE_BOOST_REGEX
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_REGEX
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_REGEX
         #include <regex>
         namespace unboost {
             using std::regex;
@@ -203,7 +360,7 @@
                 static constexpr syntax_option_type egrep = std::regex_constants::egrep;
             } // namespace regex_constants
         } // namespace unboost
-    #else   // ndef UNBOOST_USE_CXX11
+    #elif defined(UNBOOST_USE_BOOST_REGEX)
         #include <boost/regex.hpp>
         namespace unboost {
             using boost::regex;
@@ -266,16 +423,40 @@
                 static const syntax_option_type egrep = boost::regex_constants::egrep;
             } // namespace regex_constants
         } // namespace unboost
-    #endif  // ndef UNBOOST_USE_CXX11
-#endif  // ndef UNBOOST_NO_REGEX
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_REGEX
 
 //////////////////////////////////////////////////////////////////////////////
 // conversion between number and string
 
-#ifndef UNBOOST_NO_CONVERSION
+#ifdef UNBOOST_USE_CONVERSION
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_CONVERSION
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_CONVERSION
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_CONVERSION
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_CONVERSION
+                #else
+                    #define UNBOOST_USE_BOOST_CONVERSION
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_CONVERSION
+            #endif
+        #endif
+    #endif
     #include <cstdlib>
     #include <string>
-    #ifdef UNBOOST_USE_CXX11
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_CONVERSION
         namespace unboost {
             using std::stoi;
             using std::stol;
@@ -288,7 +469,7 @@
             using std::to_string;
             using std::to_wstring;
         } // namespace unboost
-    #else // ndef UNBOOST_USE_CXX11
+    #elif defined(UNBOOST_USE_BOOST_CONVERSION)
         #include <boost/lexical_cast.hpp>
         #include <boost/exception/to_string.hpp>
         namespace unboost {
@@ -397,16 +578,33 @@
             using boost::to_string;
             // NOTE: There is no boost::to_wstring.
         } // namespace unboost
-    #endif  // ndef UNBOOST_USE_CXX11
-#endif  // ndef UNBOOST_NO_CONVERSION
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_CONVERSION
 
 //////////////////////////////////////////////////////////////////////////////
 // math functions
 
-#ifndef UNBOOST_NO_COMPLEX_FUNCTIONS
+#ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS) + defined(UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS
+            #else
+                #define UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS
+            #endif
+        #endif
+    #endif
     #include <cmath>
     #include <complex>
-    #ifdef UNBOOST_USE_CXX11
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS
         namespace unboost {
             namespace math {
                 using std::complex;
@@ -419,7 +617,7 @@
                 using std::atanh;
             } // namespace math
         } // namespace unboost
-    #else
+    #elif defined(UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS)
         #include <boost/math/complex.hpp>
         namespace unboost {
             namespace math {
@@ -432,14 +630,38 @@
                 using boost::math::atanh;
             } // namespace math
         } // namespace unboost
+    #else
+        #error Your compiler is not supported yet. You lose.
     #endif
-#endif  // ndef UNBOOST_NO_COMPLEX_FUNCTIONS
+#endif  // def UNBOOST_USE_COMPLEX_FUNCTIONS
 
 //////////////////////////////////////////////////////////////////////////////
 // random generation
 
-#ifndef UNBOOST_NO_RANDOM
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_RANDOM
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_RANDOM) + defined(UNBOOST_USE_BOOST_RANDOM)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_RANDOM
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_RANDOM
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_RANDOM
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_RANDOM
+                #else
+                    #define UNBOOST_USE_BOOST_RANDOM
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_RANDOM
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_RANDOM
         #include <random>
         namespace unboost {
             namespace random {
@@ -477,7 +699,7 @@
                 using std::seed_seq;
             } // namespace random
         } // namespace unboost
-    #else   // ndef UNBOOST_USE_CXX11
+    #elif defined(UNBOOST_USE_BOOST_RANDOM)
         #include <boost/random/random_device.hpp>
         #include <boost/random.hpp>
         namespace unboost {
@@ -516,14 +738,38 @@
                 using boost::random::seed_seq;
             } // namespace random
         } // namespace unboost
-    #endif  // ndef UNBOOST_USE_CXX11
-#endif  // ndef UNBOOST_NO_RANDOM
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_RANDOM
 
 //////////////////////////////////////////////////////////////////////////////
 // chrono
 
-#ifndef UNBOOST_NO_CHRONO
-    #ifdef UNBOOST_USE_CXX11
+#ifdef UNBOOST_USE_CHRONO
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_CHRONO
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_CHRONO
+        #else
+            #ifdef UNBOOST_CXX11
+                #define UNBOOST_USE_CXX11_CHRONO
+            #elif defined(_MSC_VER)
+                #if (_MSC_VER >= 1700)
+                    // Visual C++ 2012 and later
+                    #define UNBOOST_USE_CXX11_CHRONO
+                #else
+                    #define UNBOOST_USE_BOOST_CHRONO
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_CHRONO
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_CHRONO
         #include <chrono>
         namespace unboost {
             namespace chrono {
@@ -543,7 +789,7 @@
                 using std::chrono::time_point_cast;
             } // namespace chrono
         } // namespace unboost
-    #else
+    #elif defined(UNBOOST_USE_BOOST_CHRONO)
         #include <boost/chrono/include.hpp>
         namespace unboost {
             namespace chrono {
@@ -563,8 +809,102 @@
                 using boost::chrono::time_point_cast;
             } // namespace chrono
         } // namespace unboost
+    #else
+        #error Your compiler is not supported yet. You lose.
     #endif
-#endif  // ndef UNBOOST_NO_CHRONO
+#endif  // def UNBOOST_USE_CHRONO
+
+//////////////////////////////////////////////////////////////////////////////
+// unordered set
+
+#ifdef UNBOOST_USE_UNORDERED_SET
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_UNORDERED_SET) + defined(UNBOOST_USE_TR1_UNORDERED_SET) + defined(UNBOOST_USE_BOOST_UNORDERED_SET)) == 0)
+        #ifdef UNBOOST_CXX11
+            #define UNBOOST_USE_CXX11_UNORDERED_SET
+        #elif defined(_MSC_VER)
+            #if (_MSC_VER >= 1600)
+                // Visual C++ 2010 and later
+                #define UNBOOST_USE_CXX11_UNORDERED_SET
+            #elif (_MSC_VER >= 1500)
+                // Visual C++ 2008
+                #define UNBOOST_USE_TR1_UNORDERED_SET
+            #else
+                #define UNBOOST_USE_BOOST_UNORDERED_SET
+            #endif
+        #else
+            #define UNBOOST_USE_BOOST_UNORDERED_SET
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_UNORDERED_SET
+        #include <unordered_set>
+        namespace unboost {
+            using std::unordered_set;
+            using std::unordered_multiset;
+        }
+    #elif defined(UNBOOST_USE_TR1_UNORDERED_SET)
+        #include <unordered_set>
+        namespace unboost {
+            using std::tr1::unordered_set;
+            using std::tr1::unordered_multiset;
+        }
+    #elif defined(UNBOOST_USE_BOOST_UNORDERED_SET)
+        #include <boost/unordered_set.hpp>
+        namespace unboost {
+            using boost::unordered_set;
+            using boost::unordered_multiset;
+        }
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_UNORDERED_SET
+
+//////////////////////////////////////////////////////////////////////////////
+// unordered map
+
+#ifdef UNBOOST_USE_UNORDERED_MAP
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_UNORDERED_MAP) + defined(UNBOOST_USE_TR1_UNORDERED_MAP) + defined(UNBOOST_USE_BOOST_UNORDERED_MAP)) == 0)
+        #ifdef UNBOOST_CXX11
+            #define UNBOOST_USE_CXX11_UNORDERED_MAP
+        #elif defined(_MSC_VER)
+            #if (_MSC_VER >= 1600)
+                // Visual C++ 2010 and later
+                #define UNBOOST_USE_CXX11_UNORDERED_MAP
+            #elif (_MSC_VER >= 1500)
+                // Visual C++ 2008
+                #define UNBOOST_USE_TR1_UNORDERED_MAP
+            #else
+                #define UNBOOST_USE_BOOST_UNORDERED_MAP
+            #endif
+        #else
+            #define UNBOOST_USE_BOOST_UNORDERED_MAP
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_UNORDERED_MAP
+        #include <unordered_map>
+        namespace unboost {
+            using std::unordered_map;
+            using std::unordered_multimap;
+        }
+    #elif defined(UNBOOST_USE_TR1_UNORDERED_MAP)
+        #include <unordered_map>
+        namespace unboost {
+            using std::tr1::unordered_map;
+            using std::tr1::unordered_multimap;
+        }
+    #elif defined(UNBOOST_USE_BOOST_UNORDERED_MAP)
+        #include <boost/unordered_map.hpp>
+        namespace unboost {
+            using boost::unordered_map;
+            using boost::unordered_multimap;
+        }
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif  // def UNBOOST_USE_UNORDERED_MAP
 
 //////////////////////////////////////////////////////////////////////////////
 
