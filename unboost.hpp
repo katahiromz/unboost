@@ -1047,8 +1047,8 @@
         #if defined(UNBOOST_DISABLE_ASSERTS)
             #define UNBOOST_ASSERT(exp)             ((void)0)
             #define UNBOOST_ASSERT_MSG(exp,msg)     ((void)0)
-            #define UNBOOST_VERIFY(exp)             ((void)(expr))
-            #define UNBOOST_VERIFY_MSG(exp,msg)     ((void)(expr))
+            #define UNBOOST_VERIFY(exp)             ((void)(exp))
+            #define UNBOOST_VERIFY_MSG(exp,msg)     ((void)(exp))
         #else
             #define UNBOOST_ASSERT(exp)             assert(exp)
             #define UNBOOST_ASSERT_MSG(exp,msg)     assert((exp) && (msg))
