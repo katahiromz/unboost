@@ -949,7 +949,7 @@
     #if ((defined(UNBOOST_USE_CXX11_FOREACH) + defined(UNBOOST_USE_BOOST_FOREACH)) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_FOREACH
-        #elif UNBOOST_USE_BOOST
+        #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_FOREACH
         #else
             #ifdef UNBOOST_CXX11    // C++11
