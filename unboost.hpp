@@ -56,7 +56,7 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// Is Unboost in C++11? (UNBOOST_CXX11)
+// Is Unboost on C++11? (UNBOOST_CXX11)
 
 #ifndef UNBOOST_CXX11
     #if (__cplusplus >= 201103L)    // C++11
