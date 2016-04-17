@@ -142,6 +142,11 @@ int main(void) {
         }
     #endif
 
+    #ifdef UNBOOST_USE_ASSERT
+        UNBOOST_ASSERT(1);
+        UNBOOST_ASSERT_MSG(1, "OK");
+    #endif
+
     return 0;
 } // main
 
