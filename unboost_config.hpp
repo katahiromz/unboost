@@ -10,10 +10,10 @@
 #undef UNBOOST_USE_STD_TR1
 #undef UNBOOST_USE_BOOST
 
-// Choose this if you want to use all features:
+// Define this if you want to use all features:
 #undef UNBOOST_USE_ALL
 
-// Choose any combination of:
+// Define any combination of:
 #undef UNBOOST_USE_STATIC_ASSERT
 #undef UNBOOST_USE_SMART_PTR
 #undef UNBOOST_USE_THREAD
