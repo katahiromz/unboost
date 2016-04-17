@@ -142,7 +142,18 @@ int main(void) {
         }
     #endif
 
+    #ifdef UNBOOST_USE_TUPLE
+        std::cout << "tuple" << std::endl;
+        unboost::tuple<int, const char *, std::string> tup;
+        tup = unboost::make_tuple<int, const char *, std::string>(2, "This is", "a test");
+        std::cout << unboost::get<0>(tup) << std::endl;
+        std::cout << unboost::get<1>(tup) << std::endl;
+        std::cout << unboost::get<2>(tup) << std::endl;
+        std::cout << unboost::tuple_size<unboost::tuple<int, const char *, std::string> >::value << std::endl;
+    #endif
+
     #ifdef UNBOOST_USE_ASSERT
+        std::cout << "assert" << std::endl;
         UNBOOST_ASSERT(1);
         UNBOOST_ASSERT_MSG(1, "OK");
     #endif
