@@ -100,8 +100,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_SMART_PTR
         #else
-            #ifdef UNBOOST_CXX11
-                // C++11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_SMART_PTR
             #elif defined(_MSC_VER)
                 #if (1500 <= _MSC_VER) && (_MSC_VER <= 1600)
@@ -195,7 +194,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_THREAD
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_THREAD
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1800)
@@ -238,7 +237,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_ARRAY
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_ARRAY
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1600)
@@ -294,7 +293,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_REGEX
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_REGEX
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1600)
@@ -451,7 +450,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_CONVERSION
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_CONVERSION
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1600)
@@ -510,7 +509,7 @@
             inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
                 return static_cast<int>(unboost::stol(str, pos, base));
             }
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 inline long long stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
                     long long ret;
                     if (pos) {
@@ -555,7 +554,7 @@
                     }
                     return ret;
                 }
-            #else
+            #else   // not C++11
                 inline __int64 stoll(const std::string& str) {
                     // TODO: support pos and base parameters
                     return boost::lexical_cast<__int64>(str.c_str());
@@ -575,7 +574,7 @@
                     }
                     return ret;
                 }
-            #endif
+            #endif  // not C++11
             inline double stod(const std::string& str, size_t *pos = NULL) {
                 double ret;
                 if (pos) {
@@ -606,7 +605,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS
             #else
                 #define UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS
@@ -658,7 +657,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_RANDOM
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_RANDOM
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1600)
@@ -766,7 +765,7 @@
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_CHRONO
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_CHRONO
             #elif defined(_MSC_VER)
                 #if (_MSC_VER >= 1700)
@@ -953,7 +952,7 @@
         #elif UNBOOST_USE_BOOST
             #define UNBOOST_USE_BOOST_FOREACH
         #else
-            #ifdef UNBOOST_CXX11
+            #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_FOREACH
             #else
                 #define UNBOOST_USE_BOOST_FOREACH
