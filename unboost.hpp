@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    2 // Version 2
+#define UNBOOST_HPP_    3 // Version 3
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -112,8 +112,8 @@
                     // Boost
                     #define UNBOOST_USE_BOOST_SMART_PTR
                 #endif
-            #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
-                // GCC 4.0 to 4.2
+            #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+                // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_SMART_PTR
             #else
                 // Boost
@@ -133,10 +133,10 @@
             using std::weak_ptr;
         } // namespace unboost
     #elif defined(UNBOOST_USE_TR1_SMART_PTR)
-        #if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
-            #include <tr1/memory>   // for std::tr1::shared_ptr, ...
-        #else
+        #ifdef _MSC_VER
             #include <memory>       // for std::tr1::shared_ptr, ...
+        #else
+            #include <tr1/memory>   // for std::tr1::shared_ptr, ...
         #endif
         namespace unboost {
             using std::tr1::shared_ptr;
@@ -245,8 +245,8 @@
                 #else
                     #define UNBOOST_USE_BOOST_ARRAY
                 #endif
-            #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
-                // GCC 4.0 to 4.2
+            #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+                // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_ARRAY
             #else
                 #define UNBOOST_USE_BOOST_ARRAY
@@ -255,22 +255,21 @@
     #endif
     // Adapt choosed one
     #ifdef UNBOOST_USE_CXX11_ARRAY
-        #include <array>
+        #include <array>            // for std::array
         namespace unboost {
             using std::array;
         }
     #elif defined(UNBOOST_USE_TR1_ARRAY)
-        #if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
-            // GCC 4.0 to 4.2
-            #include <tr1/array>
+        #ifdef _MSC_VER
+            #include <array>        // for std::tr1::array
         #else
-            #include <array>
+            #include <tr1/array>    // for std::tr1::array
         #endif
         namespace unboost {
             using std::tr1::array;
         }
     #elif defined(UNBOOST_USE_BOOST_ARRAY)
-        #include <boost/array.hpp>
+        #include <boost/array.hpp>  // for boost::array
         namespace unboost {
             using boost::array;
         }
@@ -840,25 +839,32 @@
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_SET
             #endif
+        #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+            // GCC 4.3 and later
+            #define UNBOOST_USE_TR1_UNORDERED_SET
         #else
             #define UNBOOST_USE_BOOST_UNORDERED_SET
         #endif
     #endif
     // Adapt choosed one
     #ifdef UNBOOST_USE_CXX11_UNORDERED_SET
-        #include <unordered_set>
+        #include <unordered_set>            // for std::unordered_set, ...
         namespace unboost {
             using std::unordered_set;
             using std::unordered_multiset;
         }
     #elif defined(UNBOOST_USE_TR1_UNORDERED_SET)
-        #include <unordered_set>
+        #ifdef _MSC_VER
+            #include <unordered_set>
+        #else
+            #include <tr1/unordered_set>    // for std::tr1::unordered_set, ...
+        #endif
         namespace unboost {
             using std::tr1::unordered_set;
             using std::tr1::unordered_multiset;
         }
     #elif defined(UNBOOST_USE_BOOST_UNORDERED_SET)
-        #include <boost/unordered_set.hpp>
+        #include <boost/unordered_set.hpp>  // for boost::unordered_set, ...
         namespace unboost {
             using boost::unordered_set;
             using boost::unordered_multiset;
@@ -886,25 +892,32 @@
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_MAP
             #endif
+        #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+            // GCC 4.3 and later
+            #define UNBOOST_USE_TR1_UNORDERED_MAP
         #else
             #define UNBOOST_USE_BOOST_UNORDERED_MAP
         #endif
     #endif
     // Adapt choosed one
     #ifdef UNBOOST_USE_CXX11_UNORDERED_MAP
-        #include <unordered_map>
+        #include <unordered_map>            // for std::unordered_map, ...
         namespace unboost {
             using std::unordered_map;
             using std::unordered_multimap;
         }
     #elif defined(UNBOOST_USE_TR1_UNORDERED_MAP)
-        #include <unordered_map>
+        #ifdef _MSC_VER
+            #include <unordered_map>        // for std::tr1::unordered_map, ...
+        #else
+            #include <tr1/unordered_map>    // for std::tr1::unordered_map, ...
+        #endif
         namespace unboost {
             using std::tr1::unordered_map;
             using std::tr1::unordered_multimap;
         }
     #elif defined(UNBOOST_USE_BOOST_UNORDERED_MAP)
-        #include <boost/unordered_map.hpp>
+        #include <boost/unordered_map.hpp>  // for boost::unordered_map, ...
         namespace unboost {
             using boost::unordered_map;
             using boost::unordered_multimap;
