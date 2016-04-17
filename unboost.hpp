@@ -609,11 +609,9 @@
             using boost::to_string;
             template <typename T>
             inline std::wstring to_wstring(const T& value) {
-                std::wstringstream ss;
-                ss << value;
-                std::wstring result;
-                ss >> result;
-                return result;
+                std::wstringstream stream;
+                stream << value;
+                return stream.str();
             }
         } // namespace unboost
     #else
