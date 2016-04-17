@@ -607,7 +607,14 @@
                 return ret;
             }
             using boost::to_string;
-            // NOTE: There is no boost::to_wstring.
+            template <typename T>
+            inline std::wstring to_wstring(const T& value) {
+                std::wstringstream ss;
+                ss << value;
+                std::wstring result;
+                ss >> result;
+                return result;
+            }
         } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
