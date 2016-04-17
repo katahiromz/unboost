@@ -763,6 +763,7 @@
                 using std::piecewise_linear_distribution;
                 using std::seed_seq;
             } // namespace random
+            using namespace random;
         } // namespace unboost
     #elif defined(UNBOOST_USE_BOOST_RANDOM)
         #include <boost/random/random_device.hpp>
@@ -802,6 +803,7 @@
                 using boost::random::piecewise_linear_distribution;
                 using boost::random::seed_seq;
             } // namespace random
+            using namespace random;
         } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
