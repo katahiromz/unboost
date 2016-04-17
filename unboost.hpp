@@ -245,6 +245,9 @@
                 #else
                     #define UNBOOST_USE_BOOST_ARRAY
                 #endif
+            #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
+                // GCC 4.0 to 4.2
+                #define UNBOOST_USE_TR1_ARRAY
             #else
                 #define UNBOOST_USE_BOOST_ARRAY
             #endif
@@ -257,7 +260,12 @@
             using std::array;
         }
     #elif defined(UNBOOST_USE_TR1_ARRAY)
-        #include <array>
+        #elif defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ <= 2)
+            // GCC 4.0 to 4.2
+            #include <tr1/array>
+        #else
+            #include <array>
+        #endif
         namespace unboost {
             using std::tr1::array;
         }
