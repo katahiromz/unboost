@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    3 // Version 3
+#define UNBOOST_HPP_    4 // Version 4
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -230,6 +230,8 @@
     #if (defined(UNBOOST_USE_CXX11_ARRAY) + defined(UNBOOST_USE_TR1_ARRAY) + defined(UNBOOST_USE_BOOST_ARRAY) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_ARRAY
+        #elif defined(UNBOOST_USE_TR1)
+            #define UNBOOST_USE_TR1_ARRAY
         #elif defined(UNBOOST_USE_BOOST)
             #define UNBOOST_USE_BOOST_ARRAY
         #else
@@ -827,23 +829,27 @@
 #ifdef UNBOOST_USE_UNORDERED_SET
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_UNORDERED_SET) + defined(UNBOOST_USE_TR1_UNORDERED_SET) + defined(UNBOOST_USE_BOOST_UNORDERED_SET)) == 0)
-        #ifdef UNBOOST_CXX11
+        #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_UNORDERED_SET
-        #elif defined(_MSC_VER)
-            #if (_MSC_VER >= 1600)
-                // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_UNORDERED_SET
-            #elif (_MSC_VER >= 1500)
-                // Visual C++ 2008
+        #elif defined(UNBOOST_USE_TR1)
+            #define UNBOOST_USE_TR1_UNORDERED_SET
+        #else
+            #if defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_UNORDERED_SET
+                #elif (_MSC_VER >= 1500)
+                    // Visual C++ 2008
+                    #define UNBOOST_USE_TR1_UNORDERED_SET
+                #else
+                    #define UNBOOST_USE_BOOST_UNORDERED_SET
+                #endif
+            #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+                // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_UNORDERED_SET
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_SET
             #endif
-        #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
-            // GCC 4.3 and later
-            #define UNBOOST_USE_TR1_UNORDERED_SET
-        #else
-            #define UNBOOST_USE_BOOST_UNORDERED_SET
         #endif
     #endif
     // Adapt choosed one
@@ -880,23 +886,27 @@
 #ifdef UNBOOST_USE_UNORDERED_MAP
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_UNORDERED_MAP) + defined(UNBOOST_USE_TR1_UNORDERED_MAP) + defined(UNBOOST_USE_BOOST_UNORDERED_MAP)) == 0)
-        #ifdef UNBOOST_CXX11
+        #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_UNORDERED_MAP
-        #elif defined(_MSC_VER)
-            #if (_MSC_VER >= 1600)
-                // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_UNORDERED_MAP
-            #elif (_MSC_VER >= 1500)
-                // Visual C++ 2008
+        #elif defined(UNBOOST_USE_TR1)
+            #define UNBOOST_USE_TR1_UNORDERED_MAP
+        #else
+            #if defined(_MSC_VER)
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_UNORDERED_MAP
+                #elif (_MSC_VER >= 1500)
+                    // Visual C++ 2008
+                    #define UNBOOST_USE_TR1_UNORDERED_MAP
+                #else
+                    #define UNBOOST_USE_BOOST_UNORDERED_MAP
+                #endif
+            #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+                // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_UNORDERED_MAP
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_MAP
             #endif
-        #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
-            // GCC 4.3 and later
-            #define UNBOOST_USE_TR1_UNORDERED_MAP
-        #else
-            #define UNBOOST_USE_BOOST_UNORDERED_MAP
         #endif
     #endif
     // Adapt choosed one
