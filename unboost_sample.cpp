@@ -175,8 +175,8 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_STRING_ALGORITHM
-        // ansi
         std::cout << "string algorithm" << std::endl;
+        // ansi
         std::string str = "  TEST1-TEST2_TEST3  ";
         str = unboost::trim_copy(str);
         std::cout << str << std::endl;
