@@ -1173,7 +1173,7 @@
                 wgraphs(L"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
                 static const std::wstring
                 wprints(L" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-            }
+            } // namespace char_range
             struct char_range_predicate {
                 char_range_predicate() {}
                 char_range_predicate(const std::string& str) : m_char_set(str) {
@@ -1192,7 +1192,7 @@
                     : m_char_set(str), m_wchar_set(wstr) {}
                 std::string m_char_set;
                 std::wstring m_wchar_set;
-            };
+            }; // struct char_range_predicate
             struct is_space : public char_range_predicate {
                 is_space() : char_range_predicate(char_range::spaces, char_range::wspaces) {}
             };
