@@ -1207,8 +1207,8 @@
             };
             struct is_from_range : public char_set_predicate {
                 is_from_range(char from, char to) {
-                    for (char ch = from; ch <= to; ++ch) {
-                        m_char_set += ch;
+                    for (int ch = from; ch <= to; ++ch) {
+                        m_char_set += char(ch);
                         m_wchar_set += wchar_t(ch);
                     }
                 }
