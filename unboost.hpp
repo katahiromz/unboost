@@ -1147,23 +1147,23 @@
             // TODO: be locale aware
             namespace char_set {
                 // ansi
-                static const std::string spaces(" \t\n\r\f\v");
-                static const std::string alphas("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-                static const std::string alnums("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-                static const std::string digits("0123456789");
-                static const std::string xdigits("0123456789ABCDEFabcdef");
-                static const std::string uppers("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-                static const std::string lowers("abcdefghijklmnopqrstuvwxyz");
-                static const std::string puncts("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+                static const char *spaces = " \t\n\r\f\v";
+                static const char *alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                static const char *alnums = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                static const char *digits = "0123456789";
+                static const char *xdigits = "0123456789ABCDEFabcdef";
+                static const char *uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                static const char *lowers = "abcdefghijklmnopqrstuvwxyz";
+                static const char *puncts = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
                 // wide
-                static const std::wstring wspaces(L" \t\n\r\f\v\u3000");
-                static const std::wstring walphas(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-                static const std::wstring walnums(L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
-                static const std::wstring wdigits(L"0123456789");
-                static const std::wstring wxdigits(L"0123456789ABCDEFabcdef");
-                static const std::wstring wuppers(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-                static const std::wstring wlowers(L"abcdefghijklmnopqrstuvwxyz");
-                static const std::wstring wpuncts(L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+                static const wchar_t *wspaces = L" \t\n\r\f\v\u3000";
+                static const wchar_t *walphas = L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                static const wchar_t *walnums = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                static const wchar_t *wdigits = L"0123456789";
+                static const wchar_t *wxdigits = L"0123456789ABCDEFabcdef";
+                static const wchar_t *wuppers = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                static const wchar_t *wlowers = L"abcdefghijklmnopqrstuvwxyz";
+                static const wchar_t *wpuncts = L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
             } // namespace char_set
             struct char_set_predicate {
                 std::string     m_char_set;
