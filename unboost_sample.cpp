@@ -188,7 +188,7 @@ int main(void) {
         str = unboost::replace_all_copy(str, "<>", "===");
         std::cout << str << std::endl;
         // wide
-        std::wstring wstr = L"  TEST1-TEST2_TEST3  ";
+        std::wstring wstr = L"  TEST1-TEST2_TEST3\u3000";
         wstr = unboost::trim_copy(wstr);
         std::wcout << wstr << std::endl;
         std::vector<std::wstring> vec2;

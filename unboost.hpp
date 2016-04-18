@@ -1127,11 +1127,17 @@
             using boost::trim;
             using boost::trim_left;
             using boost::trim_right;
+            using boost::trim_if;
+            using boost::trim_left_if;
+            using boost::trim_right_if;
             using boost::to_upper_copy;
             using boost::to_lower_copy;
             using boost::trim_copy;
             using boost::trim_left_copy;
             using boost::trim_right_copy;
+            using boost::trim_copy_if;
+            using boost::trim_left_copy_if;
+            using boost::trim_right_copy_if;
             using boost::split;
             using boost::join;
             using boost::replace_all;
@@ -1155,7 +1161,7 @@
                 static const std::string
                 prints(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
                 // wide
-                static const std::wstring wspaces(L" \t\n\r\f\v\x81\40");
+                static const std::wstring wspaces(L" \t\n\r\f\v\u3000");
                 static const std::wstring walphas(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
                 static const std::wstring walnums(L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
                 static const std::wstring wdigits(L"0123456789");
@@ -1275,55 +1281,73 @@
                     }
                 }
             }
-            inline void trim(std::string& str) {
-                size_t i = str.find_first_not_of(char_range::spaces);
-                size_t j = str.find_last_not_of(char_range::spaces);
+            inline void trim_if(std::string& str, const char_range_predicate& pred) {
+                size_t i = str.find_first_not_of(pred.m_char_set);
+                size_t j = str.find_last_not_of(pred.m_char_set);
                 if ((i == std::string::npos) || (j == std::string::npos)) {
                     str.clear();
                 } else {
                     str = str.substr(i, j - i + 1);
                 }
             }
-            inline void trim_left(std::string& str) {
-                size_t i = str.find_first_not_of(char_range::spaces);
+            inline void trim_left_if(std::string& str, const char_range_predicate& pred) {
+                size_t i = str.find_first_not_of(pred.m_char_set);
                 if (i == std::string::npos) {
                     str.clear();
                 } else {
                     str = str.substr(i);
                 }
             }
-            inline void trim_right(std::string& str) {
-                size_t j = str.find_last_not_of(char_range::spaces);
+            inline void trim_right_if(std::string& str, const char_range_predicate& pred) {
+                size_t j = str.find_last_not_of(pred.m_char_set);
                 if (j == std::string::npos) {
                     str.clear();
                 } else {
                     str = str.substr(0, j + 1);
                 }
             }
-            inline void trim(std::wstring& str) {
-                size_t i = str.find_first_not_of(char_range::wspaces);
-                size_t j = str.find_last_not_of(char_range::wspaces);
-                if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
+            inline void trim(std::string& str) {
+                trim_if(str, is_space());
+            }
+            inline void trim_left(std::string& str) {
+                trim_left_if(str, is_space());
+            }
+            inline void trim_right(std::string& str, const char_range_predicate& pred) {
+                trim_right_if(str, is_space());
+            }
+            inline void trim_if(std::wstring& str, const char_range_predicate& pred) {
+                size_t i = str.find_first_not_of(pred.m_wchar_set);
+                size_t j = str.find_last_not_of(pred.m_wchar_set);
+                if ((i == std::string::npos) || (j == std::string::npos)) {
                     str.clear();
                 } else {
                     str = str.substr(i, j - i + 1);
                 }
             }
-            inline void trim_left(std::wstring& str) {
-                size_t i = str.find_first_not_of(char_range::wspaces);
+            inline void trim_left_if(std::wstring& str, const char_range_predicate& pred) {
+                size_t i = str.find_first_not_of(pred.m_wchar_set);
                 if (i == std::wstring::npos) {
                     str.clear();
                 } else {
                     str = str.substr(i);
                 }
             }
-            inline void trim_right(std::wstring& str) {
-                size_t j = str.find_last_not_of(char_range::wspaces);
+            inline void trim_right_if(std::wstring& str, const char_range_predicate& pred) {
+                size_t j = str.find_last_not_of(pred.m_wchar_set);
                 if (j == std::wstring::npos) {
                     str.clear();
                 } else {
                     str = str.substr(0, j + 1);
                 }
+            }
+            inline void trim(std::wstring& str) {
+                trim_if(str, is_space());
+            }
+            inline void trim_left(std::wstring& str) {
+                trim_left_if(str, is_space());
+            }
+            inline void trim_right(std::wstring& str) {
+                trim_right_if(str, is_space());
             }
             template <typename T_STRING>
             inline T_STRING to_upper_copy(const T_STRING& str) {
