@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    7 // Version 7
+#define UNBOOST_HPP_    8 // Version 8
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -61,6 +61,9 @@
     #endif
     #ifndef UNBOOST_USE_TUPLE
         #define UNBOOST_USE_TUPLE
+    #endif
+    #ifndef UNBOOST_USE_STRING_ALGORITHM
+        #define UNBOOST_USE_STRING_ALGORITHM
     #endif
 #endif
 
@@ -168,9 +171,9 @@
             namespace boost {
                 namespace interprocess {
                     template<typename T>
-                    struct default_delete : checked_deleter<T> { };
+                    struct default_delete : checked_deleter<T> {};
                     template<typename T>
-                    struct default_delete<T[]> : checked_array_deleter<T> { };
+                    struct default_delete<T[]> : checked_array_deleter<T> {};
                     template<typename T, typename D = default_delete<T> >
                     class unique_ptr;
                 } // namespace interprocess
@@ -479,7 +482,7 @@
         namespace unboost {
             class bad_lexical_cast : public std::bad_cast {
             public:
-                bad_lexical_cast() { }
+                bad_lexical_cast() {}
             };
             template <typename T, typename U>
             inline T lexical_cast(const U& value) {
@@ -1089,6 +1092,237 @@
         #error Your compiler is not supported yet. You lose.
     #endif
 #endif  // def UNBOOST_USE_TUPLE
+
+//////////////////////////////////////////////////////////////////////////////
+// string algorithm
+
+#ifdef UNBOOST_USE_STRING_ALGORITHM
+    #if ((defined(UNBOOST_USE_CXX_STRING_ALGORITHM) + defined(UNBOOST_USE_BOOST_STRING_ALGORITHM)) == 0)
+        #if defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_STRING_ALGORITHM
+        #else
+            #define UNBOOST_USE_CXX_STRING_ALGORITHM
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_BOOST_STRING_ALGORITHM
+        #include <boost/algorithm/string.hpp>
+        namespace unboost {
+            using boost::is_space;
+            using boost::is_alpha;
+            using boost::is_alnum;
+            using boost::is_digit;
+            using boost::is_xdigit;
+            using boost::is_lower;
+            using boost::is_upper;
+            using boost::is_from_range;
+            using boost::is_any_of;
+            using boost::to_upper;
+            using boost::to_lower;
+            using boost::trim;
+            using boost::trim_left;
+            using boost::trim_right;
+            using boost::to_upper_copy;
+            using boost::to_lower_copy;
+            using boost::trim_copy;
+            using boost::trim_left_copy;
+            using boost::trim_right_copy;
+            using boost::split;
+            using boost::join;
+            using boost::replace_all;
+            using boost::replace_all_copy;
+        } // namespace unboost
+    #elif defined(UNBOOST_USE_CXX_STRING_ALGORITHM)
+        #include <cctype>
+        namespace unboost {
+            namespace char_range {
+                static const std::string spaces(" \t\n\r\f\v");
+                static const std::string alphas("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                static const std::string alnums("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                static const std::string digits("0123456789");
+                static const std::string xdigits("0123456789ABCDEFabcdef");
+                static const std::string uppers("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                static const std::string lowers("abcdefghijklmnopqrstuvwxyz");
+            }
+            struct char_range_predicate {
+                char_range_predicate() {}
+                char_range_predicate(const std::string& str) : m_char_set(str) {}
+                std::string m_char_set;
+            };
+            struct is_space : public char_range_predicate {
+                is_space() : char_range_predicate(char_range::spaces) {}
+            };
+            struct is_alpha : public char_range_predicate {
+                is_alpha() : char_range_predicate(char_range::alphas) {}
+            };
+            struct is_alnum : public char_range_predicate {
+                is_alnum() : char_range_predicate(char_range::alnums) {}
+            };
+            struct is_digit : public char_range_predicate {
+                is_digit() : char_range_predicate(char_range::digits) {}
+            };
+            struct is_xdigit : public char_range_predicate {
+                is_xdigit() : char_range_predicate(char_range::xdigits) {}
+            };
+            struct is_lower : public char_range_predicate {
+                is_lower() : char_range_predicate(char_range::lowers) {}
+            };
+            struct is_upper : public char_range_predicate {
+                is_upper() : char_range_predicate(char_range::uppers) {}
+            };
+            struct is_from_range : public char_range_predicate {
+                is_from_range(char from, char to) {
+                    for (char ch = from; ch <= to; ++ch) {
+                        m_char_set += ch;
+                    }
+                }
+            };
+            struct is_any_of : public char_range_predicate {
+                is_any_of(const std::string& str) : char_range_predicate(str) {}
+            };
+            inline void to_upper(std::string& str) {
+                using namespace std;
+                const size_t count = str.size();
+                for (size_t i = 0; i < count; ++i) {
+                    char& ch = str[i];
+                    if (islower(ch)) {
+                        ch = toupper(ch);
+                    }
+                }
+            }
+            inline void to_lower(std::string& str) {
+                using namespace std;
+                const size_t count = str.size();
+                for (size_t i = 0; i < count; ++i) {
+                    char& ch = str[i];
+                    if (isupper(ch)) {
+                        ch = tolower(ch);
+                    }
+                }
+            }
+            inline void trim(std::string& str) {
+                size_t i = str.find_first_not_of(char_range::spaces);
+                size_t j = str.find_last_not_of(char_range::spaces);
+                if ((i == std::string::npos) || (j == std::string::npos)) {
+                    str.clear();
+                } else {
+                    str = str.substr(i, j - i + 1);
+                }
+            }
+            inline void trim_left(std::string& str) {
+                size_t i = str.find_first_not_of(char_range::spaces);
+                if (i == std::string::npos) {
+                    str.clear();
+                } else {
+                    str = str.substr(i);
+                }
+            }
+            inline void trim_right(std::string& str) {
+                size_t j = str.find_last_not_of(char_range::spaces);
+                if (j == std::string::npos) {
+                    str.clear();
+                } else {
+                    str = str.substr(0, j + 1);
+                }
+            }
+            inline std::string to_upper_copy(const std::string& str) {
+                std::string copy(str);
+                to_upper(copy);
+                return copy;
+            }
+            inline std::string to_lower_copy(const std::string& str) {
+                std::string copy(str);
+                to_lower(copy);
+                return copy;
+            }
+            inline std::string trim_copy(const std::string& str) {
+                std::string copy(str);
+                trim(copy);
+                return copy;
+            }
+            inline std::string trim_left_copy(const std::string& str) {
+                std::string copy(str);
+                trim_left(copy);
+                return copy;
+            }
+            inline std::string trim_right_copy(const std::string& str) {
+                std::string copy(str);
+                trim_right(copy);
+                return copy;
+            }
+            template <typename T_STRING_CONTAINER>
+            void split(T_STRING_CONTAINER& container,
+                       typename T_STRING_CONTAINER::value_type& str,
+                       const char_range_predicate& pred)
+            {
+                container.clear();
+                size_t i = 0, j = str.find_first_of(pred.m_char_set);
+                while (j != T_STRING_CONTAINER::value_type::npos) {
+                    container.push_back(str.substr(i, j - i));
+                    i = j + 1;
+                    j = str.find_first_of(pred.m_char_set, i);
+                }
+                container.push_back(str.substr(i));
+            }
+            template <typename T_STRING_CONTAINER>
+            typename T_STRING_CONTAINER::value_type
+            join(const T_STRING_CONTAINER& container,
+                 const typename T_STRING_CONTAINER::value_type& sep)
+            {
+                typename T_STRING_CONTAINER::value_type result;
+                typename T_STRING_CONTAINER::const_iterator it = container.begin();
+                typename T_STRING_CONTAINER::const_iterator end = container.end();
+                if (it != end) {
+                    result = *it;
+                    for (++it; it != end; ++it) {
+                        result += sep;
+                        result += *it;
+                    }
+                }
+                return result;
+            }
+            template <typename T_STRING>
+            void replace_all(T_STRING& str,
+                             const T_STRING& from, const T_STRING& to)
+            {
+                size_t i = 0;
+                for (;;) {
+                    i = str.find(from, i);
+                    if (i == T_STRING::npos)
+                        break;
+                    str.replace(i, from.size(), to);
+                    i += to.size();
+                }
+            }
+            template <typename T_STRING>
+            inline void replace_all(T_STRING& str,
+                const typename T_STRING::value_type *from,
+                const typename T_STRING::value_type *to)
+            {
+                replace_all(str, T_STRING(from), T_STRING(to));
+            }
+            template <typename T_STRING>
+            inline T_STRING replace_all_copy(
+                const T_STRING& str,
+                const T_STRING& from, const T_STRING& to)
+            {
+                T_STRING copy(str);
+                replace_all(copy, from, to);
+                return copy;
+            }
+            template <typename T_STRING>
+            inline T_STRING replace_all_copy(const T_STRING& str,
+                const typename T_STRING::value_type *from,
+                const typename T_STRING::value_type *to)
+            {
+                T_STRING copy(str);
+                replace_all(copy, from, to);
+                return copy;
+            }
+        } // namespace unboost
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif   // def UNBOOST_USE_STRING_ALGORITHM
 
 //////////////////////////////////////////////////////////////////////////////
 // assert

@@ -174,6 +174,20 @@ int main(void) {
         std::cout << std::endl;
     #endif
 
+    #ifdef UNBOOST_USE_STRING_ALGORITHM
+        std::cout << "string algorithm" << std::endl;
+        std::vector<std::string> vec;
+        std::string str = "  TEST1-TEST2_TEST3  ";
+        str = unboost::trim_copy(str);
+        std::cout << str << std::endl;
+        unboost::split(vec, str, unboost::is_any_of("-_"));
+        std::cout << vec.size() << std::endl;
+        str = unboost::join(vec, "<>");
+        std::cout << str << std::endl;
+        str = unboost::replace_all_copy(str, "<>", "===");
+        std::cout << str << std::endl;
+    #endif
+
     #ifdef UNBOOST_USE_ASSERT
         std::cout << "assert" << std::endl;
         UNBOOST_ASSERT(1);
