@@ -1169,12 +1169,16 @@
                 static const std::wstring wuppers(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 static const std::wstring wlowers(L"abcdefghijklmnopqrstuvwxyz");
                 static const std::wstring wpuncts(L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+                // TODO: FIXME
                 static const std::wstring
                 wgraphs(L"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+                // TODO: FIXME
                 static const std::wstring
                 wprints(L" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
             } // namespace char_range
             struct char_range_predicate {
+                std::string m_char_set;
+                std::wstring m_wchar_set;
                 char_range_predicate() {}
                 char_range_predicate(const std::string& str) : m_char_set(str) {
                     for (size_t i = 0; i < str.size(); ++i) {
@@ -1190,8 +1194,6 @@
                 }
                 char_range_predicate(const std::string& str, const std::wstring& wstr)
                     : m_char_set(str), m_wchar_set(wstr) {}
-                std::string m_char_set;
-                std::wstring m_wchar_set;
             }; // struct char_range_predicate
             struct is_space : public char_range_predicate {
                 is_space() : char_range_predicate(char_range::spaces, char_range::wspaces) {}
