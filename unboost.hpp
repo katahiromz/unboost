@@ -56,14 +56,14 @@
     #ifndef UNBOOST_USE_FOREACH
         #define UNBOOST_USE_FOREACH
     #endif
-    #ifndef UNBOOST_USE_ASSERT
-        #define UNBOOST_USE_ASSERT
-    #endif
     #ifndef UNBOOST_USE_TUPLE
         #define UNBOOST_USE_TUPLE
     #endif
     #ifndef UNBOOST_USE_STRING_ALGORITHM
         #define UNBOOST_USE_STRING_ALGORITHM
+    #endif
+    #ifndef UNBOOST_USE_ASSERT
+        #define UNBOOST_USE_ASSERT
     #endif
 #endif
 
