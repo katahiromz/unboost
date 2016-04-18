@@ -1176,47 +1176,47 @@
                 static const std::wstring
                 wprints(L" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
             } // namespace char_range
-            struct char_range_predicate {
-                std::string m_char_set;
-                std::wstring m_wchar_set;
-                char_range_predicate() {}
-                char_range_predicate(const std::string& str) : m_char_set(str) {
+            struct char_set_predicate {
+                std::string     m_char_set;
+                std::wstring    m_wchar_set;
+                char_set_predicate() {}
+                char_set_predicate(const std::string& str) : m_char_set(str) {
                     for (size_t i = 0; i < str.size(); ++i) {
                         m_wchar_set += wchar_t(str[i]);
                     }
                 }
-                char_range_predicate(const std::wstring& str) : m_wchar_set(str) {
+                char_set_predicate(const std::wstring& str) : m_wchar_set(str) {
                     for (size_t i = 0; i < str.size(); ++i) {
                         if (str[i] <= 0x7F) {
                             m_char_set += char(str[i]);
                         }
                     }
                 }
-                char_range_predicate(const std::string& str, const std::wstring& wstr)
+                char_set_predicate(const std::string& str, const std::wstring& wstr)
                     : m_char_set(str), m_wchar_set(wstr) {}
-            }; // struct char_range_predicate
-            struct is_space : public char_range_predicate {
-                is_space() : char_range_predicate(char_range::spaces, char_range::wspaces) {}
+            }; // struct char_set_predicate
+            struct is_space : public char_set_predicate {
+                is_space() : char_set_predicate(char_range::spaces, char_range::wspaces) {}
             };
-            struct is_alpha : public char_range_predicate {
-                is_alpha() : char_range_predicate(char_range::alphas, char_range::walphas) {}
+            struct is_alpha : public char_set_predicate {
+                is_alpha() : char_set_predicate(char_range::alphas, char_range::walphas) {}
             };
-            struct is_alnum : public char_range_predicate {
-                is_alnum() : char_range_predicate(char_range::alnums, char_range::walnums) {}
+            struct is_alnum : public char_set_predicate {
+                is_alnum() : char_set_predicate(char_range::alnums, char_range::walnums) {}
             };
-            struct is_digit : public char_range_predicate {
-                is_digit() : char_range_predicate(char_range::digits, char_range::wdigits) {}
+            struct is_digit : public char_set_predicate {
+                is_digit() : char_set_predicate(char_range::digits, char_range::wdigits) {}
             };
-            struct is_xdigit : public char_range_predicate {
-                is_xdigit() : char_range_predicate(char_range::xdigits, char_range::wxdigits) {}
+            struct is_xdigit : public char_set_predicate {
+                is_xdigit() : char_set_predicate(char_range::xdigits, char_range::wxdigits) {}
             };
-            struct is_lower : public char_range_predicate {
-                is_lower() : char_range_predicate(char_range::lowers, char_range::wlowers) {}
+            struct is_lower : public char_set_predicate {
+                is_lower() : char_set_predicate(char_range::lowers, char_range::wlowers) {}
             };
-            struct is_upper : public char_range_predicate {
-                is_upper() : char_range_predicate(char_range::uppers, char_range::wuppers) {}
+            struct is_upper : public char_set_predicate {
+                is_upper() : char_set_predicate(char_range::uppers, char_range::wuppers) {}
             };
-            struct is_from_range : public char_range_predicate {
+            struct is_from_range : public char_set_predicate {
                 is_from_range(char from, char to) {
                     for (char ch = from; ch <= to; ++ch) {
                         m_char_set += ch;
@@ -1230,18 +1230,18 @@
                     m_wchar_set += L'\u007F';
                 }
             };
-            struct is_punct : public char_range_predicate {
-                is_punct() : char_range_predicate(char_range::puncts, char_range::wpuncts) {}
+            struct is_punct : public char_set_predicate {
+                is_punct() : char_set_predicate(char_range::puncts, char_range::wpuncts) {}
             };
-            struct is_graph : public char_range_predicate {
-                is_graph() : char_range_predicate(char_range::graphs, char_range::wgraphs) {}
+            struct is_graph : public char_set_predicate {
+                is_graph() : char_set_predicate(char_range::graphs, char_range::wgraphs) {}
             };
-            struct is_print : public char_range_predicate {
-                is_print() : char_range_predicate(char_range::prints, char_range::wprints) {}
+            struct is_print : public char_set_predicate {
+                is_print() : char_set_predicate(char_range::prints, char_range::wprints) {}
             };
-            struct is_any_of : public char_range_predicate {
-                is_any_of(const std::string& str) : char_range_predicate(str) {}
-                is_any_of(const std::wstring& str) : char_range_predicate(str) {}
+            struct is_any_of : public char_set_predicate {
+                is_any_of(const std::string& str) : char_set_predicate(str) {}
+                is_any_of(const std::wstring& str) : char_set_predicate(str) {}
             };
             inline void to_upper(std::string& str) {
                 using namespace std;
@@ -1283,7 +1283,7 @@
                     }
                 }
             }
-            inline void trim_if(std::string& str, const char_range_predicate& pred) {
+            inline void trim_if(std::string& str, const char_set_predicate& pred) {
                 size_t i = str.find_first_not_of(pred.m_char_set);
                 size_t j = str.find_last_not_of(pred.m_char_set);
                 if ((i == std::string::npos) || (j == std::string::npos)) {
@@ -1292,7 +1292,7 @@
                     str = str.substr(i, j - i + 1);
                 }
             }
-            inline void trim_left_if(std::string& str, const char_range_predicate& pred) {
+            inline void trim_left_if(std::string& str, const char_set_predicate& pred) {
                 size_t i = str.find_first_not_of(pred.m_char_set);
                 if (i == std::string::npos) {
                     str.clear();
@@ -1300,7 +1300,7 @@
                     str = str.substr(i);
                 }
             }
-            inline void trim_right_if(std::string& str, const char_range_predicate& pred) {
+            inline void trim_right_if(std::string& str, const char_set_predicate& pred) {
                 size_t j = str.find_last_not_of(pred.m_char_set);
                 if (j == std::string::npos) {
                     str.clear();
@@ -1314,10 +1314,10 @@
             inline void trim_left(std::string& str) {
                 trim_left_if(str, is_space());
             }
-            inline void trim_right(std::string& str, const char_range_predicate& pred) {
+            inline void trim_right(std::string& str, const char_set_predicate& pred) {
                 trim_right_if(str, is_space());
             }
-            inline void trim_if(std::wstring& str, const char_range_predicate& pred) {
+            inline void trim_if(std::wstring& str, const char_set_predicate& pred) {
                 size_t i = str.find_first_not_of(pred.m_wchar_set);
                 size_t j = str.find_last_not_of(pred.m_wchar_set);
                 if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
@@ -1326,7 +1326,7 @@
                     str = str.substr(i, j - i + 1);
                 }
             }
-            inline void trim_left_if(std::wstring& str, const char_range_predicate& pred) {
+            inline void trim_left_if(std::wstring& str, const char_set_predicate& pred) {
                 size_t i = str.find_first_not_of(pred.m_wchar_set);
                 if (i == std::wstring::npos) {
                     str.clear();
@@ -1334,7 +1334,7 @@
                     str = str.substr(i);
                 }
             }
-            inline void trim_right_if(std::wstring& str, const char_range_predicate& pred) {
+            inline void trim_right_if(std::wstring& str, const char_set_predicate& pred) {
                 size_t j = str.find_last_not_of(pred.m_wchar_set);
                 if (j == std::wstring::npos) {
                     str.clear();
@@ -1384,7 +1384,7 @@
             template <typename T_STRING_CONTAINER>
             void split(T_STRING_CONTAINER& container,
                        const std::string& str,
-                       const char_range_predicate& pred)
+                       const char_set_predicate& pred)
             {
                 container.clear();
                 size_t i = 0, j = str.find_first_of(pred.m_char_set);
@@ -1398,7 +1398,7 @@
             template <typename T_STRING_CONTAINER>
             void split(T_STRING_CONTAINER& container,
                        const std::wstring& str,
-                       const char_range_predicate& pred)
+                       const char_set_predicate& pred)
             {
                 container.clear();
                 size_t i = 0, j = str.find_first_of(pred.m_wchar_set);
