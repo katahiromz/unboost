@@ -1318,7 +1318,7 @@
             inline void trim_if(std::wstring& str, const char_range_predicate& pred) {
                 size_t i = str.find_first_not_of(pred.m_wchar_set);
                 size_t j = str.find_last_not_of(pred.m_wchar_set);
-                if ((i == std::string::npos) || (j == std::string::npos)) {
+                if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
                     str.clear();
                 } else {
                     str = str.substr(i, j - i + 1);
