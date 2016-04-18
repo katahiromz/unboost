@@ -175,6 +175,7 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_STRING_ALGORITHM
+        // ansi
         std::cout << "string algorithm" << std::endl;
         std::string str = "  TEST1-TEST2_TEST3  ";
         str = unboost::trim_copy(str);
@@ -186,6 +187,7 @@ int main(void) {
         std::cout << str << std::endl;
         str = unboost::replace_all_copy(str, "<>", "===");
         std::cout << str << std::endl;
+        // wide
         std::wstring wstr = L"  TEST1-TEST2_TEST3  ";
         wstr = unboost::trim_copy(wstr);
         std::wcout << wstr << std::endl;
