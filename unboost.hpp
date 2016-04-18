@@ -9,6 +9,8 @@
     #error Unboost needs C++ compiler. You lose.
 #endif
 
+#include <cassert>
+
 //////////////////////////////////////////////////////////////////////////////
 // Unboost configuration (optional)
 
@@ -1139,6 +1141,7 @@
         #include <cctype>
         namespace unboost {
             namespace char_range {
+                // ansi
                 static const std::string spaces(" \t\n\r\f\v");
                 static const std::string alphas("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
                 static const std::string alnums("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
@@ -1151,56 +1154,86 @@
                 graphs("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
                 static const std::string
                 prints(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+                // wide
+                static const std::wstring wspaces(L" \t\n\r\f\v\x81\40");
+                static const std::wstring walphas(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                static const std::wstring walnums(L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                static const std::wstring wdigits(L"0123456789");
+                static const std::wstring wxdigits(L"0123456789ABCDEFabcdef");
+                static const std::wstring wuppers(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                static const std::wstring wlowers(L"abcdefghijklmnopqrstuvwxyz");
+                static const std::wstring wpuncts(L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+                static const std::wstring
+                wgraphs(L"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+                static const std::wstring
+                wprints(L" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
             }
             struct char_range_predicate {
                 char_range_predicate() {}
-                char_range_predicate(const std::string& str) : m_char_set(str) {}
+                char_range_predicate(const std::string& str) : m_char_set(str) {
+                    for (size_t i = 0; i < str.size(); ++i) {
+                        m_wchar_set += wchar_t(str[i]);
+                    }
+                }
+                char_range_predicate(const std::wstring& str) : m_wchar_set(str) {
+                    for (size_t i = 0; i < str.size(); ++i) {
+                        if (str[i] <= 0x7F) {
+                            m_char_set += char(str[i]);
+                        }
+                    }
+                }
+                char_range_predicate(const std::string& str, const std::wstring& wstr)
+                    : m_char_set(str), m_wchar_set(wstr) {}
                 std::string m_char_set;
+                std::wstring m_wchar_set;
             };
             struct is_space : public char_range_predicate {
-                is_space() : char_range_predicate(char_range::spaces) {}
+                is_space() : char_range_predicate(char_range::spaces, char_range::wspaces) {}
             };
             struct is_alpha : public char_range_predicate {
-                is_alpha() : char_range_predicate(char_range::alphas) {}
+                is_alpha() : char_range_predicate(char_range::alphas, char_range::walphas) {}
             };
             struct is_alnum : public char_range_predicate {
-                is_alnum() : char_range_predicate(char_range::alnums) {}
+                is_alnum() : char_range_predicate(char_range::alnums, char_range::walnums) {}
             };
             struct is_digit : public char_range_predicate {
-                is_digit() : char_range_predicate(char_range::digits) {}
+                is_digit() : char_range_predicate(char_range::digits, char_range::wdigits) {}
             };
             struct is_xdigit : public char_range_predicate {
-                is_xdigit() : char_range_predicate(char_range::xdigits) {}
+                is_xdigit() : char_range_predicate(char_range::xdigits, char_range::wxdigits) {}
             };
             struct is_lower : public char_range_predicate {
-                is_lower() : char_range_predicate(char_range::lowers) {}
+                is_lower() : char_range_predicate(char_range::lowers, char_range::wlowers) {}
             };
             struct is_upper : public char_range_predicate {
-                is_upper() : char_range_predicate(char_range::uppers) {}
+                is_upper() : char_range_predicate(char_range::uppers, char_range::wuppers) {}
             };
             struct is_from_range : public char_range_predicate {
                 is_from_range(char from, char to) {
                     for (char ch = from; ch <= to; ++ch) {
                         m_char_set += ch;
+                        m_wchar_set += wchar_t(ch);
                     }
                 }
             };
             struct is_cntrl : public is_from_range {
                 is_cntrl(char from, char to) : is_from_range(0, '\x1F') {
                     m_char_set += '\x7F';
+                    m_wchar_set += L'\x7F';
                 }
             };
             struct is_punct : public char_range_predicate {
-                is_punct() : char_range_predicate(char_range::puncts) {}
+                is_punct() : char_range_predicate(char_range::puncts, char_range::wpuncts) {}
             };
             struct is_graph : public char_range_predicate {
-                is_graph() : char_range_predicate(char_range::graphs) {}
+                is_graph() : char_range_predicate(char_range::graphs, char_range::wgraphs) {}
             };
             struct is_print : public char_range_predicate {
-                is_print() : char_range_predicate(char_range::prints) {}
+                is_print() : char_range_predicate(char_range::prints, char_range::wprints) {}
             };
             struct is_any_of : public char_range_predicate {
                 is_any_of(const std::string& str) : char_range_predicate(str) {}
+                is_any_of(const std::wstring& str) : char_range_predicate(str) {}
             };
             inline void to_upper(std::string& str) {
                 using namespace std;
@@ -1219,6 +1252,26 @@
                     char& ch = str[i];
                     if (isupper(ch)) {
                         ch = tolower(ch);
+                    }
+                }
+            }
+            inline void to_upper(std::wstring& str) {
+                using namespace std;
+                const size_t count = str.size();
+                for (size_t i = 0; i < count; ++i) {
+                    wchar_t& ch = str[i];
+                    if (iswlower(ch)) {
+                        ch = towupper(ch);
+                    }
+                }
+            }
+            inline void to_lower(std::wstring& str) {
+                using namespace std;
+                const size_t count = str.size();
+                for (size_t i = 0; i < count; ++i) {
+                    wchar_t& ch = str[i];
+                    if (iswupper(ch)) {
+                        ch = towlower(ch);
                     }
                 }
             }
@@ -1247,34 +1300,64 @@
                     str = str.substr(0, j + 1);
                 }
             }
-            inline std::string to_upper_copy(const std::string& str) {
-                std::string copy(str);
+            inline void trim(std::wstring& str) {
+                size_t i = str.find_first_not_of(char_range::wspaces);
+                size_t j = str.find_last_not_of(char_range::wspaces);
+                if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
+                    str.clear();
+                } else {
+                    str = str.substr(i, j - i + 1);
+                }
+            }
+            inline void trim_left(std::wstring& str) {
+                size_t i = str.find_first_not_of(char_range::wspaces);
+                if (i == std::wstring::npos) {
+                    str.clear();
+                } else {
+                    str = str.substr(i);
+                }
+            }
+            inline void trim_right(std::wstring& str) {
+                size_t j = str.find_last_not_of(char_range::wspaces);
+                if (j == std::wstring::npos) {
+                    str.clear();
+                } else {
+                    str = str.substr(0, j + 1);
+                }
+            }
+            template <typename T_STRING>
+            inline T_STRING to_upper_copy(const T_STRING& str) {
+                T_STRING copy(str);
                 to_upper(copy);
                 return copy;
             }
-            inline std::string to_lower_copy(const std::string& str) {
-                std::string copy(str);
+            template <typename T_STRING>
+            inline T_STRING to_lower_copy(const T_STRING& str) {
+                T_STRING copy(str);
                 to_lower(copy);
                 return copy;
             }
-            inline std::string trim_copy(const std::string& str) {
-                std::string copy(str);
+            template <typename T_STRING>
+            inline T_STRING trim_copy(const T_STRING& str) {
+                T_STRING copy(str);
                 trim(copy);
                 return copy;
             }
-            inline std::string trim_left_copy(const std::string& str) {
-                std::string copy(str);
+            template <typename T_STRING>
+            inline T_STRING trim_left_copy(const T_STRING& str) {
+                T_STRING copy(str);
                 trim_left(copy);
                 return copy;
             }
-            inline std::string trim_right_copy(const std::string& str) {
-                std::string copy(str);
+            template <typename T_STRING>
+            inline T_STRING trim_right_copy(const T_STRING& str) {
+                T_STRING copy(str);
                 trim_right(copy);
                 return copy;
             }
             template <typename T_STRING_CONTAINER>
             void split(T_STRING_CONTAINER& container,
-                       typename T_STRING_CONTAINER::value_type& str,
+                       const std::string& str,
                        const char_range_predicate& pred)
             {
                 container.clear();
@@ -1283,6 +1366,20 @@
                     container.push_back(str.substr(i, j - i));
                     i = j + 1;
                     j = str.find_first_of(pred.m_char_set, i);
+                }
+                container.push_back(str.substr(i));
+            }
+            template <typename T_STRING_CONTAINER>
+            void split(T_STRING_CONTAINER& container,
+                       const std::wstring& str,
+                       const char_range_predicate& pred)
+            {
+                container.clear();
+                size_t i = 0, j = str.find_first_of(pred.m_wchar_set);
+                while (j != T_STRING_CONTAINER::value_type::npos) {
+                    container.push_back(str.substr(i, j - i));
+                    i = j + 1;
+                    j = str.find_first_of(pred.m_wchar_set, i);
                 }
                 container.push_back(str.substr(i));
             }
@@ -1369,7 +1466,6 @@
             #define UNBOOST_ASSERT_IS_VOID
         #endif
     #else
-        #include <cassert>
         #if defined(UNBOOST_DISABLE_ASSERTS)
             #define UNBOOST_ASSERT(exp)             ((void)0)
             #define UNBOOST_ASSERT_MSG(exp,msg)     ((void)0)
