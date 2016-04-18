@@ -1119,8 +1119,6 @@
             using boost::is_from_range;
             using boost::is_cntrl;
             using boost::is_punct;
-            using boost::is_graph;
-            using boost::is_print;
             using boost::is_any_of;
             using boost::to_upper;
             using boost::to_lower;
@@ -1146,7 +1144,8 @@
     #elif defined(UNBOOST_USE_CXX_STRING_ALGORITHM)
         #include <cctype>
         namespace unboost {
-            namespace char_range {
+            // TODO: be locale aware
+            namespace char_set {
                 // ansi
                 static const std::string spaces(" \t\n\r\f\v");
                 static const std::string alphas("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
@@ -1156,10 +1155,6 @@
                 static const std::string uppers("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 static const std::string lowers("abcdefghijklmnopqrstuvwxyz");
                 static const std::string puncts("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
-                static const std::string
-                graphs("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-                static const std::string
-                prints(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
                 // wide
                 static const std::wstring wspaces(L" \t\n\r\f\v\u3000");
                 static const std::wstring walphas(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
@@ -1169,13 +1164,7 @@
                 static const std::wstring wuppers(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 static const std::wstring wlowers(L"abcdefghijklmnopqrstuvwxyz");
                 static const std::wstring wpuncts(L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
-                // TODO: FIXME
-                static const std::wstring
-                wgraphs(L"!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-                // TODO: FIXME
-                static const std::wstring
-                wprints(L" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-            } // namespace char_range
+            } // namespace char_set
             struct char_set_predicate {
                 std::string     m_char_set;
                 std::wstring    m_wchar_set;
@@ -1196,25 +1185,25 @@
                     : m_char_set(str), m_wchar_set(wstr) {}
             }; // struct char_set_predicate
             struct is_space : public char_set_predicate {
-                is_space() : char_set_predicate(char_range::spaces, char_range::wspaces) {}
+                is_space() : char_set_predicate(char_set::spaces, char_set::wspaces) {}
             };
             struct is_alpha : public char_set_predicate {
-                is_alpha() : char_set_predicate(char_range::alphas, char_range::walphas) {}
+                is_alpha() : char_set_predicate(char_set::alphas, char_set::walphas) {}
             };
             struct is_alnum : public char_set_predicate {
-                is_alnum() : char_set_predicate(char_range::alnums, char_range::walnums) {}
+                is_alnum() : char_set_predicate(char_set::alnums, char_set::walnums) {}
             };
             struct is_digit : public char_set_predicate {
-                is_digit() : char_set_predicate(char_range::digits, char_range::wdigits) {}
+                is_digit() : char_set_predicate(char_set::digits, char_set::wdigits) {}
             };
             struct is_xdigit : public char_set_predicate {
-                is_xdigit() : char_set_predicate(char_range::xdigits, char_range::wxdigits) {}
+                is_xdigit() : char_set_predicate(char_set::xdigits, char_set::wxdigits) {}
             };
             struct is_lower : public char_set_predicate {
-                is_lower() : char_set_predicate(char_range::lowers, char_range::wlowers) {}
+                is_lower() : char_set_predicate(char_set::lowers, char_set::wlowers) {}
             };
             struct is_upper : public char_set_predicate {
-                is_upper() : char_set_predicate(char_range::uppers, char_range::wuppers) {}
+                is_upper() : char_set_predicate(char_set::uppers, char_set::wuppers) {}
             };
             struct is_from_range : public char_set_predicate {
                 is_from_range(char from, char to) {
@@ -1231,13 +1220,7 @@
                 }
             };
             struct is_punct : public char_set_predicate {
-                is_punct() : char_set_predicate(char_range::puncts, char_range::wpuncts) {}
-            };
-            struct is_graph : public char_set_predicate {
-                is_graph() : char_set_predicate(char_range::graphs, char_range::wgraphs) {}
-            };
-            struct is_print : public char_set_predicate {
-                is_print() : char_set_predicate(char_range::prints, char_range::wprints) {}
+                is_punct() : char_set_predicate(char_set::puncts, char_set::wpuncts) {}
             };
             struct is_any_of : public char_set_predicate {
                 is_any_of(const std::string& str) : char_set_predicate(str) {}
