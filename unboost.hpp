@@ -1115,6 +1115,10 @@
             using boost::is_lower;
             using boost::is_upper;
             using boost::is_from_range;
+            using boost::is_cntrl;
+            using boost::is_punct;
+            using boost::is_graph;
+            using boost::is_print;
             using boost::is_any_of;
             using boost::to_upper;
             using boost::to_lower;
@@ -1142,6 +1146,11 @@
                 static const std::string xdigits("0123456789ABCDEFabcdef");
                 static const std::string uppers("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
                 static const std::string lowers("abcdefghijklmnopqrstuvwxyz");
+                static const std::string puncts("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
+                static const std::string
+                graphs("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+                static const std::string
+                prints(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
             }
             struct char_range_predicate {
                 char_range_predicate() {}
@@ -1175,6 +1184,20 @@
                         m_char_set += ch;
                     }
                 }
+            };
+            struct is_cntrl : public is_from_range {
+                is_cntrl(char from, char to) : is_from_range(0, '\x1F') {
+                    m_char_set += '\x7F';
+                }
+            };
+            struct is_punct : public char_range_predicate {
+                is_punct() : char_range_predicate(char_range::puncts) {}
+            };
+            struct is_graph : public char_range_predicate {
+                is_graph() : char_range_predicate(char_range::graphs) {}
+            };
+            struct is_print : public char_range_predicate {
+                is_print() : char_range_predicate(char_range::prints) {}
             };
             struct is_any_of : public char_range_predicate {
                 is_any_of(const std::string& str) : char_range_predicate(str) {}
