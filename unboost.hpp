@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    8 // Version 8
+#define UNBOOST_HPP_    9 // Version 9
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -1216,7 +1216,7 @@
             struct is_cntrl : public is_from_range {
                 is_cntrl(char from, char to) : is_from_range(0, '\x1F') {
                     m_char_set += '\x7F';
-                    m_wchar_set += L'\u007F';
+                    m_wchar_set += static_cast<wchar_t>(0x7F);
                 }
             };
             struct is_punct : public char_set_predicate {
