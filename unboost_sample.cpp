@@ -206,27 +206,34 @@ int main(void) {
             using namespace unboost::filesystem;
             FILE *fp = fopen("test.dat", "w");
             fputs("TEST", fp);
+            fflush(fp);
             fclose(fp);
             #ifdef _WIN32
+                if (exists(L"test.dat")) std::cout << "test.dat exists" << std::endl;
                 std::wcout << current_path().c_str() << std::endl;
                 create_directory(L"dir");
                 copy_file(L"test.dat", L"dir/test2.dat");
-                if (exists(L"dir/test2.dat")) std::cout << "exists" << std::endl;
-                copy_directory(L"dir", L"dir2");
+                copy_directory_recursive(L"dir", L"dir2");
+                if (exists(L"dir/test2.dat")) std::cout << "dir/test2.dat exists" << std::endl;
+                if (exists(L"dir2/test2.dat")) std::cout << "dir2/test2.dat exists" << std::endl;
                 std::cout << file_size(L"test.dat") << std::endl;
                 remove(L"test.dat");
                 remove(L"dir/test2.dat");
                 create_directories(L"mydir1/mydir2/mydir3");
+                delete_directory(L"mydir1");
             #else
+                if (exists("test.dat")) std::cout << "test.dat exists" << std::endl;
                 std::cout << current_path().c_str() << std::endl;
                 create_directory("dir");
                 copy_file("test.dat", "dir/test2.dat");
-                if (exists("test2.dat")) std::cout << "exists" << std::endl;
-                copy_directory("dir", "dir2");
+                copy_directory_recursive("dir", "dir2");
+                if (exists("dir/test2.dat")) std::cout << "dir/test2.dat exists" << std::endl;
+                if (exists("dir2/test2.dat")) std::cout << "dir2/test2.dat exists" << std::endl;
                 std::cout << file_size("test.dat") << std::endl;
                 remove("test.dat");
                 remove("dir/test2.dat");
                 create_directories("mydir1/mydir2/mydir3");
+                delete_directory("mydir1");
             #endif
         }
     #endif

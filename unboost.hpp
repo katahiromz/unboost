@@ -1488,7 +1488,13 @@
     // Adapt choosed one
     #ifdef UNBOOST_USE_BOOST_FILESYSTEM
         #include <boost/filesystem/path.hpp>
-        #include <boost/filesystem/operation.hpp>
+        #include <boost/filesystem/operations.hpp>
+        #ifdef _WIN32
+            #include <windows.h>    // for Windows API
+        #else
+            #include <direct.h>     // for DIR, opendir, readdir, closedir
+            #include <sys/stat.h>   // for stat
+        #endif
         namespace unboost {
             namespace filesystem {
                 using boost::filesystem::path;
@@ -1506,9 +1512,108 @@
                 using boost::filesystem::rename;
                 using boost::filesystem::directory_iterator;
                 namespace detail {
-                    using boost::filesystem::dot_path;
-                    using boost::filesystem::dot_dot_path;
+                    enum copy_option {
+                        none = 0, fail_if_exists = none, overwrite_if_exists
+                    };
                 } // namespace detail
+                using detail::copy_option;
+                inline void copy_directory_recursive(const path& from, const path& to) {
+                    create_directory(to);
+                    path p = system_complete(to);
+                    path cur_dir = current_path();
+                    current_path(from);
+                    using namespace std;
+                    using namespace boost::filesystem::detail;
+                    #ifdef _WIN32
+                        WIN32_FIND_DATAW find;
+                        HANDLE hFind = ::FindFirstFileW(L"*", &find);
+                        const WCHAR *name;
+                        do {
+                            name = find.cFileName;
+                            if (!wcscmp(name, L".") || !wcscmp(name, L"..")) {
+                                continue;
+                            }
+                            path new_p(p);
+                            new_p /= name;
+                            if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                                copy_directory_recursive(name, new_p);
+                            } else {
+                                copy_file(name, new_p, overwrite_if_exists);
+                            }
+                        } while (::FindNextFileW(hFind, &find));
+                        ::FindClose(hFind);
+                    #else
+                        DIR *pdir = opendir(cur_dir.c_str());
+                        const char *name;
+                        if (pdir) {
+                            struct dirent *ent;
+                            while ((ent = readdir(pdir)) != NULL) {
+                                name = ent->d_name;
+                                if (!strcmp(name, ".") || !strcmp(name, "..")) {
+                                    continue;
+                                }
+                                path new_p(p);
+                                new_p /= name;
+                                if (is_directory(name)) {
+                                    copy_directory_recursive(name, new_p);
+                                } else {
+                                    copy_file(name, new_p, overwrite_if_exists);
+                                }
+                            }
+                            closedir(pdir);
+                        }
+                    #endif
+                    current_path(cur_dir);
+                } // copy_directory_recursive
+                bool delete_directory(const path& p) {
+                    if (!exists(p)) return true;
+                    path full = system_complete(p);
+                    path cur_dir = current_path();
+                    current_path(p);
+                    #ifdef _WIN32
+                        WIN32_FIND_DATAW find;
+                        HANDLE hFind = ::FindFirstFileW(L"*", &find);
+                        const WCHAR *name;
+                        do {
+                            name = find.cFileName;
+                            if (!wcscmp(name, L".") || !wcscmp(name, L"..")) {
+                                continue;
+                            }
+                            path new_p(full);
+                            new_p /= name;
+                            if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                                if (!delete_directory(new_p)) break;
+                            } else {
+                                using namespace unboost::filesystem;
+                                if (!remove(name)) break;
+                            }
+                        } while (::FindNextFileW(hFind, &find));
+                        ::FindClose(hFind);
+                    #else
+                        DIR *pdir = opendir(cur_dir.c_str());
+                        const char *name;
+                        if (pdir) {
+                            struct dirent *ent;
+                            while ((ent = readdir(pdir)) != NULL) {
+                                name = ent->d_name;
+                                if (!strcmp(name, ".") || !strcmp(name, "..")) {
+                                    continue;
+                                }
+                                path new_p(full);
+                                new_p /= name;
+                                if (is_directory(name)) {
+                                    if (!delete_directory(new_p)) break;
+                                } else {
+                                    using namespace unboost::filesystem;
+                                    if (!remove(name)) break;
+                                }
+                            }
+                            closedir(pdir);
+                        }
+                    #endif
+                    current_path(cur_dir);
+                    return remove(p);
+                } // delete_directory
             } // namespace filesystem
         } // namespace unboost
     #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
@@ -1528,7 +1633,11 @@
                 namespace detail {
                     const path& dot_path();
                     const path& dot_dot_path();
+                    enum copy_option {
+                        none = 0, fail_if_exists = none, overwrite_if_exists
+                    };
                 } // namespace detail
+                using unboost::filesystem::detail::copy_option;
                 #ifdef _WIN32
                     typedef wchar_t value_type;
                     static const value_type preferred_separator = L'\\';
@@ -1702,7 +1811,6 @@
                     bool operator<(const path& p) const {
                         return m_pathname < p.m_pathname;
                     }
-                    // TODO: implement more methods
                 private:
                     string_type m_pathname;
                     size_type filename_pos(const string_type & str, size_type end_pos) const {
@@ -1784,29 +1892,33 @@
                         return (st.st_mode & S_IFMT) == S_IFREG;
                     #endif
                 }
-                inline void copy_file(const path& from, const path& to) {
+                inline void copy_file(const path& from, const path& to,
+                                      detail::copy_option opt = detail::none) {
                     #ifdef _WIN32
-                        if (!::CopyFileW(from.c_str(), to.c_str(), FALSE)) {
+                        BOOL bFailIfExists = (opt == detail::fail_if_exists);
+                        if (!::CopyFileW(from.c_str(), to.c_str(), bFailIfExists)) {
                             throw std::runtime_error("unboost::filesystem::copy_file");
                         }
                     #else
                         bool ok = false;
                         FILE *inf = fopen(from.c_str(), "rb");
                         if (inf) {
-                            FILE *outf = fopen(to.c_str(), "wb");
-                            if (outf) {
-                                const int c_buf_size = 1024;
-                                static char buf[c_buf_size];
-                                ok = true;
-                                for (;;) {
-                                    int count = fread(buf, 1, c_buf_size, inf);
-                                    if (count == 0) break;
-                                    if (!fwrite(buf, count, 1, outf)) {
-                                        ok = false;
-                                        break;
+                            if (!exists(to) || opt != detail::fail_if_exists) {
+                                FILE *outf = fopen(to.c_str(), "wb");
+                                if (outf) {
+                                    const int c_buf_size = 1024;
+                                    static char buf[c_buf_size];
+                                    ok = true;
+                                    for (;;) {
+                                        int count = fread(buf, 1, c_buf_size, inf);
+                                        if (count == 0) break;
+                                        if (!fwrite(buf, count, 1, outf)) {
+                                            ok = false;
+                                            break;
+                                        }
                                     }
+                                    fclose(outf);
                                 }
-                                fclose(outf);
                             }
                             fclose(inf);
                         }
@@ -1913,9 +2025,21 @@
                     return current_path() / p;
 #endif
                 } // system_complete
-                // TODO: use directory_iterator
-                // TODO: do not change current directory
                 inline void copy_directory(const path& from, const path& to) {
+#ifdef _WIN32
+                    if (!::CreateDirectoryExW(from.c_str(), to.c_str(), NULL)) {
+                        throw std::runtime_error("unboost::filesystem::copy_directory");
+                    }
+#else
+                    struct stat st;
+                    if (stat(from.c_str(), &st) != 0 ||
+                        mkdir(to.c_str(), st.st_mode) != 0)
+                    {
+                        throw std::runtime_error("unboost::filesystem::copy_directory");
+                    }
+#endif
+                }
+                inline void copy_directory_recursive(const path& from, const path& to) {
                     create_directory(to);
                     path p = system_complete(to);
                     path cur_dir = current_path();
@@ -1931,9 +2055,9 @@
                             path new_p(p);
                             new_p /= name;
                             if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                                copy_directory(name, new_p);
+                                copy_directory_recursive(name, new_p);
                             } else {
-                                copy_file(name, new_p);
+                                copy_file(name, new_p, detail::overwrite_if_exists);
                             }
                         } while (::FindNextFileW(hFind, &find));
                         ::FindClose(hFind);
@@ -1950,16 +2074,70 @@
                                 path new_p(p);
                                 new_p /= name;
                                 if (is_directory(name)) {
-                                    copy_directory(name, new_p);
+                                    copy_directory_recursive(name, new_p);
                                 } else {
-                                    copy_file(name, new_p);
+                                    copy_file(name, new_p, detail::overwrite_if_exists);
                                 }
                             }
                             closedir(pdir);
                         }
                     #endif
                     current_path(cur_dir);
-                } // copy_directory
+                } // copy_directory_recursive
+                inline bool remove(const path& p) {
+                    #ifdef _WIN32
+                        return ::RemoveDirectoryW(p.c_str()) || ::DeleteFileW(p.c_str());
+                    #else
+                        return rmdir(p.c_str()) == 0 || unlink(p.c_str()) == 0;
+                    #endif
+                }
+                bool delete_directory(const path& p) {
+                    if (!exists(p)) return true;
+                    path full = system_complete(p);
+                    path cur_dir = current_path();
+                    current_path(p);
+                    #ifdef _WIN32
+                        WIN32_FIND_DATAW find;
+                        HANDLE hFind = ::FindFirstFileW(L"*", &find);
+                        const WCHAR *name;
+                        do {
+                            name = find.cFileName;
+                            if (!wcscmp(name, L".") || !wcscmp(name, L"..")) {
+                                continue;
+                            }
+                            path new_p(full);
+                            new_p /= name;
+                            if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                                if (!delete_directory(new_p)) break;
+                            } else {
+                                if (!remove(name)) break;
+                            }
+                        } while (::FindNextFileW(hFind, &find));
+                        ::FindClose(hFind);
+                    #else
+                        DIR *pdir = opendir(cur_dir.c_str());
+                        const char *name;
+                        if (pdir) {
+                            struct dirent *ent;
+                            while ((ent = readdir(pdir)) != NULL) {
+                                name = ent->d_name;
+                                if (!strcmp(name, ".") || !strcmp(name, "..")) {
+                                    continue;
+                                }
+                                path new_p(full);
+                                new_p /= name;
+                                if (is_directory(name)) {
+                                    if (!delete_directory(new_p)) break;
+                                } else {
+                                    if (!remove(name)) break;
+                                }
+                            }
+                            closedir(pdir);
+                        }
+                    #endif
+                    current_path(cur_dir);
+                    return remove(p);
+                } // delete_directory
                 inline UNBOOST_UINT64 file_size(const path& p) {
                     #ifdef _WIN32
                         WIN32_FIND_DATAW find;
@@ -1974,13 +2152,6 @@
                         st.st_size = 0;
                         if (stat(p.c_str(), &st) == 0) return st.st_size;
                         return (UNBOOST_UINT64)-1;
-                    #endif
-                }
-                inline bool remove(const path& p) {
-                    #ifdef _WIN32
-                        return ::RemoveDirectoryW(p.c_str()) || ::DeleteFileW(p.c_str());
-                    #else
-                        return rmdir(p.c_str()) == 0 || unlink(p.c_str()) == 0;
                     #endif
                 }
                 inline void rename(const path& old_p, const path& new_p) {
