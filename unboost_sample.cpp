@@ -174,8 +174,8 @@ int main(void) {
         std::cout << std::endl;
     #endif
 
-    #ifdef UNBOOST_USE_STRING_ALGORITHM
-        std::cout << "string algorithm" << std::endl;
+    #ifdef UNBOOST_USE_STRING_ALGORITHMS
+        std::cout << "string algorithms" << std::endl;
         // ansi
         std::string str = "  TEST1-TEST2_TEST3  ";
         str = unboost::trim_copy(str);
@@ -198,6 +198,37 @@ int main(void) {
         std::wcout << wstr << std::endl;
         wstr = unboost::replace_all_copy(wstr, L"<>", L"===");
         std::wcout << wstr << std::endl;
+    #endif
+
+    #ifdef UNBOOST_USE_FILESYSTEM
+        std::cout << "filesystem" << std::endl;
+        {
+            using namespace unboost::filesystem;
+            FILE *fp = fopen("test.dat", "w");
+            fputs("TEST", fp);
+            fclose(fp);
+            #ifdef _WIN32
+                std::wcout << current_path().c_str() << std::endl;
+                create_directory(L"dir");
+                copy_file(L"test.dat", L"dir/test2.dat");
+                if (exists(L"dir/test2.dat")) std::cout << "exists" << std::endl;
+                copy_directory(L"dir", L"dir2");
+                std::cout << file_size(L"test.dat") << std::endl;
+                remove(L"test.dat");
+                remove(L"dir/test2.dat");
+                create_directories(L"mydir1/mydir2/mydir3");
+            #else
+                std::cout << current_path().c_str() << std::endl;
+                create_directory("dir");
+                copy_file("test.dat", "dir/test2.dat");
+                if (exists("test2.dat")) std::cout << "exists" << std::endl;
+                copy_directory("dir", "dir2");
+                std::cout << file_size("test.dat") << std::endl;
+                remove("test.dat");
+                remove("dir/test2.dat");
+                create_directories("mydir1/mydir2/mydir3");
+            #endif
+        }
     #endif
 
     #ifdef UNBOOST_USE_ASSERT
