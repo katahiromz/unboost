@@ -1840,9 +1840,12 @@
                 }
                 inline path current_path() {
                     #ifdef _WIN32
-                        WCHAR szPath[MAX_PATH];
-                        ::GetCurrentDirectoryW(MAX_PATH, szPath);
-                        return path(szPath);
+                        std::wstring str;
+                        DWORD cch = ::GetCurrentDirectoryW(0, NULL);
+                        str.resize(cch);
+                        cch = ::GetCurrentDirectoryW(cch, &str[0]);
+                        str.resize(cch);
+                        return path(str);
                     #else
                         char *ptr = getcwd(NULL, 512);
                         path p(ptr);
