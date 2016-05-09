@@ -1,10 +1,18 @@
                  ----- Unboost -----
       ----- Time to say good-bye to Boost -----
 
-This is "Unboost", that is a convenience library for C++.
-Unboost enables you to switch codes to C++11 or Boost smartly.
+This is "Unboost", that is a convenience compatibility library for C++.
+
+The Boost C++ Libraries (http://www.boost.org) are famous and very 
+sophisticated but too large and expensive for daily use.
+
+Unboost (just 104KB) enables you to avoid that expensive booster if 
+possible on your C++ compiler (C++11, std::tr1, substitute tiny
+implementations).
 
 See source for more details.
+
+If you found bug, please send me e-mail.
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]
