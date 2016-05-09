@@ -1592,17 +1592,17 @@
                 #endif
                 typedef string_type::size_type size_type;
                 bool is_separator(value_type c) {
-                    return c == separator
-#ifdef _WIN32
-                    || c == preferred_separator
-#endif
-                    ;
+                    #ifdef _WIN32
+                        return (c == separator || c == preferred_separator);
+                    #else
+                        return (c == separator);
+                    #endif
                 }
                 bool is_root_separator(const string_type & str, size_type pos) {
                     while (pos > 0 && is_separator(str[pos - 1])) --pos;
                     if (pos == 0) return true;
 #ifdef _WIN32
-                    if (pos == 2 && is_letter(str[0]) && str[1] == colon)  
+                    if (pos == 2 && is_letter(str[0]) && str[1] == colon)
                         return true;
 #endif
                     if (pos < 3 || !is_separator(str[0]) || !is_separator(str[1]))
