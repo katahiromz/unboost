@@ -1,4 +1,4 @@
-         ----- The Unboost C++ Library -----
+                 ----- Unboost -----
       ----- Time to say good-bye to Boost -----
 
 This is the Unboost C++ Library, that is a convenience compatibility 
