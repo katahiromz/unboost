@@ -1481,16 +1481,17 @@
             #define UNBOOST_USE_UNBOOST_FILESYSTEM
         #endif
     #endif
+    // include directory interface
+    #ifdef _WIN32
+        #include <windows.h>    // for Windows API
+    #else
+        #include <direct.h>     // for DIR, opendir, readdir, closedir
+        #include <sys/stat.h>   // for stat
+    #endif
     // Adapt choosed one
     #ifdef UNBOOST_USE_BOOST_FILESYSTEM
         #include <boost/filesystem/path.hpp>
         #include <boost/filesystem/operations.hpp>
-        #ifdef _WIN32
-            #include <windows.h>    // for Windows API
-        #else
-            #include <direct.h>     // for DIR, opendir, readdir, closedir
-            #include <sys/stat.h>   // for stat
-        #endif
         namespace unboost {
             namespace filesystem {
                 using boost::filesystem::path;
@@ -1561,12 +1562,6 @@
         // NOTE: Unboost Filesystem doesn't support conversion.
         #include <string>           // for std::string and std::wstring
         #include <algorithm>        // for std::replace
-        #ifdef _WIN32
-            #include <windows.h>    // for Windows API
-        #else
-            #include <direct.h>     // for DIR, opendir, readdir, closedir
-            #include <sys/stat.h>   // for stat
-        #endif
         namespace unboost {
             namespace filesystem {
                 class path;
@@ -2018,7 +2013,7 @@
                         }
                     #endif
                     current_path(cur_dir);
-                } // copy_directory
+                } // copy_directory_tree
                 inline UNBOOST_UINT64 file_size(const path& p) {
                     #ifdef _WIN32
                         WIN32_FIND_DATAW find;
