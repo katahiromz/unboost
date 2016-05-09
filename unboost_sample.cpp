@@ -220,7 +220,7 @@ int main(void) {
                 remove(L"test.dat");
                 remove(L"dir/test2.dat");
                 create_directories(L"mydir1/mydir2/mydir3");
-                delete_directory(L"mydir1");
+                remove_all(L"mydir1");
             #else
                 if (exists("test.dat")) std::cout << "test.dat exists" << std::endl;
                 std::cout << current_path().c_str() << std::endl;
@@ -233,7 +233,7 @@ int main(void) {
                 remove("test.dat");
                 remove("dir/test2.dat");
                 create_directories("mydir1/mydir2/mydir3");
-                delete_directory("mydir1");
+                remove_all("mydir1");
             #endif
         }
     #endif
