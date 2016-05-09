@@ -1112,7 +1112,7 @@
 #endif  // def UNBOOST_USE_TUPLE
 
 //////////////////////////////////////////////////////////////////////////////
-// string algorithm
+// string algorithms
 
 #ifdef UNBOOST_USE_STRING_ALGORITHMS
     #if ((defined(UNBOOST_USE_CXX_STRING_ALGORITHMS) + defined(UNBOOST_USE_BOOST_STRING_ALGORITHMS)) == 0)
