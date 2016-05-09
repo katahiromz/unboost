@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    9 // Version 9
+#define UNBOOST_HPP_    10 // Version 10
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -64,6 +64,9 @@
     #ifndef UNBOOST_USE_STRING_ALGORITHMS
         #define UNBOOST_USE_STRING_ALGORITHMS
     #endif
+    #ifndef UNBOOST_USE_FILESYSTEM
+        #define UNBOOST_USE_FILESYSTEM
+    #endif
     #ifndef UNBOOST_USE_ASSERT
         #define UNBOOST_USE_ASSERT
     #endif
@@ -83,6 +86,19 @@
 
 #if ((defined(UNBOOST_USE_CXX11) + defined(UNBOOST_USE_TR1) + defined(UNBOOST_USE_BOOST)) >= 2)
     #error Choose one or none of UNBOOST_USE_CXX11, UNBOOST_USE_TR1 and UNBOOST_USE_BOOST. You lose.
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// UNBOOST_INT64 and UNBOOST_UINT64
+
+#ifndef UNBOOST_INT64
+    #ifdef UNBOOST_CXX11
+        #define UNBOOST_INT64     long long
+        #define UNBOOST_UINT64    unsigned long long
+    #else
+        #define UNBOOST_INT64     __int64
+        #define UNBOOST_UINT64    unsigned __int64
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -585,22 +601,22 @@
                     return ret;
                 }
             #else   // ndef UNBOOST_CXX11
-                inline __int64 stoll(const std::string& str) {
+                inline UNBOOST_INT64 stoll(const std::string& str) {
                     // TODO: support pos and base
                     std::stringstream stream;
                     stream << str;
-                    __int64 result;
+                    UNBOOST_INT64 result;
                     stream >> result;
                     if (stream.fail()) {
                         throw std::invalid_argument("stoll");
                     }
                     return result;
                 }
-                inline unsigned __int64 stoull(const std::string& str) {
+                inline UNBOOST_UINT64 stoull(const std::string& str) {
                     // TODO: support pos and base
                     std::stringstream stream;
                     stream << str;
-                    unsigned __int64 result;
+                    UNBOOST_UINT64 result;
                     stream >> result;
                     if (stream.fail()) {
                         throw std::invalid_argument("stoull");
@@ -1468,7 +1484,13 @@
     // Adapt choosed one
     #ifdef UNBOOST_USE_BOOST_FILESYSTEM
         #include <boost/filesystem/path.hpp>
-        #include <boost/filesystem/operation.hpp>
+        #include <boost/filesystem/operations.hpp>
+        #ifdef _WIN32
+            #include <windows.h>    // for Windows API
+        #else
+            #include <direct.h>     // for DIR, opendir, readdir, closedir
+            #include <sys/stat.h>   // for stat
+        #endif
         namespace unboost {
             namespace filesystem {
                 using boost::filesystem::path;
@@ -1483,12 +1505,55 @@
                 using boost::filesystem::system_complete;
                 using boost::filesystem::file_size;
                 using boost::filesystem::remove;
+                using boost::filesystem::remove_all;
                 using boost::filesystem::rename;
                 using boost::filesystem::directory_iterator;
-                namespace detail {
-                    using boost::filesystem::dot_path;
-                    using boost::filesystem::dot_dot_path;
-                } // namespace detail
+                inline void copy_directory_tree(const path& from, const path& to) {
+                    create_directory(to);
+                    path p = system_complete(to);
+                    path cur_dir = current_path();
+                    current_path(from);
+                    #ifdef _WIN32
+                        WIN32_FIND_DATAW find;
+                        HANDLE hFind = ::FindFirstFileW(L"*", &find);
+                        const WCHAR *name;
+                        do {
+                            name = find.cFileName;
+                            if (!wcscmp(name, L".") || !wcscmp(name, L"..")) {
+                                continue;
+                            }
+                            path new_p(p);
+                            new_p /= name;
+                            if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                                copy_directory_tree(name, new_p);
+                            } else {
+                                copy_file(name, new_p);
+                            }
+                        } while (::FindNextFileW(hFind, &find));
+                        ::FindClose(hFind);
+                    #else
+                        DIR *pdir = opendir(cur_dir.c_str());
+                        const char *name;
+                        if (pdir) {
+                            struct dirent *ent;
+                            while ((ent = readdir(pdir)) != NULL) {
+                                name = ent->d_name;
+                                if (!strcmp(name, ".") || !strcmp(name, "..")) {
+                                    continue;
+                                }
+                                path new_p(p);
+                                new_p /= name;
+                                if (is_directory(name)) {
+                                    copy_directory_tree(name, new_p);
+                                } else {
+                                    copy_file(name, new_p);
+                                }
+                            }
+                            closedir(pdir);
+                        }
+                    #endif
+                    current_path(cur_dir);
+                } // copy_directory
             } // namespace filesystem
         } // namespace unboost
     #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
@@ -1893,9 +1958,23 @@
                     return current_path() / p;
 #endif
                 } // system_complete
+                inline void copy_directory(const path& from, const path& to) {
+                    #ifdef _WIN32
+                        if (!::CreateDirectoryExW(from.c_str(), to.c_str(), NULL)) {
+                            throw std::runtime_error("unboost::filesystem::copy_directory");
+                        }
+                    #else
+                        struct stat st;
+                        if (stat(from.c_str(), &st) != 0 ||
+                            mkdir(to.c_str(), st.st_mode) != 0)
+                        {
+                            throw std::runtime_error("unboost::filesystem::copy_directory");
+                        }
+                    #endif
+                } // copy_directory
                 // TODO: use directory_iterator
                 // TODO: do not change current directory
-                inline void copy_directory(const path& from, const path& to) {
+                inline void copy_directory_tree(const path& from, const path& to) {
                     create_directory(to);
                     path p = system_complete(to);
                     path cur_dir = current_path();
@@ -1911,7 +1990,7 @@
                             path new_p(p);
                             new_p /= name;
                             if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                                copy_directory(name, new_p);
+                                copy_directory_tree(name, new_p);
                             } else {
                                 copy_file(name, new_p);
                             }
@@ -1930,7 +2009,7 @@
                                 path new_p(p);
                                 new_p /= name;
                                 if (is_directory(name)) {
-                                    copy_directory(name, new_p);
+                                    copy_directory_tree(name, new_p);
                                 } else {
                                     copy_file(name, new_p);
                                 }
@@ -1962,6 +2041,54 @@
                     #else
                         return rmdir(p.c_str()) == 0 || unlink(p.c_str()) == 0;
                     #endif
+                }
+                inline bool delete_directory(const path& p) {
+                    path full = system_complete(p);
+                    path cur_dir = current_path();
+                    current_path(p);
+                    #ifdef _WIN32
+                        WIN32_FIND_DATAW find;
+                        HANDLE hFind = ::FindFirstFileW(L"*", &find);
+                        const WCHAR *name;
+                        do {
+                            name = find.cFileName;
+                            if (detail::dot_path() == name ||
+                                detail::dot_dot_path() == name) continue;
+                            path new_p(full);
+                            new_p /= name;
+                            if (find.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                                delete_directory(new_p);
+                            } else {
+                                remove(new_p);
+                            }
+                        } while (::FindNextFileW(hFind, &find));
+                        ::FindClose(hFind);
+                    #else
+                        DIR *pdir = opendir(cur_dir.c_str());
+                        const char *name;
+                        if (pdir) {
+                            struct dirent *ent;
+                            while ((ent = readdir(pdir)) != NULL) {
+                                name = ent->d_name;
+                                if (!strcmp(name, ".") || !strcmp(name, "..")) {
+                                    continue;
+                                }
+                                path new_p(full);
+                                new_p /= name;
+                                if (is_directory(new_p)) {
+                                    delete_directory(new_p);
+                                } else {
+                                    remove(new_p);
+                                }
+                            }
+                            closedir(pdir);
+                        }
+                    #endif
+                    current_path(cur_dir);
+                    return remove(full);
+                }
+                inline bool remove_all(const path& p) {
+                    return delete_directory(p) || remove(p);
                 }
                 inline void rename(const path& old_p, const path& new_p) {
                     #ifdef _WIN32

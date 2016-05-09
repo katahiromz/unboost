@@ -212,7 +212,7 @@ int main(void) {
                 create_directory(L"dir");
                 copy_file(L"test.dat", L"dir/test2.dat");
                 if (exists(L"dir/test2.dat")) std::cout << "exists" << std::endl;
-                copy_directory(L"dir", L"dir2");
+                copy_directory_tree(L"dir", L"dir2");
                 std::cout << file_size(L"test.dat") << std::endl;
                 remove(L"test.dat");
                 remove(L"dir/test2.dat");
@@ -223,7 +223,7 @@ int main(void) {
                 create_directory("dir");
                 copy_file("test.dat", "dir/test2.dat");
                 if (exists("test2.dat")) std::cout << "exists" << std::endl;
-                copy_directory("dir", "dir2");
+                copy_directory_tree("dir", "dir2");
                 std::cout << file_size("test.dat") << std::endl;
                 remove("test.dat");
                 remove("dir/test2.dat");
