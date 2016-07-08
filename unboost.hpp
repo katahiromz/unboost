@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    10 // Version 10
+#define UNBOOST_HPP_    11 // Version 11
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -116,7 +116,7 @@
         #endif
     #else
         #define UNBOOST_STATIC_ASSERT_MSG(x,y) \
-            typedef UNBOOST_STATIC_ASSERTION[(x) ? 1 : -1]
+            typedef char UNBOOST_STATIC_ASSERTION[(x) ? 1 : -1]
         #define static_assert(x,y) UNBOOST_STATIC_ASSERT_MSG((x),(y))
     #endif
 #endif
