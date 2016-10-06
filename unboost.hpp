@@ -1155,26 +1155,49 @@
             const bool ratio_greater_equal<R1, R2>::value =
                 (R1::num * R2::den >= R2::num * R1::den);
 
-            //static const ratio<1, 1000000000000000000000000LL> yocto;
-            //static const ratio<1, 1000000000000000000000LL> zepto;
-            static const ratio<1, 1000000000000000000LL> atto;
-            static const ratio<1, 1000000000000000LL> femto;
-            static const ratio<1, 1000000000000LL> pico;
-            static const ratio<1, 1000000000> nano;
-            static const ratio<1, 1000000> micro;
-            static const ratio<1, 1000> milli;
-            static const ratio<1, 100> centi;
-            static const ratio<1, 10> deci;
-            static const ratio<10, 1> deca;
-            static const ratio<100, 1> hecto;
-            static const ratio<1000, 1> kilo;
-            static const ratio<1000000, 1> mega;
-            static const ratio<1000000000LL, 1> giga;
-            static const ratio<1000000000000LL, 1> tera;
-            static const ratio<1000000000000000LL, 1> peta;
-            static const ratio<1000000000000000000LL, 1> exa;
-            //static const ratio<1000000000000000000000LL, 1> zetta;
-            //static const ratio<1000000000000000000000000LL, 1> yotta;
+            #ifdef __BORLANDC__
+                //static const ratio<1, 1000000000000000000000000I16> yocto;
+                //static const ratio<1, 1000000000000000000000I16> zepto;
+                static const ratio<1, 1000000000000000000I16> atto;
+                static const ratio<1, 1000000000000000I16> femto;
+                static const ratio<1, 1000000000000I16> pico;
+                static const ratio<1, 1000000000> nano;
+                static const ratio<1, 1000000> micro;
+                static const ratio<1, 1000> milli;
+                static const ratio<1, 100> centi;
+                static const ratio<1, 10> deci;
+                static const ratio<10, 1> deca;
+                static const ratio<100, 1> hecto;
+                static const ratio<1000, 1> kilo;
+                static const ratio<1000000, 1> mega;
+                static const ratio<1000000000I16, 1> giga;
+                static const ratio<1000000000000I16, 1> tera;
+                static const ratio<1000000000000000I16, 1> peta;
+                static const ratio<1000000000000000000I16, 1> exa;
+                //static const ratio<1000000000000000000000I16, 1> zetta;
+                //static const ratio<1000000000000000000000000I16, 1> yotta;
+            #else
+                //static const ratio<1, 1000000000000000000000000LL> yocto;
+                //static const ratio<1, 1000000000000000000000LL> zepto;
+                static const ratio<1, 1000000000000000000LL> atto;
+                static const ratio<1, 1000000000000000LL> femto;
+                static const ratio<1, 1000000000000LL> pico;
+                static const ratio<1, 1000000000> nano;
+                static const ratio<1, 1000000> micro;
+                static const ratio<1, 1000> milli;
+                static const ratio<1, 100> centi;
+                static const ratio<1, 10> deci;
+                static const ratio<10, 1> deca;
+                static const ratio<100, 1> hecto;
+                static const ratio<1000, 1> kilo;
+                static const ratio<1000000, 1> mega;
+                static const ratio<1000000000LL, 1> giga;
+                static const ratio<1000000000000LL, 1> tera;
+                static const ratio<1000000000000000LL, 1> peta;
+                static const ratio<1000000000000000000LL, 1> exa;
+                //static const ratio<1000000000000000000000LL, 1> zetta;
+                //static const ratio<1000000000000000000000000LL, 1> yotta;
+            #endif
 
             struct auto_ratio {
                 intmax_t num;
@@ -1818,8 +1841,8 @@
             protected:
                 template <class FUNC>
                 struct THREAD_DATA_ARG0 {
-                    FUNC&       m_func;
-                    THREAD_DATA_ARG0(FUNC& func) : m_func(func) { }
+                    FUNC        m_func;
+                    THREAD_DATA_ARG0(FUNC func) : m_func(func) { }
                 };
 
                 template <class FUNC>
@@ -1833,9 +1856,9 @@
 
                 template <class FUNC, class ARG1>
                 struct THREAD_DATA_ARG1 {
-                    FUNC&       m_func;
+                    FUNC        m_func;
                     ARG1        m_arg1;
-                    THREAD_DATA_ARG1(FUNC& func, ARG1 arg1) :
+                    THREAD_DATA_ARG1(FUNC func, ARG1 arg1) :
                         m_func(func), m_arg1(arg1) { }
                 };
 
@@ -1850,10 +1873,10 @@
 
                 template <class FUNC, class ARG1, class ARG2>
                 struct THREAD_DATA_ARG2 {
-                    FUNC&       m_func;
+                    FUNC        m_func;
                     ARG1        m_arg1;
                     ARG2        m_arg2;
-                    THREAD_DATA_ARG2(FUNC& func, ARG1 arg1, ARG2 arg2) :
+                    THREAD_DATA_ARG2(FUNC func, ARG1 arg1, ARG2 arg2) :
                         m_func(func), m_arg1(arg1), m_arg2(arg2) { }
                 };
 
@@ -1868,11 +1891,11 @@
 
                 template <class FUNC, class ARG1, class ARG2, class ARG3>
                 struct THREAD_DATA_ARG3 {
-                    FUNC&       m_func;
+                    FUNC        m_func;
                     ARG1        m_arg1;
                     ARG2        m_arg2;
                     ARG3        m_arg3;
-                    THREAD_DATA_ARG3(FUNC& func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
+                    THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
                         m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
                 };
 
@@ -1889,7 +1912,7 @@
                 thread() : m_hThread(NULL), m_id() {}
 
                 template <class FUNC>
-                thread(FUNC& func) : m_hThread(NULL), m_id() {
+                thread(FUNC func) : m_hThread(NULL), m_id() {
                     THREAD_DATA_ARG0<FUNC> *data;
                     data = new THREAD_DATA_ARG0<FUNC>(func);
                     m_hThread = reinterpret_cast<HANDLE>(
@@ -1902,7 +1925,7 @@
                 }
 
                 template <class FUNC, class ARG1>
-                thread(FUNC& func, ARG1 arg1) : m_hThread(NULL), m_id() {
+                thread(FUNC func, ARG1 arg1) : m_hThread(NULL), m_id() {
                     THREAD_DATA_ARG1<FUNC, ARG1> *data;
                     data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
                     m_hThread = reinterpret_cast<HANDLE>(
@@ -1915,7 +1938,7 @@
                 }
 
                 template <class FUNC, class ARG1, class ARG2>
-                thread(FUNC& func, ARG1 arg1, ARG2 arg2) : m_hThread(NULL), m_id() {
+                thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_hThread(NULL), m_id() {
                     THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                     data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
                     m_hThread = reinterpret_cast<HANDLE>(
@@ -1928,7 +1951,7 @@
                 }
 
                 template <class FUNC, class ARG1, class ARG2, class ARG3>
-                thread(FUNC& func, ARG1 arg1, ARG2 arg2, ARG3 arg3) :
+                thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) :
                     m_hThread(NULL), m_id()
                 {
                     THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
