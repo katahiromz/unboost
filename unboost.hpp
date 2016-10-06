@@ -1520,19 +1520,6 @@
                     }
                 };
 
-                inline auto_duration operator+(const auto_duration& ad) {
-                    return ad;
-                }
-                inline auto_duration operator-(const auto_duration& ad) {
-                    return auto_duration(-ad.m_rep, ad.m_period);
-                }
-                auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs);
-                auto_duration operator-(const auto_duration& lhs, const auto_duration& rhs);
-                auto_duration operator*(const auto_duration& d, uintmax_t r);
-                auto_duration operator*(uintmax_t r, const auto_duration& d);
-                auto_duration operator/(const auto_duration& d, uintmax_t r);
-                auto_duration operator%(const auto_duration& d, uintmax_t r);
-
                 template <class Rep, class Period = unboost::ratio<1> >
                 class duration {
                 public:
@@ -1560,12 +1547,6 @@
                     }
                     static const type max() {
                         return type(duration_values<rep>::max());
-                    }
-                    type operator+() {
-                        return *this;
-                    }
-                    type operator-() {
-                        return type(-m_rep);
                     }
                     type& operator++() {
                         ++m_rep;
@@ -1606,6 +1587,13 @@
                         return *this;
                     }
                 }; // class duration
+
+                inline auto_duration operator+(const auto_duration& ad) {
+                    return ad;
+                }
+                inline auto_duration operator-(const auto_duration& ad) {
+                    return auto_duration(-ad.m_rep, ad.m_period);
+                }
 
                 inline auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs) {
                     auto_ratio ar(1, _Gcd(lhs.m_period.den, rhs.m_period.den));

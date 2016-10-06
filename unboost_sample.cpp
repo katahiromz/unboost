@@ -168,6 +168,7 @@ int main(void) {
     #ifdef UNBOOST_USE_CHRONO
         std::cout << "chrono" << std::endl;
         {
+            // 4807 seconds
             unboost_auto_duration s = unboost::chrono::hours(1)
                                       + 2 * unboost::chrono::minutes(10)
                                       + unboost::chrono::seconds(70) / 10;
