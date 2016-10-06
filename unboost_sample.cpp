@@ -4,6 +4,7 @@
 
 #define UNBOOST_USE_RATIO
 #define UNBOOST_USE_THREAD
+#define UNBOOST_USE_CHRONO
 #include "unboost.hpp"
 
 #include <iostream>
@@ -66,11 +67,14 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_THREAD
+        unboost::chrono::milliseconds dura(2000);
         std::cout << "thread" << std::endl;
         unboost::thread t0(thread_proc0);
         t0.join();
+        unboost::this_thread::sleep_for(dura);
         unboost::thread t1(thread_proc1, 2);
         t1.join();
+        unboost::this_thread::sleep_for(dura);
         unboost::thread t2(thread_proc2, 2, 3);
         t2.join();
     #endif

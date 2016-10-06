@@ -1756,11 +1756,12 @@
                     unboost::thread::id i(::GetCurrentThreadId());
                     return i;
                 }
-                //template <class Rep, class Period>
-                //void sleep_for(const chrono::duration<Rep,Period>& sleep_duration) {
-                //    milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                //    ::Sleep(ms.count());
-                //}
+                template <class Rep, class Period>
+                inline void sleep_for(const chrono::duration<Rep,Period>& sleep_duration) {
+                    using namespace unboost::chrono;
+                    milliseconds ms = duration_cast<milliseconds>(sleep_duration);
+                    ::Sleep(ms.count());
+                }
                 //template <class Clock, class Duration>
                 //void sleep_until(const chrono::time_point<Clock,Duration>& sleep_time) {
                 //    ;
