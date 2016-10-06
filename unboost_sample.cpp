@@ -2,7 +2,8 @@
 // This file is public domain software (PDS).
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_ALL
+#define UNBOOST_USE_RATIO
+#define UNBOOST_USE_THREAD
 #include "unboost.hpp"
 
 #include <iostream>
@@ -42,7 +43,11 @@
 
 #ifdef UNBOOST_USE_THREAD
     void thread_proc(void) {
-        std::cout << "in thread_proc" << std::endl;
+        std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
+    }
+    void thread_proc2(int n) {
+        std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
+        std::cout << "n: " << n << std::endl;
     }
 #endif
 
@@ -59,6 +64,8 @@ int main(void) {
         std::cout << "thread" << std::endl;
         unboost::thread t(thread_proc);
         t.join();
+        unboost::thread t2(thread_proc2, 2);
+        t2.join();
     #endif
 
     #ifdef UNBOOST_USE_ARRAY
@@ -88,9 +95,6 @@ int main(void) {
     #ifdef UNBOOST_USE_CONVERSION
         std::cout << "conversion" << std::endl;
         std::cout << unboost::to_string(unboost::stoi("2016")) << std::endl;
-        std::cout << unboost::lexical_cast<int>("123") << std::endl;
-        std::cout << unboost::lexical_cast<std::string>(456) << std::endl;
-        std::cout << unboost::lexical_cast<unsigned int>(-789) << std::endl;
         std::cout << unboost::stod("999.99999999999999999999999") << std::endl;
         std::cout << unboost::stoull("100000000000000") << std::endl;
     #endif
@@ -112,16 +116,55 @@ int main(void) {
         }
     #endif
 
+    #ifdef UNBOOST_USE_RATIO
+        std::cout << unboost::ratio<7,-21>::num << std::endl;   // -1;
+        std::cout << unboost::ratio<7,-21>::den << std::endl;   // 3;
+
+        typedef unboost::ratio<2, 3> two_third;
+        typedef unboost::ratio<1, 6> one_sixth;
+
+        typedef unboost::ratio_add<two_third, one_sixth> sum;
+        std::cout << sum::num << "/" << sum::den << std::endl;  // 5/6
+
+        typedef unboost::ratio_subtract<two_third, one_sixth> diff;
+        std::cout << diff::num << '/' << diff::den << std::endl;    // 1/2
+
+        typedef unboost::ratio_multiply<two_third, one_sixth> prod;
+        std::cout << prod::num << '/' << prod::den << std::endl;    // 1/9
+
+        typedef unboost::ratio_divide<two_third, one_sixth> quot;
+        std::cout << quot::num << '/' << quot::den << std::endl;    // 4/1
+
+        typedef unboost::ratio_equal<two_third, two_third> eq;
+        typedef unboost::ratio_equal<two_third, one_sixth> neq;
+        std::cout << "eq: " << eq() << std::endl;
+        std::cout << "neq: " << neq() << std::endl;
+
+        std::cout << "less: " <<
+            unboost::ratio_less<unboost::ratio<23,37>,
+                                unboost::ratio<57,90> >::value << std::endl;
+    #endif
+
     #ifdef UNBOOST_USE_CHRONO
-        std::cout << "chrono" << std::endl;
-        {
-            using namespace unboost::chrono;
-            seconds sec(1);
-            std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
-            std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
-            std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
-            std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
-        }
+        //std::cout << "chrono" << std::endl;
+        //{
+        //    using namespace unboost::chrono;
+        //    seconds sec(1);
+        //    std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
+        //    std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
+        //    std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
+        //    std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
+        //}
+
+        //unboost::chrono::time_point<unboost::chrono::steady_clock> t1, t2;
+        //for (unsigned __int64 size = 1; size < 10000000; size *= 10) {
+        //    t1 = unboost::chrono::steady_clock::now();
+        //    std::vector<int> v(size, 42);
+        //    t2 = unboost::chrono::steady_clock::now();
+        //    std::cout << t1.time_since_epoch().count() << std::endl;
+        //    std::cout << t2.time_since_epoch().count() << std::endl;
+        //    std::cout << size << ": " << (t1 - t2).count() << std::endl;
+        //}
     #endif
 
     #ifdef UNBOOST_USE_UNORDERED_SET
