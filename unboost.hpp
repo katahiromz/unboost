@@ -1086,7 +1086,7 @@
                 _Abs(ratio_divide<R1, R2>::Num) /
                 _Gcd(ratio_divide<R1, R2>::Num,
                      ratio_divide<R1, R2>::Den);
-            
+
             template <class R1, class R2>
             const intmax_t ratio_divide<R1, R2>::den =
                 _Abs(ratio_divide<R1, R2>::Den) /
@@ -1300,16 +1300,16 @@
                     typedef Rep rep;
                     typedef Period period;
                     typedef duration<Rep,Period> type;
-                
+
                     duration() { }
-                
+
                     template <class Rep2>
                     explicit duration(const Rep2& r) : m_rep(r) { }
-                
+
                     template <class Rep2, class Period2>
                     duration(const duration<Rep2, Period2>& d) :
                         m_rep((d.m_rep * Period2::num) / Period2::den) { }
-                
+
                     rep count() const { return m_rep; }
                     static const type zero() {
                         return type(duration_values<rep>::zero());
@@ -1364,33 +1364,51 @@
                         m_rep %= rhs.count();
                         return *this;
                     }
-                
+
                     template <class D, class Rep2, class Period2>
                     friend D duration_cast(const duration<Rep2, Period2>& d);
-                
+
                 protected:
                     rep m_rep;
                 }; // class duration
-                
+
                 template <class D, class Rep2, class Period2>
                 inline D duration_cast(const duration<Rep2, Period2>& d) {
                     D td(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num);
                     return td;
                 }
-                
+
                 typedef duration<uintmax_t, ratio<1, 1000000> > microseconds;
                 typedef duration<uintmax_t, ratio<1, 1000> >    milliseconds;
                 typedef duration<uintmax_t>                     seconds;
                 typedef duration<uintmax_t, ratio<60> >         minutes;
                 typedef duration<uintmax_t, ratio<3600> >       hours;
-                
+
+                struct auto_duration {
+                    uintmax_t       m_rep;
+                    _auto_ratio     m_ratio;
+
+                    template <class D>
+                    auto_duration(const D& d) {
+                        m_rep = d.m_rep;
+                        m_ratio = D::period;
+                    }
+
+                    template <class D>
+                    auto_duration& operator=(const D& d) {
+                        m_rep = d.m_rep;
+                        m_ratio = D::period;
+                        return *this;
+                    }
+                };
+
                 //template <typename Clock, typename Dur = typename Clock::duration>
                 //struct time_point {
-                //    typedef Clock                      clock;
-                //    typedef Dur                        duration;
-                //    typedef typename duration::rep     rep;
-                //    typedef typename duration::period  period;
-                //    typedef time_point<Clock, Dur> type;
+                //    typedef Clock                       clock;
+                //    typedef Dur                         duration;
+                //    typedef typename duration::rep      rep;
+                //    typedef typename duration::period   period;
+                //    typedef time_point<Clock, Dur>      type;
                 //
                 //    time_point() : m_d(duration::zero()) { }
                 //
@@ -1514,7 +1532,7 @@
                 #if (_MSC_VER >= 1800)
                     // Visual C++ 2013 and later
                     #define UNBOOST_USE_CXX11_THREAD
-                #else 
+                #else
                     #define UNBOOST_USE_WIN32_THREAD
                 #endif
             #else
