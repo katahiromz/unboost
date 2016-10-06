@@ -137,8 +137,8 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_RATIO
-        std::cout << unboost::ratio<7,-21>::num << std::endl;   // -1;
-        std::cout << unboost::ratio<7,-21>::den << std::endl;   // 3;
+        std::cout << unboost::ratio<7,-21>::num << std::endl;   // 7;
+        std::cout << unboost::ratio<7,-21>::den << std::endl;   // -21;
 
         typedef unboost::ratio<2, 3> two_third;
         typedef unboost::ratio<1, 6> one_sixth;

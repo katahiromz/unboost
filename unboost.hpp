@@ -958,6 +958,7 @@
                 return (value < 0) ? -value : value;
             }
             inline intmax_t _Gcd(intmax_t n, intmax_t m) {
+                std::cout << n << ", " << m << std::endl;
                 if (n == 0 && m == 0)
                     return 1;
                 if (n == 0)
@@ -984,117 +985,115 @@
             class ratio_add {
             public:
                 typedef ratio_add<R1, R2> type;
-                static const intmax_t Num;
-                static const intmax_t Den;
+                static const intmax_t _Num;
+                static const intmax_t _Den;
                 static const intmax_t num;
                 static const intmax_t den;
             };
 
             template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::Num =
+            const intmax_t ratio_add<R1, R2>::_Num =
                 R1::num * R2::den + R2::num * R1::den;
             template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::Den =
-                R1::den * R2::den;
+            const intmax_t ratio_add<R1, R2>::_Den = R1::den * R2::den;
 
             template <class R1, class R2>
             const intmax_t ratio_add<R1, R2>::num =
-                _Sign(ratio_add<R1, R2>::Num) *
-                _Sign(ratio_add<R1, R2>::Den) *
-                _Abs(ratio_add<R1, R2>::Num) /
-                _Gcd(ratio_add<R1, R2>::Num, ratio_add<R1, R2>::Den);
+                _Sign(ratio_add<R1, R2>::_Num) *
+                _Sign(ratio_add<R1, R2>::_Den) *
+                _Abs(ratio_add<R1, R2>::_Num) /
+                _Gcd(ratio_add<R1, R2>::_Num, ratio_add<R1, R2>::_Den);
             template <class R1, class R2>
             const intmax_t ratio_add<R1, R2>::den =
-                _Abs(ratio_add<R1, R2>::Den) /
-                _Gcd(ratio_add<R1, R2>::Num, ratio_add<R1, R2>::Den);
+                _Abs(ratio_add<R1, R2>::_Den) /
+                _Gcd(ratio_add<R1, R2>::_Num, ratio_add<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_subtract {
             public:
                 typedef ratio_subtract<R1, R2> type;
-                static const intmax_t Num;
-                static const intmax_t Den;
+                static const intmax_t _Num;
+                static const intmax_t _Den;
                 static const intmax_t num;
                 static const intmax_t den;
             };
 
             template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::Num =
+            const intmax_t ratio_subtract<R1, R2>::_Num =
                 R1::num * R2::den - R2::num * R1::den;
             template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::Den =
-                R1::den * R2::den;
+            const intmax_t ratio_subtract<R1, R2>::_Den = R1::den * R2::den;
 
             template <class R1, class R2>
             const intmax_t ratio_subtract<R1, R2>::num =
-                _Sign(ratio_subtract<R1, R2>::Num) *
-                _Sign(ratio_subtract<R1, R2>::Den) *
-                _Abs(ratio_subtract<R1, R2>::Num) /
-                _Gcd(ratio_subtract<R1, R2>::Num,
-                     ratio_subtract<R1, R2>::Den);
+                _Sign(ratio_subtract<R1, R2>::_Num) *
+                _Sign(ratio_subtract<R1, R2>::_Den) *
+                _Abs(ratio_subtract<R1, R2>::_Num) /
+                _Gcd(ratio_subtract<R1, R2>::_Num,
+                     ratio_subtract<R1, R2>::_Den);
 
             template <class R1, class R2>
             const intmax_t ratio_subtract<R1, R2>::den =
-                _Abs(ratio_subtract<R1, R2>::Den) /
-                _Gcd(ratio_subtract<R1, R2>::Num,
-                     ratio_subtract<R1, R2>::Den);
+                _Abs(ratio_subtract<R1, R2>::_Den) /
+                _Gcd(ratio_subtract<R1, R2>::_Num,
+                     ratio_subtract<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_multiply {
             public:
                 typedef ratio_multiply<R1, R2> type;
-                static const intmax_t Num;
-                static const intmax_t Den;
+                static const intmax_t _Num;
+                static const intmax_t _Den;
                 static const intmax_t num;
                 static const intmax_t den;
             };
 
             template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::Num = R1::num * R2::num;
+            const intmax_t ratio_multiply<R1, R2>::_Num = R1::num * R2::num;
             template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::Den = R1::den * R2::den;
+            const intmax_t ratio_multiply<R1, R2>::_Den = R1::den * R2::den;
 
             template <class R1, class R2>
             const intmax_t ratio_multiply<R1, R2>::num =
-                _Sign(ratio_multiply<R1, R2>::Num) *
-                _Sign(ratio_multiply<R1, R2>::Den) *
-                _Abs(ratio_multiply<R1, R2>::Num) /
-                _Gcd(ratio_multiply<R1, R2>::Num,
-                     ratio_multiply<R1, R2>::Den);
+                _Sign(ratio_multiply<R1, R2>::_Num) *
+                _Sign(ratio_multiply<R1, R2>::_Den) *
+                _Abs(ratio_multiply<R1, R2>::_Num) /
+                _Gcd(ratio_multiply<R1, R2>::_Num,
+                     ratio_multiply<R1, R2>::_Den);
 
             template <class R1, class R2>
             const intmax_t ratio_multiply<R1, R2>::den =
-                _Abs(ratio_multiply<R1, R2>::Den) /
-                _Gcd(ratio_multiply<R1, R2>::Num,
-                     ratio_multiply<R1, R2>::Den);
+                _Abs(ratio_multiply<R1, R2>::_Den) /
+                _Gcd(ratio_multiply<R1, R2>::_Num,
+                     ratio_multiply<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_divide {
             public:
                 typedef ratio_divide<R1, R2> type;
-                static const intmax_t Num;
-                static const intmax_t Den;
+                static const intmax_t _Num;
+                static const intmax_t _Den;
                 static const intmax_t num;
                 static const intmax_t den;
             };
 
             template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::Num = R1::num * R2::den;
+            const intmax_t ratio_divide<R1, R2>::_Num = R1::num * R2::den;
             template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::Den = R1::den * R2::num;
+            const intmax_t ratio_divide<R1, R2>::_Den = R1::den * R2::num;
 
             template <class R1, class R2>
             const intmax_t ratio_divide<R1, R2>::num =
-                _Sign(ratio_divide<R1, R2>::Num) *
-                _Sign(ratio_divide<R1, R2>::Den) *
-                _Abs(ratio_divide<R1, R2>::Num) /
-                _Gcd(ratio_divide<R1, R2>::Num,
-                     ratio_divide<R1, R2>::Den);
+                _Sign(ratio_divide<R1, R2>::_Num) *
+                _Sign(ratio_divide<R1, R2>::_Den) *
+                _Abs(ratio_divide<R1, R2>::_Num) /
+                _Gcd(ratio_divide<R1, R2>::_Num,
+                     ratio_divide<R1, R2>::_Den);
 
             template <class R1, class R2>
             const intmax_t ratio_divide<R1, R2>::den =
-                _Abs(ratio_divide<R1, R2>::Den) /
-                _Gcd(ratio_divide<R1, R2>::Num, ratio_divide<R1, R2>::Den);
+                _Abs(ratio_divide<R1, R2>::_Den) /
+                _Gcd(ratio_divide<R1, R2>::_Num, ratio_divide<R1, R2>::_Den);
 
             template <class R1, class R2>
             struct ratio_equal {
