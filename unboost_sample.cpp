@@ -67,16 +67,22 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_THREAD
-        //unboost::chrono::milliseconds dura(2000);
-        //std::cout << "thread" << std::endl;
-        //unboost::thread t0(thread_proc0);
-        //t0.join();
-        //unboost::this_thread::sleep_for(dura);
-        //unboost::thread t1(thread_proc1, 2);
-        //t1.join();
-        //unboost::this_thread::sleep_for(dura);
-        //unboost::thread t2(thread_proc2, 2, 3);
-        //t2.join();
+        unboost::chrono::milliseconds dura(2000);
+        std::cout << "thread" << std::endl;
+        unboost::thread t0(thread_proc0);
+        t0.join();
+        std::cout << "sleep 2 seconds" << std::endl;
+        unboost::this_thread::sleep_for(dura);
+        unboost::thread t1(thread_proc1, 2);
+        t1.join();
+        std::cout << "sleep 2 seconds" << std::endl;
+        unboost::this_thread::sleep_for(dura);
+        unboost::thread t2(thread_proc2, 2, 3);
+        t2.join();
+        std::cout << "sleep 4 seconds" << std::endl;
+        unboost_auto_duration s = unboost::chrono::seconds(2) * 2;
+        unboost::this_thread::sleep_for(s);
+        std::cout << "OK" << std::endl;
     #endif
 
     #ifdef UNBOOST_USE_ARRAY

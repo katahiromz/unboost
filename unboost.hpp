@@ -1644,13 +1644,16 @@
 
                 template <class D, class Rep2, class Period2>
                 inline auto_duration duration_cast(const duration<Rep2, Period2>& d) {
-                    auto_duration ad(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num, typename D::period());
+                    auto_duration ad(d.m_rep * D::period::den * Period2::num
+                                     / Period2::den / D::period::num, typename D::period());
                     return ad;
                 }
 
                 template <class D>
-                inline auto_duration duration_cast(const auto_duration& ad) {
-                    return auto_duration(ad, typename D::period());
+                inline auto_duration duration_cast(const auto_duration& d) {
+                    auto_duration ad(d.m_rep * D::period::den * d.m_period.num
+                                     / d.m_period.den / D::period::num, typename D::period());
+                    return ad;
                 }
 
                 typedef duration<uintmax_t, ratio<1, 1000000> > microseconds;
@@ -2015,7 +2018,12 @@
                 template <class Rep, class Period>
                 inline void sleep_for(const chrono::duration<Rep,Period>& sleep_duration) {
                     using namespace unboost::chrono;
-                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    ::Sleep(ms.count());
+                }
+                inline void sleep_for(const chrono::auto_duration& sleep_duration) {
+                    using namespace unboost::chrono;
+                    auto_duration ms = duration_cast<milliseconds>(sleep_duration);
                     ::Sleep(ms.count());
                 }
                 //template <class Clock, class Duration>
