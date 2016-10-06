@@ -1645,14 +1645,16 @@
                 template <class D, class Rep2, class Period2>
                 inline auto_duration duration_cast(const duration<Rep2, Period2>& d) {
                     auto_duration ad(d.m_rep * D::period::den * Period2::num
-                                     / Period2::den / D::period::num, typename D::period());
+                                     / Period2::den / D::period::num,
+                                     typename D::period());
                     return ad;
                 }
 
                 template <class D>
                 inline auto_duration duration_cast(const auto_duration& d) {
                     auto_duration ad(d.m_rep * D::period::den * d.m_period.num
-                                     / d.m_period.den / D::period::num, typename D::period());
+                                     / d.m_period.den / D::period::num,
+                                     typename D::period());
                     return ad;
                 }
 
