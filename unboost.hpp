@@ -1368,6 +1368,8 @@
                     template <class D, class Rep2, class Period2>
                     friend D duration_cast(const duration<Rep2, Period2>& d);
 
+                    friend struct auto_duration;
+
                 protected:
                     rep m_rep;
                 }; // class duration
