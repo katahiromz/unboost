@@ -974,10 +974,9 @@
             };
 
             template <intmax_t Num, intmax_t Den>
-            const intmax_t ratio<Num, Den>::num =
-                 _Sign(Num) * _Sign(Den) * _Abs(Num) / _Gcd(Num, Den);
+            const intmax_t ratio<Num, Den>::num = Num;
             template <intmax_t Num, intmax_t Den>
-            const intmax_t ratio<Num, Den>::den = _Abs(Den) / _Gcd(Num, Den);
+            const intmax_t ratio<Num, Den>::den = Den;
 
             template <class R1, class R2>
             class ratio_add {
