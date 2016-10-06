@@ -1674,7 +1674,10 @@
                 }
 
                 ~thread() {
-                    ::CloseHandle(m_hThread);
+                    if (m_hThread) {
+                        ::CloseHandle(m_hThread);
+                        std::terminate();
+                    }
                 }
 
                 id get_id() const {
