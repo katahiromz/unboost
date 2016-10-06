@@ -958,6 +958,8 @@
                 return (value < 0) ? -value : value;
             }
             inline intmax_t _Gcd(intmax_t n, intmax_t m) {
+                if (n == 0 && m == 0)
+                    return 1;
                 if (n == 0)
                     return _Abs(m);
                 if (m == 0)
@@ -1202,15 +1204,9 @@
                 intmax_t num;
                 intmax_t den;
 
-                auto_ratio() { }
+                auto_ratio() : num(1), den(1) { }
                 auto_ratio(intmax_t n, intmax_t d) : num(n), den(d) { }
                 auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
-
-                auto_ratio& operator=(const auto_ratio& ar) {
-                    num = ar.num;
-                    den = ar.den;
-                    return *this;
-                }
 
                 template <intmax_t Num, intmax_t Den>
                 auto_ratio(const ratio<Num, Den>&) {
@@ -1238,6 +1234,11 @@
                     den = ratio_divide<R1, R2>::den;
                 }
 
+                auto_ratio& operator=(const auto_ratio& ar) {
+                    num = ar.num;
+                    den = ar.den;
+                    return *this;
+                }
                 template <intmax_t Num, intmax_t Den>
                 auto_ratio& operator=(const ratio<Num, Den>&) {
                     num = ratio<Num, Den>::num;
@@ -1658,11 +1659,25 @@
                 typedef duration<uintmax_t, ratio<60> >         minutes;
                 typedef duration<uintmax_t, ratio<3600> >       hours;
 
+                inline auto_duration _duration_cast_inner(const auto_ratio& r, const auto_duration& d) {
+                    auto_duration ad(d.m_rep * r.den * d.m_period.num
+                                     / d.m_period.den / r.num, r);
+                    return ad;
+                }
+
                 template <class D>
                 inline auto_duration duration_cast(const auto_duration& d) {
-                    typedef typename D::period per;
-                    auto_duration ad(d.m_rep * D::period::den * d.m_period.num
-                                     / d.m_period.den / D::period::num, per());
+                    typename D::period p;
+                    auto_ratio r(p);
+                    return _duration_cast_inner(r, d);
+                }
+
+                template <class D, class Rep2, class Period2>
+                inline auto_duration duration_cast(const duration<Rep2, Period2>& d) {
+                    typedef typename D::period Period1;
+                    Period1 p;
+                    auto_duration ad(d.m_rep * Period1::den * Period2::num
+                                     / Period2::den / Period1::num, p);
                     return ad;
                 }
 
