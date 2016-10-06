@@ -896,6 +896,7 @@
             using std::zetta;
             using std::yotta;
         } // namespace unboost
+        #define unboost_auto_ratio auto
     #elif defined(UNBOOST_USE_BOOST_RATIO)
         #include <boost/ratio/ratio.hpp>
         #include <boost/ratio/ratio_io.hpp>
@@ -933,6 +934,7 @@
             using boost::zetta;
             using boost::yotta;
         } // namespace unboost
+        #define unboost_auto_ratio auto
     #elif defined(UNBOOST_USE_UNBOOST_RATIO)
         namespace unboost {
             typedef __int64 intmax_t;
@@ -1189,6 +1191,7 @@
                 }
             };
         } // namespace unboost
+        #define unboost_auto_ratio unboost::_auto_ratio
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
