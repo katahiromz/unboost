@@ -1695,6 +1695,7 @@
                 void join() {
                     if (joinable()) {
                         ::WaitForSingleObject(m_hThread, INFINITE);
+                        detach();
                     }
                 }
 
