@@ -936,6 +936,7 @@
         } // namespace unboost
         #define unboost_auto_ratio auto
     #elif defined(UNBOOST_USE_UNBOOST_RATIO)
+        #include <algorithm>    // for std::swap
         namespace unboost {
             typedef __int64 intmax_t;
             typedef unsigned __int64 uintmax_t;
@@ -1175,23 +1176,134 @@
             //static const ratio<1000000000000000000000LL, 1> zetta;
             //static const ratio<1000000000000000000000000LL, 1> yotta;
 
-            struct _auto_ratio {
+            struct auto_ratio {
                 intmax_t num;
                 intmax_t den;
-                template <class R>
-                _auto_ratio(const R&) {
-                    num = R::num;
-                    den = R::den;
+
+                auto_ratio() { }
+                auto_ratio(intmax_t n, intmax_t d) : num(n), den(d) { }
+                auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
+
+                auto_ratio& operator=(const auto_ratio& ar) {
+                    num = ar.num;
+                    den = ar.den;
+                    return *this;
                 }
-                template <class R>
-                _auto_ratio& operator=(const R&) {
-                    num = R::num;
-                    den = R::den;
+
+                template <intmax_t Num, intmax_t Den>
+                auto_ratio(const ratio<Num, Den>&) {
+                    num = ratio<Num, Den>::num;
+                    den = ratio<Num, Den>::den;
+                }
+                template <class R1, class R2>
+                auto_ratio(const ratio_add<R1, R2>&) {
+                    num = ratio_add<R1, R2>::num;
+                    den = ratio_add<R1, R2>::den;
+                }
+                template <class R1, class R2>
+                auto_ratio(const ratio_subtract<R1, R2>&) {
+                    num = ratio_subtract<R1, R2>::num;
+                    den = ratio_subtract<R1, R2>::den;
+                }
+                template <class R1, class R2>
+                auto_ratio(const ratio_multiply<R1, R2>&) {
+                    num = ratio_multiply<R1, R2>::num;
+                    den = ratio_multiply<R1, R2>::den;
+                }
+                template <class R1, class R2>
+                auto_ratio(const ratio_divide<R1, R2>&) {
+                    num = ratio_divide<R1, R2>::num;
+                    den = ratio_divide<R1, R2>::den;
+                }
+
+                template <intmax_t Num, intmax_t Den>
+                auto_ratio& operator=(const ratio<Num, Den>&) {
+                    num = ratio<Num, Den>::num;
+                    den = ratio<Num, Den>::den;
+                    return *this;
+                }
+                template <class R1, class R2>
+                auto_ratio& operator=(const ratio_add<R1, R2>&) {
+                    num = ratio_add<R1, R2>::num;
+                    den = ratio_add<R1, R2>::den;
+                    return *this;
+                }
+                template <class R1, class R2>
+                auto_ratio& operator=(const ratio_subtract<R1, R2>&) {
+                    num = ratio_subtract<R1, R2>::num;
+                    den = ratio_subtract<R1, R2>::den;
+                    return *this;
+                }
+                template <class R1, class R2>
+                auto_ratio& operator=(const ratio_multiply<R1, R2>&) {
+                    num = ratio_multiply<R1, R2>::num;
+                    den = ratio_multiply<R1, R2>::den;
+                    return *this;
+                }
+                template <class R1, class R2>
+                auto_ratio& operator=(const ratio_divide<R1, R2>&) {
+                    num = ratio_divide<R1, R2>::num;
+                    den = ratio_divide<R1, R2>::den;
+                    return *this;
+                }
+
+                friend auto_ratio operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
+                    auto_ratio ret;
+                    ret.num = ar1.num * ar2.den + ar1.den * ar2.num;
+                    ret.den = ar1.den * ar2.den;
+                    return ret;
+                }
+                friend auto_ratio operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
+                    auto_ratio ret;
+                    ret.num = ar1.num * ar2.den - ar1.den * ar2.num;
+                    ret.den = ar1.den * ar2.den;
+                    return ret;
+                }
+                friend auto_ratio operator*(const auto_ratio& ar1, const intmax_t& n) {
+                    auto_ratio ret;
+                    ret.num = ar1.num * n;
+                    ret.den = ar1.den;
+                    return ret;
+                }
+                friend auto_ratio operator*(const intmax_t& n, const auto_ratio& ar1) {
+                    auto_ratio ret;
+                    ret.num = ar1.num * n;
+                    ret.den = ar1.den;
+                    return ret;
+                }
+                friend auto_ratio operator/(const auto_ratio& ar1, const intmax_t& n) {
+                    auto_ratio ret;
+                    ret.num = ar1.num / n;
+                    ret.den = ar1.den;
+                    return ret;
+                }
+                friend intmax_t operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
+                    intmax_t ret;
+                    ret = (ar1.num * ar2.den + ar1.den * ar2.num) / (ar1.den * ar2.den);
+                    return ret;
+                }
+
+                auto_ratio& operator+=(const auto_ratio& ar2) {
+                    auto_ratio ret = *this + ar2;
+                    std::swap(*this, ret);
+                    return *this;
+                }
+                auto_ratio& operator-=(const auto_ratio& ar2) {
+                    auto_ratio ret = *this - ar2;
+                    std::swap(*this, ret);
+                    return *this;
+                }
+                auto_ratio& operator*=(intmax_t n) {
+                    num *= n;
+                    return *this;
+                }
+                auto_ratio& operator/=(intmax_t n) {
+                    den *= n;
                     return *this;
                 }
             };
         } // namespace unboost
-        #define unboost_auto_ratio unboost::_auto_ratio
+        #define unboost_auto_ratio unboost::auto_ratio
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
@@ -1252,6 +1364,7 @@
                 using std::chrono::time_point_cast;
             } // namespace chrono
         } // namespace unboost
+        #define unboost_auto_duration auto
     #elif defined(UNBOOST_USE_BOOST_CHRONO)
         #include <boost/chrono/include.hpp>
         namespace unboost {
@@ -1273,11 +1386,13 @@
                 using boost::chrono::time_point_cast;
             } // namespace chrono
         } // namespace unboost
+        #define unboost_auto_duration auto
     #elif defined(UNBOOST_USE_WIN32_CHRONO)
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
         #include <limits>
+        #include <cfloat>
         #include <ctime>
         namespace unboost {
             namespace chrono {
@@ -1290,19 +1405,142 @@
                 struct duration_values {
                     static const Rep zero() { return Rep(0); }
                     static const Rep min() {
-                        return std::numeric_limits<Rep>::lowest();
+                        Rep r = 0.1;
+                        if ((int)r == 0) {
+                            return std::numeric_limits<Rep>::min();
+                        } else {
+                            if (sizeof(Rep) == sizeof(float)) {
+                                return -FLT_MAX;
+                            }
+                            if (sizeof(Rep) == sizeof(double)) {
+                                return -DBL_MAX;
+                            }
+                            if (sizeof(Rep) == sizeof(long double)) {
+                                return -LDBL_MAX;
+                            }
+                        }
+                        return 0;
                     }
                     static const Rep max() {
                         return std::numeric_limits<Rep>::max();
                     }
                 };
 
+                template <class Rep, class Period>
+                class duration;
+
+                struct auto_duration {
+                    typedef uintmax_t       rep;
+                    typedef auto_ratio      period;
+                    typedef auto_duration   type;
+
+                    rep             m_rep;
+                    period          m_period;
+
+                    auto_duration() : m_rep(), m_period(unboost::ratio<1>()) { }
+
+                    explicit auto_duration(const rep& r) :
+                        m_rep(r), m_period(unboost::ratio<1>()) { }
+
+                    auto_duration(const rep& r, const auto_ratio& ar) :
+                        m_rep(r), m_period(ar) { }
+
+                    auto_duration(const auto_duration& ad) :
+                        m_rep(ad.m_rep), m_period(ad.m_period) { }
+
+                    template <class Rep, class Period>
+                    auto_duration(const duration<Rep, Period>& d) :
+                        m_rep(d.m_rep), m_period(Period()) { }
+
+                    template <class Rep, class Period>
+                    auto_duration& operator=(const duration<Rep, Period>& d) {
+                        m_rep = d.m_rep;
+                        m_period = Period();
+                        return *this;
+                    }
+
+                    rep count() const { return m_rep; }
+                    static const type zero() {
+                        return type(duration_values<rep>::zero());
+                    }
+                    static const type min() {
+                        return type(duration_values<rep>::min());
+                    }
+                    static const type max() {
+                        return type(duration_values<rep>::max());
+                    }
+
+                    type& operator++() {
+                        ++m_rep;
+                        return *this;
+                    }
+                    type& operator--() {
+                        --m_rep;
+                        return *this;
+                    }
+                    type operator++(int) {
+                        return type(m_rep++, m_period);
+                    }
+                    type operator--(int) {
+                        return type(m_rep--, m_period);
+                    }
+                    type& operator+=(const type& d) {
+                        if (d.m_period.num == m_period.num && d.m_period.den == m_period.den) {
+                            m_rep += d.count();
+                        } else {
+                            m_rep += d.count() * d.m_period.num / m_period.num
+                                               * d.m_period.den / m_period.den;
+                        }
+                        return *this;
+                    }
+                    type& operator-=(const type& d) {
+                        if (d.m_period.num == m_period.num && d.m_period.den == m_period.den) {
+                            m_rep -= d.count();
+                        } else {
+                            m_rep -= d.count() * d.m_period.num / m_period.num
+                                               * d.m_period.den / m_period.den;
+                        }
+                        return *this;
+                    }
+                    type& operator*=(const rep& rhs) {
+                        m_rep *= rhs;
+                        return *this;
+                    }
+                    type& operator/=(const rep& rhs) {
+                        m_rep /= rhs;
+                        return *this;
+                    }
+                    type& operator%=(const rep& rhs) {
+                        m_rep %= rhs;
+                        return *this;
+                    }
+                    type& operator%=(const type& rhs) {
+                        m_rep %= rhs.count();
+                        return *this;
+                    }
+                };
+
+                inline auto_duration operator+(const auto_duration& ad) {
+                    return ad;
+                }
+                inline auto_duration operator-(const auto_duration& ad) {
+                    return auto_duration(-ad.m_rep, ad.m_period);
+                }
+                auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs);
+                auto_duration operator-(const auto_duration& lhs, const auto_duration& rhs);
+                auto_duration operator*(const auto_duration& d, uintmax_t r);
+                auto_duration operator*(uintmax_t r, const auto_duration& d);
+                auto_duration operator/(const auto_duration& d, uintmax_t r);
+                auto_duration operator%(const auto_duration& d, uintmax_t r);
+
                 template <class Rep, class Period = unboost::ratio<1> >
                 class duration {
                 public:
                     typedef Rep rep;
                     typedef Period period;
-                    typedef duration<Rep,Period> type;
+                    typedef duration<Rep, Period> type;
+
+                    rep m_rep;
 
                     duration() { }
 
@@ -1338,10 +1576,10 @@
                         return *this;
                     }
                     type operator++(int) {
-                        return duration<Rep,Period>(m_rep++);
+                        return type(m_rep++);
                     }
                     type operator--(int) {
-                        return duration<Rep,Period>(m_rep--);
+                        return type(m_rep--);
                     }
                     type& operator+=(const type& d) {
                         m_rep += d.count();
@@ -1367,20 +1605,52 @@
                         m_rep %= rhs.count();
                         return *this;
                     }
-
-                    template <class D, class Rep2, class Period2>
-                    friend D duration_cast(const duration<Rep2, Period2>& d);
-
-                    friend struct auto_duration;
-
-                protected:
-                    rep m_rep;
                 }; // class duration
 
+                inline auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs) {
+                    auto_ratio ar(1, _Gcd(lhs.m_period.den, rhs.m_period.den));
+                    auto_duration ret(0, ar);
+                    ret += lhs;
+                    ret += rhs;
+                    return ret;
+                }
+                inline auto_duration operator-(const auto_duration& lhs, const auto_duration& rhs) {
+                    return lhs + (-rhs);
+                }
+                inline auto_duration operator*(const auto_duration& d, uintmax_t r) {
+                    auto_duration ret;
+                    ret.m_rep = d.m_rep * r;
+                    ret.m_period = d.m_period;
+                    return ret;
+                }
+                inline auto_duration operator*(uintmax_t r, const auto_duration& d) {
+                    auto_duration ret;
+                    ret.m_rep = d.m_rep * r;
+                    ret.m_period = d.m_period;
+                    return ret;
+                }
+                inline auto_duration operator/(const auto_duration& d, uintmax_t r) {
+                    auto_duration ret;
+                    ret.m_rep = d.m_rep / r;
+                    ret.m_period = d.m_period;
+                    return ret;
+                }
+                inline auto_duration operator%(const auto_duration& d, uintmax_t r) {
+                    auto_duration ret;
+                    ret.m_rep = d.m_rep % r;
+                    ret.m_period = d.m_period;
+                    return ret;
+                }
+
                 template <class D, class Rep2, class Period2>
-                inline D duration_cast(const duration<Rep2, Period2>& d) {
-                    D td(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num);
-                    return td;
+                inline auto_duration duration_cast(const duration<Rep2, Period2>& d) {
+                    auto_duration ad(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num, typename D::period());
+                    return ad;
+                }
+
+                template <class D>
+                inline auto_duration duration_cast(const auto_duration& ad) {
+                    return auto_duration(ad, typename D::period());
                 }
 
                 typedef duration<uintmax_t, ratio<1, 1000000> > microseconds;
@@ -1388,24 +1658,6 @@
                 typedef duration<uintmax_t>                     seconds;
                 typedef duration<uintmax_t, ratio<60> >         minutes;
                 typedef duration<uintmax_t, ratio<3600> >       hours;
-
-                struct auto_duration {
-                    uintmax_t       m_rep;
-                    _auto_ratio     m_ratio;
-
-                    template <class D>
-                    auto_duration(const D& d) {
-                        m_rep = d.m_rep;
-                        m_ratio = D::period;
-                    }
-
-                    template <class D>
-                    auto_duration& operator=(const D& d) {
-                        m_rep = d.m_rep;
-                        m_ratio = D::period;
-                        return *this;
-                    }
-                };
 
                 //template <typename Clock, typename Dur = typename Clock::duration>
                 //struct time_point {
@@ -1515,6 +1767,7 @@
                 //}; // struct steady_clock
             } // namespace chrono
         } // namespace unboost
+        #define unboost_auto_duration unboost::chrono::auto_duration
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
@@ -1762,7 +2015,7 @@
                 template <class Rep, class Period>
                 inline void sleep_for(const chrono::duration<Rep,Period>& sleep_duration) {
                     using namespace unboost::chrono;
-                    milliseconds ms = duration_cast<milliseconds>(sleep_duration);
+                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
                     ::Sleep(ms.count());
                 }
                 //template <class Clock, class Duration>
