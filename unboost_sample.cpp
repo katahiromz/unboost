@@ -42,12 +42,17 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef UNBOOST_USE_THREAD
-    void thread_proc(void) {
+    void thread_proc0(void) {
         std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
     }
-    void thread_proc2(int n) {
+    void thread_proc1(int n) {
         std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
         std::cout << "n: " << n << std::endl;
+    }
+    void thread_proc2(int n, int m) {
+        std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
+        std::cout << "n: " << n << std::endl;
+        std::cout << "m: " << m << std::endl;
     }
 #endif
 
@@ -62,9 +67,11 @@ int main(void) {
 
     #ifdef UNBOOST_USE_THREAD
         std::cout << "thread" << std::endl;
-        unboost::thread t(thread_proc);
-        t.join();
-        unboost::thread t2(thread_proc2, 2);
+        unboost::thread t0(thread_proc0);
+        t0.join();
+        unboost::thread t1(thread_proc1, 2);
+        t1.join();
+        unboost::thread t2(thread_proc2, 2, 3);
         t2.join();
     #endif
 
