@@ -1294,96 +1294,96 @@
                     }
                 };
 
-                //template <class Rep, class Period = unboost::ratio<1> >
-                //class duration {
-                //public:
-                //    typedef Rep rep;
-                //    typedef Period period;
-                //    typedef duration<Rep,Period> type;
-                //
-                //    duration() { }
-                //
-                //    template <class Rep2>
-                //    explicit duration(const Rep2& r) : m_rep(r) { }
-                //
-                //    template <class Rep2, class Period2>
-                //    duration(const duration<Rep2, Period2>& d) :
-                //        m_rep((d.m_rep * Period2::num) / Period2::den) { }
-                //
-                //    rep count() const { return m_rep; }
-                //    static const type zero() {
-                //        return type(duration_values<rep>::zero());
-                //    }
-                //    static const type min() {
-                //        return type(duration_values<rep>::min());
-                //    }
-                //    static const type max() {
-                //        return type(duration_values<rep>::max());
-                //    }
-                //    type operator+() {
-                //        return *this;
-                //    }
-                //    type operator-() {
-                //        return type(-m_rep);
-                //    }
-                //    type& operator++() {
-                //        ++m_rep;
-                //        return *this;
-                //    }
-                //    type& operator--() {
-                //        --m_rep;
-                //        return *this;
-                //    }
-                //    type operator++(int) {
-                //        return duration<Rep,Period>(m_rep++);
-                //    }
-                //    type operator--(int) {
-                //        return duration<Rep,Period>(m_rep--);
-                //    }
-                //    type& operator+=(const type& d) {
-                //        m_rep += d.count();
-                //        return *this;
-                //    }
-                //    type& operator-=(const type& d) {
-                //        m_rep -= d.count();
-                //        return *this;
-                //    }
-                //    type& operator*=(const rep& rhs) {
-                //        m_rep *= rhs;
-                //        return *this;
-                //    }
-                //    type& operator/=(const rep& rhs) {
-                //        m_rep /= rhs;
-                //        return *this;
-                //    }
-                //    type& operator%=(const rep& rhs) {
-                //        m_rep %= rhs;
-                //        return *this;
-                //    }
-                //    type& operator%=(const type& rhs) {
-                //        m_rep %= rhs.count();
-                //        return *this;
-                //    }
-                //
-                //    template <class D, class Rep2, class Period2>
-                //    friend D duration_cast(const duration<Rep2, Period2>& d);
-                //
-                //protected:
-                //    rep m_rep;
-                //}; // class duration
-                //
-                //template <class D, class Rep2, class Period2>
-                //inline D duration_cast(const duration<Rep2, Period2>& d) {
-                //    D td(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num);
-                //    return td;
-                //}
-                //
-                //typedef duration<uintmax_t, ratio<1, 1000000> > microseconds;
-                //typedef duration<uintmax_t, ratio<1, 1000> >    milliseconds;
-                //typedef duration<uintmax_t>                     seconds;
-                //typedef duration<uintmax_t, ratio<60> >         minutes;
-                //typedef duration<uintmax_t, ratio<3600> >       hours;
-                //
+                template <class Rep, class Period = unboost::ratio<1> >
+                class duration {
+                public:
+                    typedef Rep rep;
+                    typedef Period period;
+                    typedef duration<Rep,Period> type;
+                
+                    duration() { }
+                
+                    template <class Rep2>
+                    explicit duration(const Rep2& r) : m_rep(r) { }
+                
+                    template <class Rep2, class Period2>
+                    duration(const duration<Rep2, Period2>& d) :
+                        m_rep((d.m_rep * Period2::num) / Period2::den) { }
+                
+                    rep count() const { return m_rep; }
+                    static const type zero() {
+                        return type(duration_values<rep>::zero());
+                    }
+                    static const type min() {
+                        return type(duration_values<rep>::min());
+                    }
+                    static const type max() {
+                        return type(duration_values<rep>::max());
+                    }
+                    type operator+() {
+                        return *this;
+                    }
+                    type operator-() {
+                        return type(-m_rep);
+                    }
+                    type& operator++() {
+                        ++m_rep;
+                        return *this;
+                    }
+                    type& operator--() {
+                        --m_rep;
+                        return *this;
+                    }
+                    type operator++(int) {
+                        return duration<Rep,Period>(m_rep++);
+                    }
+                    type operator--(int) {
+                        return duration<Rep,Period>(m_rep--);
+                    }
+                    type& operator+=(const type& d) {
+                        m_rep += d.count();
+                        return *this;
+                    }
+                    type& operator-=(const type& d) {
+                        m_rep -= d.count();
+                        return *this;
+                    }
+                    type& operator*=(const rep& rhs) {
+                        m_rep *= rhs;
+                        return *this;
+                    }
+                    type& operator/=(const rep& rhs) {
+                        m_rep /= rhs;
+                        return *this;
+                    }
+                    type& operator%=(const rep& rhs) {
+                        m_rep %= rhs;
+                        return *this;
+                    }
+                    type& operator%=(const type& rhs) {
+                        m_rep %= rhs.count();
+                        return *this;
+                    }
+                
+                    template <class D, class Rep2, class Period2>
+                    friend D duration_cast(const duration<Rep2, Period2>& d);
+                
+                protected:
+                    rep m_rep;
+                }; // class duration
+                
+                template <class D, class Rep2, class Period2>
+                inline D duration_cast(const duration<Rep2, Period2>& d) {
+                    D td(d.m_rep * D::period::den * Period2::num / Period2::den / D::period::num);
+                    return td;
+                }
+                
+                typedef duration<uintmax_t, ratio<1, 1000000> > microseconds;
+                typedef duration<uintmax_t, ratio<1, 1000> >    milliseconds;
+                typedef duration<uintmax_t>                     seconds;
+                typedef duration<uintmax_t, ratio<60> >         minutes;
+                typedef duration<uintmax_t, ratio<3600> >       hours;
+                
                 //template <typename Clock, typename Dur = typename Clock::duration>
                 //struct time_point {
                 //    typedef Clock                      clock;

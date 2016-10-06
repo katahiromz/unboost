@@ -153,15 +153,15 @@ int main(void) {
     #endif
 
     #ifdef UNBOOST_USE_CHRONO
-        //std::cout << "chrono" << std::endl;
-        //{
-        //    using namespace unboost::chrono;
-        //    seconds sec(1);
-        //    std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
-        //    std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
-        //    std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
-        //    std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
-        //}
+        std::cout << "chrono" << std::endl;
+        {
+            using namespace unboost::chrono;
+            seconds sec(1);
+            std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
+            std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
+            std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
+            std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
+        }
 
         //unboost::chrono::time_point<unboost::chrono::steady_clock> t1, t2;
         //for (unsigned __int64 size = 1; size < 10000000; size *= 10) {
