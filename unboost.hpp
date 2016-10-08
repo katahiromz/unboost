@@ -958,7 +958,6 @@
                 return (value < 0) ? -value : value;
             }
             inline intmax_t _Gcd(intmax_t n, intmax_t m) {
-                std::cout << n << ", " << m << std::endl;
                 if (n == 0 && m == 0)
                     return 1;
                 if (n == 0)
