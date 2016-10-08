@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    14 // Version 14
+#define UNBOOST_HPP_    15 // Version 15
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -938,8 +938,9 @@
     #elif defined(UNBOOST_USE_UNBOOST_RATIO)
         #include <algorithm>    // for std::swap
         namespace unboost {
-            typedef __int64 intmax_t;
-            typedef unsigned __int64 uintmax_t;
+            // NOTE: unboost::intmax_t is 32-bit
+            typedef int intmax_t;
+            typedef unsigned int uintmax_t;
 
             template <class T, T v>
             struct integral_constant {
@@ -951,252 +952,162 @@
             template <class T, T v>
             const T integral_constant<T,v>::value = v;
 
-            inline intmax_t _Sign(intmax_t value) {
-                return (value < 0) ? -1 : 1;
-            }
-            inline intmax_t _Abs(intmax_t value) {
-                return (value < 0) ? -value : value;
-            }
-            inline intmax_t _Gcd(intmax_t n, intmax_t m) {
-                if (n == 0 && m == 0)
-                    return 1;
-                if (n == 0)
-                    return _Abs(m);
-                if (m == 0)
-                    return _Abs(n);
-                return _Gcd(m, n % m);
-            }
+            template <intmax_t N>
+            struct _SIGN {
+                enum { value = (N < 0 ? -1 : 1) };
+            };
+
+            template <intmax_t N>
+            struct _ABS {
+                enum { value = (N < 0 ? -N : N) };
+            };
+
+            template <intmax_t A, intmax_t B>
+            struct _GCD {
+                enum { value = _GCD<B, A % B>::value };
+            };
+            template <intmax_t A>
+            struct _GCD<A, 0> {
+                enum { value = A };
+            };
+            template <intmax_t B>
+            struct _GCD<0, B> {
+                enum { value = B };
+            };
 
             template <intmax_t Num, intmax_t Den = 1>
             class ratio {
             public:
                 typedef ratio<Num, Den> type;
-                static const intmax_t num;
-                static const intmax_t den;
+                enum { num = Num, den = Den };
             };
-
-            template <intmax_t Num, intmax_t Den>
-            const intmax_t ratio<Num, Den>::num = Num;
-            template <intmax_t Num, intmax_t Den>
-            const intmax_t ratio<Num, Den>::den = Den;
 
             template <class R1, class R2>
             class ratio_add {
             public:
                 typedef ratio_add<R1, R2> type;
-                static const intmax_t _Num;
-                static const intmax_t _Den;
-                static const intmax_t num;
-                static const intmax_t den;
+                enum {
+                    _Num = R1::num * R2::den + R2::num * R1::den,
+                    _Den = R1::den * R2::den,
+                    num = _SIGN<_Num>::value * _SIGN<_Den>::value *
+                          _ABS<_Num>::value / _GCD<_Num, _Den>::value,
+                    den = _ABS<_Den>::value / _GCD<_Num, _Den>::value
+                };
             };
-
-            template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::_Num =
-                R1::num * R2::den + R2::num * R1::den;
-            template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::_Den = R1::den * R2::den;
-
-            template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::num =
-                _Sign(ratio_add<R1, R2>::_Num) *
-                _Sign(ratio_add<R1, R2>::_Den) *
-                _Abs(ratio_add<R1, R2>::_Num) /
-                _Gcd(ratio_add<R1, R2>::_Num, ratio_add<R1, R2>::_Den);
-            template <class R1, class R2>
-            const intmax_t ratio_add<R1, R2>::den =
-                _Abs(ratio_add<R1, R2>::_Den) /
-                _Gcd(ratio_add<R1, R2>::_Num, ratio_add<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_subtract {
             public:
                 typedef ratio_subtract<R1, R2> type;
-                static const intmax_t _Num;
-                static const intmax_t _Den;
-                static const intmax_t num;
-                static const intmax_t den;
+                enum {
+                    _Num = R1::num * R2::den - R2::num * R1::den,
+                    _Den = R1::den * R2::den,
+                    num = _SIGN<_Num>::value * _SIGN<_Den>::value *
+                          _ABS<_Num>::value / _GCD<_Num, _Den>::value,
+                    den = _ABS<_Den>::value / _GCD<_Num, _Den>::value
+                };
             };
-
-            template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::_Num =
-                R1::num * R2::den - R2::num * R1::den;
-            template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::_Den = R1::den * R2::den;
-
-            template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::num =
-                _Sign(ratio_subtract<R1, R2>::_Num) *
-                _Sign(ratio_subtract<R1, R2>::_Den) *
-                _Abs(ratio_subtract<R1, R2>::_Num) /
-                _Gcd(ratio_subtract<R1, R2>::_Num,
-                     ratio_subtract<R1, R2>::_Den);
-
-            template <class R1, class R2>
-            const intmax_t ratio_subtract<R1, R2>::den =
-                _Abs(ratio_subtract<R1, R2>::_Den) /
-                _Gcd(ratio_subtract<R1, R2>::_Num,
-                     ratio_subtract<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_multiply {
             public:
                 typedef ratio_multiply<R1, R2> type;
-                static const intmax_t _Num;
-                static const intmax_t _Den;
-                static const intmax_t num;
-                static const intmax_t den;
+                enum {
+                    _Num = R1::num * R2::num,
+                    _Den = R1::den * R2::den,
+                    num = _SIGN<_Num>::value * _SIGN<_Den>::value * _ABS<_Num>::value /
+                          _GCD<_Num, _Den>::value,
+                    den = _ABS<_Den>::value / _GCD<_Num, _Den>::value
+                };
             };
-
-            template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::_Num = R1::num * R2::num;
-            template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::_Den = R1::den * R2::den;
-
-            template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::num =
-                _Sign(ratio_multiply<R1, R2>::_Num) *
-                _Sign(ratio_multiply<R1, R2>::_Den) *
-                _Abs(ratio_multiply<R1, R2>::_Num) /
-                _Gcd(ratio_multiply<R1, R2>::_Num,
-                     ratio_multiply<R1, R2>::_Den);
-
-            template <class R1, class R2>
-            const intmax_t ratio_multiply<R1, R2>::den =
-                _Abs(ratio_multiply<R1, R2>::_Den) /
-                _Gcd(ratio_multiply<R1, R2>::_Num,
-                     ratio_multiply<R1, R2>::_Den);
 
             template <class R1, class R2>
             class ratio_divide {
             public:
                 typedef ratio_divide<R1, R2> type;
-                static const intmax_t _Num;
-                static const intmax_t _Den;
-                static const intmax_t num;
-                static const intmax_t den;
+                enum {
+                    _Num = R1::num * R2::den,
+                    _Den = R1::den * R2::num,
+                    num = _SIGN<_Num>::value * _SIGN<_Den>::value *
+                          _ABS<_Num>::value / _GCD<_Num, _Den>::value,
+                    den = _ABS<_Den>::value / _GCD<_Num, _Den>::value
+                };
             };
-
-            template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::_Num = R1::num * R2::den;
-            template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::_Den = R1::den * R2::num;
-
-            template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::num =
-                _Sign(ratio_divide<R1, R2>::_Num) *
-                _Sign(ratio_divide<R1, R2>::_Den) *
-                _Abs(ratio_divide<R1, R2>::_Num) /
-                _Gcd(ratio_divide<R1, R2>::_Num,
-                     ratio_divide<R1, R2>::_Den);
-
-            template <class R1, class R2>
-            const intmax_t ratio_divide<R1, R2>::den =
-                _Abs(ratio_divide<R1, R2>::_Den) /
-                _Gcd(ratio_divide<R1, R2>::_Num, ratio_divide<R1, R2>::_Den);
 
             template <class R1, class R2>
             struct ratio_equal {
-                static const bool value;
+                enum {
+                    value = (R1::num == R2::num && R1::den == R2::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_equal<R1, R2>::value =
-                (R1::num == R2::num && R1::den == R2::den);
 
             template <class R1, class R2>
             struct ratio_not_equal {
-                static const bool value;
+                enum {
+                    value = (R1::num != R2::num || R1::den != R2::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_not_equal<R1, R2>::value =
-                (R1::num != R2::num || R1::den != R2::den);
 
             template <class R1, class R2>
             struct ratio_less {
-                static const bool value;
+                enum {
+                    value = (R1::num * R2::den < R2::num * R1::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_less<R1, R2>::value =
-                (R1::num * R2::den < R2::num * R1::den);
 
             template <class R1, class R2>
             struct ratio_less_equal {
-                static const bool value;
+                enum {
+                    value = (R1::num * R2::den <= R2::num * R1::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_less_equal<R1, R2>::value =
-                (R1::num * R2::den <= R2::num * R1::den);
 
             template <class R1, class R2>
             struct ratio_greater {
-                static const bool value;
+                enum {
+                    value = (R1::num * R2::den > R2::num * R1::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_greater<R1, R2>::value =
-                (R1::num * R2::den > R2::num * R1::den);
 
             template <class R1, class R2>
             struct ratio_greater_equal {
-                static const bool value;
+                enum {
+                    value = (R1::num * R2::den >= R2::num * R1::den)
+                };
                 typedef bool value_type;
                 operator value_type() const { return value; }
             };
-            template <class R1, class R2>
-            const bool ratio_greater_equal<R1, R2>::value =
-                (R1::num * R2::den >= R2::num * R1::den);
 
-            #ifdef __BORLANDC__
-                //static const ratio<1, 1000000000000000000000000I16> yocto;
-                //static const ratio<1, 1000000000000000000000I16> zepto;
-                static const ratio<1, 1000000000000000000I16> atto;
-                static const ratio<1, 1000000000000000I16> femto;
-                static const ratio<1, 1000000000000I16> pico;
-                static const ratio<1, 1000000000> nano;
-                static const ratio<1, 1000000> micro;
-                static const ratio<1, 1000> milli;
-                static const ratio<1, 100> centi;
-                static const ratio<1, 10> deci;
-                static const ratio<10, 1> deca;
-                static const ratio<100, 1> hecto;
-                static const ratio<1000, 1> kilo;
-                static const ratio<1000000, 1> mega;
-                static const ratio<1000000000I16, 1> giga;
-                static const ratio<1000000000000I16, 1> tera;
-                static const ratio<1000000000000000I16, 1> peta;
-                static const ratio<1000000000000000000I16, 1> exa;
-                //static const ratio<1000000000000000000000I16, 1> zetta;
-                //static const ratio<1000000000000000000000000I16, 1> yotta;
-            #else
-                //static const ratio<1, 1000000000000000000000000LL> yocto;
-                //static const ratio<1, 1000000000000000000000LL> zepto;
-                static const ratio<1, 1000000000000000000LL> atto;
-                static const ratio<1, 1000000000000000LL> femto;
-                static const ratio<1, 1000000000000LL> pico;
-                static const ratio<1, 1000000000> nano;
-                static const ratio<1, 1000000> micro;
-                static const ratio<1, 1000> milli;
-                static const ratio<1, 100> centi;
-                static const ratio<1, 10> deci;
-                static const ratio<10, 1> deca;
-                static const ratio<100, 1> hecto;
-                static const ratio<1000, 1> kilo;
-                static const ratio<1000000, 1> mega;
-                static const ratio<1000000000LL, 1> giga;
-                static const ratio<1000000000000LL, 1> tera;
-                static const ratio<1000000000000000LL, 1> peta;
-                static const ratio<1000000000000000000LL, 1> exa;
-                //static const ratio<1000000000000000000000LL, 1> zetta;
-                //static const ratio<1000000000000000000000000LL, 1> yotta;
-            #endif
+            //static const ratio<1, 1000000000000000000000000LL> yocto;
+            //static const ratio<1, 1000000000000000000000LL> zepto;
+            //static const ratio<1, 1000000000000000000LL> atto;
+            //static const ratio<1, 1000000000000000LL> femto;
+            //static const ratio<1, 1000000000000LL> pico;
+            static const ratio<1, 1000000000> nano;
+            static const ratio<1, 1000000> micro;
+            static const ratio<1, 1000> milli;
+            static const ratio<1, 100> centi;
+            static const ratio<1, 10> deci;
+            static const ratio<10, 1> deca;
+            static const ratio<100, 1> hecto;
+            static const ratio<1000, 1> kilo;
+            static const ratio<1000000, 1> mega;
+            static const ratio<1000000000, 1> giga;
+            //static const ratio<1000000000000LL, 1> tera;
+            //static const ratio<1000000000000000LL, 1> peta;
+            //static const ratio<1000000000000000000LL, 1> exa;
+            //static const ratio<1000000000000000000000LL, 1> zetta;
+            //static const ratio<1000000000000000000000000LL, 1> yotta;
 
             struct auto_ratio {
                 intmax_t num;

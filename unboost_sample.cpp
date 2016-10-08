@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#define UNBOOST_USE_RATIO
+#define UNBOOST_USE_ALL
 #include "unboost.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
