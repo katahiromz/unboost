@@ -7,8 +7,6 @@
 #include <vector>
 
 #define UNBOOST_USE_RATIO
-#define UNBOOST_USE_THREAD
-#define UNBOOST_USE_CHRONO
 #include "unboost.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
