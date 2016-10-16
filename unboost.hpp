@@ -67,6 +67,9 @@
     #ifndef UNBOOST_USE_THREAD
         #define UNBOOST_USE_THREAD
     #endif
+    #ifndef UNBOOST_USE_MUTEX
+        #define UNBOOST_USE_MUTEX
+    #endif
     #ifndef UNBOOST_USE_ASSERT
         #define UNBOOST_USE_ASSERT
     #endif
@@ -1963,6 +1966,112 @@
                 }
             } // namespace this_thread
         } // namespace unboost
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// mutex
+
+#ifdef UNBOOST_USE_MUTEX
+    // If not choosed, choose one
+    #if (defined(UNBOOST_USE_CXX11_MUTEX) + defined(UNBOOST_USE_BOOST_MUTEX) + defined(UNBOOST_USE_WIN32_MUTEX) + defined(UNBOOST_USE_POSIX_MUTEX) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_MUTEX
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_MUTEX
+        #else
+            #ifdef UNBOOST_CXX11    // C++11
+                #define UNBOOST_USE_CXX11_MUTEX
+            #elif defined(_WIN32)
+                #define UNBOOST_USE_WIN32_MUTEX
+            #else
+                #define UNBOOST_USE_POSIX_MUTEX
+            #endif
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_MUTEX
+        #include <mutex>
+        namespace unboost {
+            using std::mutex;
+        }
+    #elif defined(UNBOOST_USE_BOOST_MUTEX)
+        #include <boost/thread.hpp>
+        namespace unboost {
+            using boost::mutex;
+        }
+    #elif defined(UNBOOST_USE_WIN32_MUTEX)
+        #ifndef _INC_WINDOWS
+            #include <windows.h>
+        #endif
+        namespace unboost {
+            class mutex {
+            public:
+                typedef HANDLE native_handle_type;
+                mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)) {
+                    if (m_hMutex == NULL)
+                        throw std::runtime_error("unboost::mutex");
+                }
+                ~mutex() {
+                    ::CloseHandle(m_hMutex);
+                }
+                void lock() {
+                    return ::WaitForSingleObject(m_hMutex, INFINITE);
+                }
+                bool try_lock() {
+                    return ::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0;
+                }
+                void unlock() {
+                    ::ReleaseMutex(m_hMutex);
+                }
+                native_handle_type native_handle() {
+                    return m_hMutex;
+                }
+            protected:
+                native_handle_type m_hMutex;
+            private:
+                mutex(const mutex&);
+                mutex& operator=(const mutex&);
+            }; // class mutex
+        }; // namespace unboost
+    #elif defined(UNBOOST_USE_POSIX_MUTEX)
+        #ifdef __cplusplus
+            #include <cerrno>
+        #else
+            #include <errno.h>
+        #endif
+        #include <pthread.h>    /* for POSIX threads */
+        namespace unboost {
+            class mutex {
+            public:
+                typedef pthread_mutex_t native_handle_type;
+                mutex() {
+                    m_mutex = PTHREAD_MUTEX_INITIALIZER;
+                }
+                ~mutex() {
+                    pthread_mutex_destroy(&m_mutex);
+                }
+                void lock() {
+                    pthread_mutex_lock(&m_mutex);
+                }
+                bool try_lock() {
+                    return pthread_mutex_trylock(&m_mutex) != EBUSY;
+                }
+                void unlock() {
+                    pthread_mutex_unlock(&m_mutex);
+                }
+                native_handle_type native_handle() {
+                    return m_mutex;
+                }
+            protected:
+                native_handle_type m_mutex;
+            private:
+                mutex(const mutex&);
+                mutex& operator=(const mutex&);
+            }; // class mutex
+        }; // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
