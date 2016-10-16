@@ -6,8 +6,7 @@
 #include <string>
 #include <vector>
 
-#define UNBOOST_USE_THREAD
-#define UNBOOST_USE_MUTEX
+#define UNBOOST_USE_ALL
 #include "unboost.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
