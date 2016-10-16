@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-#define UNBOOST_USE_ALL
+#define UNBOOST_USE_THREAD
+#define UNBOOST_USE_MUTEX
 #include "unboost.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -57,6 +58,33 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#if defined(UNBOOST_USE_THREAD) && defined(UNBOOST_USE_MUTEX)
+    int n = 0;
+    unboost::mutex my_mutex;
+    unboost::chrono::milliseconds interval1(100);
+    unboost::chrono::milliseconds interval2(200);
+    void mutex_test_thread_proc1(void) {
+        for (int i = 0; i < 20; ++i) {
+            my_mutex.lock();
+            unboost::this_thread::sleep_for(interval1);
+            ++n;
+            std::cout << "mutex_test_thread_proc1: " << n << std::endl;
+            my_mutex.unlock();
+        }
+    }
+    void mutex_test_thread_proc2(void) {
+        for (int i = 0; i < 20; ++i) {
+            my_mutex.lock();
+            unboost::this_thread::sleep_for(interval2);
+            ++n;
+            std::cout << "mutex_test_thread_proc2: " << n << std::endl;
+            my_mutex.unlock();
+        }
+    }
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+
 int main(void) {
     #ifdef UNBOOST_USE_SMART_PTR
         std::cout << "smart ptr" << std::endl;
@@ -84,6 +112,14 @@ int main(void) {
         unboost_auto_duration s = unboost::chrono::seconds(2) * 2;
         unboost::this_thread::sleep_for(s);
         std::cout << "OK" << std::endl;
+    #endif
+
+    #if defined(UNBOOST_USE_THREAD) && defined(UNBOOST_USE_MUTEX)
+        unboost::thread thread1(mutex_test_thread_proc1);
+        unboost::thread thread2(mutex_test_thread_proc2);
+        thread1.detach();
+        thread2.detach();
+        unboost::this_thread::sleep_for(unboost::chrono::seconds(10));
     #endif
 
     #ifdef UNBOOST_USE_ARRAY

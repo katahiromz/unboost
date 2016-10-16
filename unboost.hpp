@@ -1040,7 +1040,7 @@
             template <class R1, class R2>
             struct ratio_equal {
                 enum {
-                    value = (R1::num == R2::num && R1::den == R2::den)
+                    value = ((intmax_t)R1::num == (intmax_t)R2::num && (intmax_t)R1::den == (intmax_t)R2::den)
                 };
                 typedef bool value_type;
                 operator value_type() const { return value; }
@@ -1741,11 +1741,23 @@
         #include <thread>
         namespace unboost {
             using std::thread;
+            namespace this_thread {
+                using std::this_thread::get_id;
+                using std::this_thread::sleep_for;
+                using std::this_thread::sleep_until;
+                using std::this_thread::yield;
+            }
         }
     #elif defined(UNBOOST_USE_BOOST_THREAD)
         #include <boost/thread.hpp>
         namespace unboost {
             using boost::thread;
+            namespace this_thread {
+                using boost::this_thread::get_id;
+                using boost::this_thread::sleep_for;
+                using boost::this_thread::sleep_until;
+                using boost::this_thread::yield;
+            }
         }
     #elif defined(UNBOOST_USE_WIN32_THREAD)
         #include <stdexcept>
@@ -2018,7 +2030,7 @@
                     ::CloseHandle(m_hMutex);
                 }
                 void lock() {
-                    return ::WaitForSingleObject(m_hMutex, INFINITE);
+                    ::WaitForSingleObject(m_hMutex, INFINITE);
                 }
                 bool try_lock() {
                     return ::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0;
