@@ -1040,7 +1040,8 @@
             template <class R1, class R2>
             struct ratio_equal {
                 enum {
-                    value = ((intmax_t)R1::num == (intmax_t)R2::num && (intmax_t)R1::den == (intmax_t)R2::den)
+                    value = ((intmax_t)R1::num == (intmax_t)R2::num &&
+                             (intmax_t)R1::den == (intmax_t)R2::den)
                 };
                 typedef bool value_type;
                 operator value_type() const { return value; }
