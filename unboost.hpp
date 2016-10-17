@@ -78,6 +78,29 @@
 //////////////////////////////////////////////////////////////////////////////
 // dependency
 
+#ifdef UNBOOST_USE_MUTEX
+    #ifndef UNBOOST_USE_CHRONO
+        #define UNBOOST_USE_CHRONO
+        #ifdef UNBOOST_USE_CXX11_MUTEX
+            #ifndef UNBOOST_USE_CXX11_CHRONO
+                #define UNBOOST_USE_CXX11_CHRONO
+            #endif
+        #elif defined(UNBOOST_USE_BOOST_MUTEX)
+            #ifndef UNBOOST_USE_BOOST_CHRONO
+                #define UNBOOST_USE_BOOST_CHRONO
+            #endif
+        #elif defined(UNBOOST_USE_WIN32_MUTEX)
+            #ifndef UNBOOST_USE_WIN32_CHRONO
+                #define UNBOOST_USE_WIN32_CHRONO
+            #endif
+        #elif defined(UNBOOST_USE_POSIX_MUTEX)
+            #ifndef UNBOOST_USE_POSIX_CHRONO
+                #define UNBOOST_USE_POSIX_CHRONO
+            #endif
+        #endif
+    #endif
+#endif
+
 #ifdef UNBOOST_USE_THREAD
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
@@ -92,6 +115,10 @@
         #elif defined(UNBOOST_USE_WIN32_THREAD)
             #ifndef UNBOOST_USE_WIN32_CHRONO
                 #define UNBOOST_USE_WIN32_CHRONO
+            #endif
+        #elif defined(UNBOOST_USE_POSIX_THREAD)
+            #ifndef UNBOOST_USE_POSIX_CHRONO
+                #define UNBOOST_USE_POSIX_CHRONO
             #endif
         #endif
     #endif
@@ -108,7 +135,7 @@
             #ifndef UNBOOST_USE_BOOST_RATIO
                 #define UNBOOST_USE_BOOST_RATIO
             #endif
-        #elif defined(UNBOOST_USE_WIN32_CHRONO)
+        #else
             #ifndef UNBOOST_USE_UNBOOST_RATIO
                 #define UNBOOST_USE_UNBOOST_RATIO
             #endif
@@ -1709,7 +1736,7 @@
 #endif  // def UNBOOST_USE_CHRONO
 
 //////////////////////////////////////////////////////////////////////////////
-// modern thread
+// thread
 
 #ifdef UNBOOST_USE_THREAD
     // If not choosed, choose one
@@ -2009,13 +2036,18 @@
         #include <mutex>
         namespace unboost {
             using std::mutex;
+            using std::timed_mutex;
+            using std::unique_lock;
         }
     #elif defined(UNBOOST_USE_BOOST_MUTEX)
         #include <boost/thread.hpp>
         namespace unboost {
             using boost::mutex;
+            using boost::timed_mutex;
+            using boost::unique_lock;
         }
     #elif defined(UNBOOST_USE_WIN32_MUTEX)
+        #define UNBOOST_DEFINE_UNIQUE_LOCK
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
@@ -2027,7 +2059,7 @@
                     if (m_hMutex == NULL)
                         throw std::runtime_error("unboost::mutex");
                 }
-                ~mutex() {
+                virtual ~mutex() {
                     ::CloseHandle(m_hMutex);
                 }
                 void lock() {
@@ -2048,8 +2080,36 @@
                 mutex(const mutex&);
                 mutex& operator=(const mutex&);
             }; // class mutex
+            class timed_mutex : public mutex {
+            public:
+                timed_mutex() { }
+                virtual ~timed_mutex() { }
+                template <class Rep, class Period>
+                bool try_lock_for(const unboost::chrono::duration<Rep, Period>&
+                                  timeout_duration)
+                {
+                    using namespace unboost::chrono;
+                    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
+                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                }
+                bool try_lock_for(const unboost::chrono::auto_duration&
+                                  timeout_duration)
+                {
+                    using namespace unboost::chrono;
+                    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
+                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                }
+                //template <class Clock, class Duration>
+                //bool try_lock_until(const unboost::chrono::time_point<Clock, Duration>& timeout_time) {
+                //    // FIXME
+                //}
+            private:
+                timed_mutex(const timed_mutex&);
+                timed_mutex& operator=(const timed_mutex&);
+            }; // class timed_mutex
         }; // namespace unboost
     #elif defined(UNBOOST_USE_POSIX_MUTEX)
+        #define UNBOOST_DEFINE_UNIQUE_LOCK
         #ifdef __cplusplus
             #include <cerrno>
         #else
@@ -2084,9 +2144,111 @@
                 mutex(const mutex&);
                 mutex& operator=(const mutex&);
             }; // class mutex
-        }; // namespace unboost
+            class timed_mutex : public mutex {
+            public:
+                timed_mutex() { }
+                virtual ~timed_mutex() { }
+                //template <class Rep, class Period>
+                //bool try_lock_for(const unboost::chrono::duration<Rep, Period>&
+                //                  timeout_duration)
+                //{
+                //    using namespace unboost::chrono;
+                //    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
+                //    // FIXME
+                //}
+                //bool try_lock_for(const unboost::chrono::auto_duration&
+                //                  timeout_duration)
+                //{
+                //    using namespace unboost::chrono;
+                //    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
+                //    // FIXME
+                //}
+                //template <class Clock, class Duration>
+                //bool try_lock_until(const unboost::chrono::time_point<Clock, Duration>& timeout_time) {
+                //    // FIXME
+                //}
+            private:
+                timed_mutex(const timed_mutex&);
+                timed_mutex& operator=(const timed_mutex&);
+            }; // class timed_mutex
+        } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
+    #endif
+    #ifdef UNBOOST_DEFINE_UNIQUE_LOCK
+        namespace unboost {
+            struct defer_lock_t { };
+            struct try_to_lock_t { };
+            struct adopt_lock_t { };
+            template <class Mutex>
+            class unique_lock {
+            public:
+                typedef Mutex mutex_type;
+                unique_lock() : m_pmutex(NULL), m_locked(false) { }
+                explicit unique_lock(mutex_type& m) : m_pmutex(&m), m_locked(true)
+                {
+                    m_pmutex->lock();
+                }
+                unique_lock(mutex_type& m, defer_lock_t) :
+                    m_pmutex(&m), m_locked(false) { }
+                unique_lock(mutex_type& m, try_to_lock_t) :
+                    m_pmutex(&m), m_locked(false)
+                {
+                    m_locked = m_pmutex->try_lock();
+                }
+                unique_lock(mutex_type& m, adopt_lock_t) :
+                    m_pmutex(&m), m_locked(true) { }
+                ~unique_lock() { 
+                    if (m_locked && m_pmutex)
+                        m_pmutex->unlock();
+                }
+                explicit operator bool() const { return owns_lock(); }
+                void move_assignment(unique_lock& other) {
+                    if (m_pmutex && m_locked)
+                        m_pmutex->lock();
+                    m_pmutex = other->m_pmutex;
+                    m_locked = other->m_locked;
+                    other->m_pmutex = NULL;
+                    other->m_locked = false;
+                }
+                bool owns_lock() const { return m_locked; }
+                void lock() {
+                    if (m_pmutex == NULL || m_locked) 
+                        throw std::runtime_error("unboost::unique_lock");
+                    m_pmutex->lock();
+                    m_locked = true;
+                }
+                bool try_lock() {
+                    if (m_pmutex == NULL || m_locked) 
+                        throw std::runtime_error("unboost::unique_lock");
+                    return mutex()->try_lock();
+                }
+                void unlock() {
+                    if (m_pmutex == NULL || !m_locked)
+                        throw std::runtime_error("unboost::unique_lock");
+                    mutex()->unlock();
+                    m_locked = false;
+                }
+                mutex_type *mutex() const { return m_pmutex; }
+                mutex_type *release() {
+                    mutex_type *m = m_pmutex;
+                    m_pmutex = NULL;
+                    m_locked = false;
+                    return m;
+                }
+                void swap(unique_lock<Mutex>& other) {
+                    std::swap(m_pmutex, other.m_pmutex);
+                    std::swap(m_locked, other.m_locked);
+                }
+            protected:
+                mutex_type *m_pmutex;
+                bool m_locked;
+            }; // class unique_lock
+            template <class Mutex>
+            void swap(unique_lock<Mutex>& ul1, unique_lock<Mutex>& ul2) {
+                ul1.swap(ul2);
+            }
+        } // namespace unboost
     #endif
 #endif
 

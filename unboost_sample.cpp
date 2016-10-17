@@ -59,7 +59,7 @@
 
 #if defined(UNBOOST_USE_THREAD) && defined(UNBOOST_USE_MUTEX)
     int n = 0;
-    unboost::mutex my_mutex;
+    unboost::timed_mutex my_mutex;
     unboost::chrono::milliseconds interval1(100);
     unboost::chrono::milliseconds interval2(200);
     void mutex_test_thread_proc1(void) {
