@@ -3,3 +3,5 @@
 *.tds
 *.exe
 a.txt
+CMakeFiles
+CMakeCache.txt
