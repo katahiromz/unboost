@@ -2324,11 +2324,15 @@
 
                 unique_lock(mutex_type& m, adopt_lock_t) :
                     m_pmutex(&m), m_locked(true) { }
-                ~unique_lock() { 
+                ~unique_lock() {
                     if (m_locked && m_pmutex)
                         m_pmutex->unlock();
                 }
+
+                bool owns_lock() const { return m_locked; }
+                mutex_type *mutex() const { return m_pmutex; }
                 explicit operator bool() const { return owns_lock(); }
+
                 void move_assignment(unique_lock& other) {
                     if (m_pmutex && m_locked)
                         m_pmutex->lock();
@@ -2337,9 +2341,6 @@
                     other->m_pmutex = NULL;
                     other->m_locked = false;
                 }
-
-                bool owns_lock() const { return m_locked; }
-                mutex_type *mutex() const { return m_pmutex; }
 
                 void lock() {
                     if (m_pmutex == NULL || m_locked) 
