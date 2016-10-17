@@ -99,6 +99,27 @@
             #define UNBOOST_USE_POSIX_CHRONO
         #endif
     #endif
+
+    #ifndef UNBOOST_USE_THREAD
+        #define UNBOOST_USE_THREAD
+    #endif
+    #ifdef UNBOOST_USE_CXX11_MUTEX
+        #ifndef UNBOOST_USE_CXX11_THREAD
+            #define UNBOOST_USE_CXX11_THREAD
+        #endif
+    #elif defined(UNBOOST_USE_BOOST_MUTEX)
+        #ifndef UNBOOST_USE_BOOST_THREAD
+            #define UNBOOST_USE_BOOST_THREAD
+        #endif
+    #elif defined(UNBOOST_USE_WIN32_MUTEX)
+        #ifndef UNBOOST_USE_WIN32_THREAD
+            #define UNBOOST_USE_WIN32_THREAD
+        #endif
+    #elif defined(UNBOOST_USE_POSIX_MUTEX)
+        #ifndef UNBOOST_USE_POSIX_THREAD
+            #define UNBOOST_USE_POSIX_THREAD
+        #endif
+    #endif
 #endif
 
 #ifdef UNBOOST_USE_THREAD
@@ -2169,36 +2190,26 @@
             class mutex {
             public:
                 typedef HANDLE native_handle_type;
-                mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)), m_locked(false) {
+                mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)) {
                     if (m_hMutex == NULL)
                         throw std::runtime_error("unboost::mutex");
                 }
                 virtual ~mutex() {
-                    if (m_locked) {
-                        unlock();
-                    }
+                    unlock();
                     ::CloseHandle(m_hMutex);
                 }
                 native_handle_type native_handle() { return m_hMutex; }
                 void lock() {
-                    assert(!m_locked);
-                    m_locked = true;
                     ::WaitForSingleObject(m_hMutex, INFINITE);
                 }
                 void unlock() {
-                    assert(m_locked);
                     ::ReleaseMutex(m_hMutex);
-                    m_locked = false;
                 }
                 bool try_lock() {
-                    assert(!m_locked);
-                    m_locked =
-                        (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0);
-                    return m_locked;
+                    return (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0);
                 }
             protected:
                 native_handle_type  m_hMutex;
-                bool                m_locked;
             private:
                 mutex(const mutex&);
                 mutex& operator=(const mutex&);
@@ -2233,49 +2244,6 @@
                 timed_mutex(const timed_mutex&);
                 timed_mutex& operator=(const timed_mutex&);
             }; // class timed_mutex
-            class recursive_mutex {
-            public:
-                typedef HANDLE native_handle_type;
-                recursive_mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)),
-                                    m_lock_count(0)
-                {
-                    if (m_hMutex == NULL)
-                        throw std::runtime_error("unboost::recursive_mutex");
-                }
-                virtual ~recursive_mutex() {
-                    ::CloseHandle(m_hMutex);
-                }
-                native_handle_type native_handle() { return m_hMutex; }
-                void lock() {
-                    ++m_lock_count;
-                    if (m_lock_count == 0) {
-                        ::WaitForSingleObject(m_hMutex, INFINITE);
-                    }
-                }
-                void unlock() {
-                    if (m_lock_count > 0) {
-                        --m_lock_count;
-                        if (m_lock_count == 0)
-                            ::ReleaseMutex(m_hMutex);
-                    }
-                }
-                bool try_lock() {
-                    if (m_lock_count == 0) {
-                        if (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0) {
-                            ++m_lock_count;
-                            return true;
-                        }
-                        return false;
-                    }
-                    return true;
-                }
-            protected:
-                native_handle_type  m_hMutex;
-                int                 m_lock_count;
-            private:
-                recursive_mutex(const recursive_mutex&);
-                recursive_mutex& operator=(const recursive_mutex&);
-            }; // class recursive_mutex
         }; // namespace unboost
     #elif defined(UNBOOST_USE_POSIX_MUTEX)
         #define UNBOOST_DEFINE_LOCK_EXTRA
@@ -2333,49 +2301,6 @@
                 timed_mutex(const timed_mutex&);
                 timed_mutex& operator=(const timed_mutex&);
             }; // class timed_mutex
-            class recursive_mutex {
-            public:
-                typedef pthread_mutex_t native_handle_type;
-                recursive_mutex() : m_hMutex(PTHREAD_MUTEX_INITIALIZER),
-                                    m_lock_count(0)
-                {
-                    if (m_hMutex == NULL)
-                        throw std::runtime_error("unboost::recursive_mutex");
-                }
-                virtual ~recursive_mutex() {
-                    pthread_mutex_destroy(&m_mutex);
-                }
-                native_handle_type native_handle() { return m_mutex; }
-                void lock() {
-                    ++m_lock_count;
-                    if (m_lock_count == 0) {
-                        pthread_mutex_lock(&m_mutex);
-                    }
-                }
-                void unlock() {
-                    if (m_lock_count > 0) {
-                        --m_lock_count;
-                        if (m_lock_count == 0)
-                            pthread_mutex_unlock(&m_mutex);
-                    }
-                }
-                bool try_lock() {
-                    if (m_lock_count == 0) {
-                        if (pthread_mutex_trylock(&m_mutex) != EBUSY) {
-                            ++m_lock_count;
-                            return true;
-                        }
-                        return false;
-                    }
-                    return true;
-                }
-            protected:
-                native_handle_type  m_mutex;
-                int                 m_lock_count;
-            private:
-                recursive_mutex(const recursive_mutex&);
-                recursive_mutex& operator=(const recursive_mutex&);
-            }; // class recursive_mutex
         } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
@@ -2385,6 +2310,7 @@
             struct defer_lock_t { };
             struct try_to_lock_t { };
             struct adopt_lock_t { };
+
             template <class Mutex>
             class unique_lock {
             public:
