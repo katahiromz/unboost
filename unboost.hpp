@@ -2194,10 +2194,7 @@
                     if (m_hMutex == NULL)
                         throw std::runtime_error("unboost::mutex");
                 }
-                virtual ~mutex() {
-                    unlock();
-                    ::CloseHandle(m_hMutex);
-                }
+                virtual ~mutex() { ::CloseHandle(m_hMutex); }
                 native_handle_type native_handle() { return m_hMutex; }
                 void lock() {
                     ::WaitForSingleObject(m_hMutex, INFINITE);
@@ -2257,11 +2254,11 @@
             class mutex {
             public:
                 typedef pthread_mutex_t native_handle_type;
-                mutex() { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
-                ~mutex() { pthread_mutex_destroy(&m_mutex); }
+                mutex()         { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
+                ~mutex()        { pthread_mutex_destroy(&m_mutex); }
                 native_handle_type native_handle() { return m_mutex; }
-                void lock() { pthread_mutex_lock(&m_mutex); }
-                void unlock() { pthread_mutex_unlock(&m_mutex); }
+                void lock()     { pthread_mutex_lock(&m_mutex); }
+                void unlock()   { pthread_mutex_unlock(&m_mutex); }
                 bool try_lock() {
                     return pthread_mutex_trylock(&m_mutex) != EBUSY;
                 }
