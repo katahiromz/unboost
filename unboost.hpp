@@ -2237,6 +2237,11 @@
                 //{
                 //    // FIXME
                 //}
+                //bool try_lock_until(
+                //    const unboost::chrono::auto_time_point& timeout_time)
+                //{
+                //    // FIXME
+                //}
             private:
                 timed_mutex(const timed_mutex&);
                 timed_mutex& operator=(const timed_mutex&);
@@ -2291,6 +2296,11 @@
                 //bool try_lock_until(
                 //    const unboost::chrono::time_point<Clock, Duration>&
                 //    timeout_time)
+                //{
+                //    // FIXME
+                //}
+                //bool try_lock_until(
+                //    const unboost::chrono::auto_time_point& timeout_time)
                 //{
                 //    // FIXME
                 //}
