@@ -3001,6 +3001,48 @@
 #endif  // def UNBOOST_USE_ASSERT
 
 //////////////////////////////////////////////////////////////////////////////
+// emplace
+
+#ifndef UNBOOST_EMPLACE
+    #ifdef UNBOOST_CXX11
+        #define UNBOOST_EMPLACE(type, obj, ...) \
+            (obj).emplace(__VA_ARGS__)
+        #define UNBOOST_EMPLACE_FRONT(type, obj, ...) \
+            (obj).emplace_front(__VA_ARGS__)
+        #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
+            (obj).emplace_back(__VA_ARGS__)
+    #else
+        #define UNBOOST_EMPLACE(type, obj, ...) \
+            (obj).insert(type(__VA_ARGS__))
+        #define UNBOOST_EMPLACE_FRONT(type, obj, ...) \
+            (obj).push_front(type(__VA_ARGS__))
+        #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
+            (obj).push_back(type(__VA_ARGS__))
+    #endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// safe delete and safe release
+
+#ifndef UNBOOST_SAFE_DELETE
+    #define UNBOOST_SAFE_DELETE(pobj) do { \
+        delete (pobj); \
+        (pobj) = NULL; \
+    } while (0)
+    #define UNBOOST_SAFE_DELETE_ARRAY(parray) do { \
+        delete[] (parray); \
+        (parray) = NULL; \
+    } while (0)
+#endif
+
+#ifndef UNBOOST_SAFE_RELEASE
+    #define UNBOOST_SAFE_RELEASE(pobj) do { \
+        (pobj)->Release(); \
+        (pobj) = NULL; \
+    } while (0)
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 
 #endif  // ndef UNBOOST_HPP_
 
