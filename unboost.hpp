@@ -2314,16 +2314,14 @@
                 typedef Mutex mutex_type;
                 unique_lock() : m_pmutex(NULL), m_locked(false) { }
                 explicit unique_lock(mutex_type& m) : m_pmutex(&m), m_locked(true)
-                {
-                    m_pmutex->lock();
-                }
+                { m_pmutex->lock(); }
+
                 unique_lock(mutex_type& m, defer_lock_t) :
                     m_pmutex(&m), m_locked(false) { }
                 unique_lock(mutex_type& m, try_to_lock_t) :
                     m_pmutex(&m), m_locked(false)
-                {
-                    m_locked = m_pmutex->try_lock();
-                }
+                { m_locked = m_pmutex->try_lock(); }
+
                 unique_lock(mutex_type& m, adopt_lock_t) :
                     m_pmutex(&m), m_locked(true) { }
                 ~unique_lock() { 
