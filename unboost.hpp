@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    15 // Version 15
+#define UNBOOST_HPP_    16 // Version 16
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
@@ -81,22 +81,22 @@
 #ifdef UNBOOST_USE_MUTEX
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
-        #ifdef UNBOOST_USE_CXX11_MUTEX
-            #ifndef UNBOOST_USE_CXX11_CHRONO
-                #define UNBOOST_USE_CXX11_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_BOOST_MUTEX)
-            #ifndef UNBOOST_USE_BOOST_CHRONO
-                #define UNBOOST_USE_BOOST_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_WIN32_MUTEX)
-            #ifndef UNBOOST_USE_WIN32_CHRONO
-                #define UNBOOST_USE_WIN32_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_POSIX_MUTEX)
-            #ifndef UNBOOST_USE_POSIX_CHRONO
-                #define UNBOOST_USE_POSIX_CHRONO
-            #endif
+    #endif
+    #ifdef UNBOOST_USE_CXX11_MUTEX
+        #ifndef UNBOOST_USE_CXX11_CHRONO
+            #define UNBOOST_USE_CXX11_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_BOOST_MUTEX)
+        #ifndef UNBOOST_USE_BOOST_CHRONO
+            #define UNBOOST_USE_BOOST_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_WIN32_MUTEX)
+        #ifndef UNBOOST_USE_WIN32_CHRONO
+            #define UNBOOST_USE_WIN32_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_POSIX_MUTEX)
+        #ifndef UNBOOST_USE_POSIX_CHRONO
+            #define UNBOOST_USE_POSIX_CHRONO
         #endif
     #endif
 #endif
@@ -104,22 +104,22 @@
 #ifdef UNBOOST_USE_THREAD
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
-        #ifdef UNBOOST_USE_CXX11_THREAD
-            #ifndef UNBOOST_USE_CXX11_CHRONO
-                #define UNBOOST_USE_CXX11_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_BOOST_THREAD)
-            #ifndef UNBOOST_USE_BOOST_CHRONO
-                #define UNBOOST_USE_BOOST_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_WIN32_THREAD)
-            #ifndef UNBOOST_USE_WIN32_CHRONO
-                #define UNBOOST_USE_WIN32_CHRONO
-            #endif
-        #elif defined(UNBOOST_USE_POSIX_THREAD)
-            #ifndef UNBOOST_USE_POSIX_CHRONO
-                #define UNBOOST_USE_POSIX_CHRONO
-            #endif
+    #endif
+    #ifdef UNBOOST_USE_CXX11_THREAD
+        #ifndef UNBOOST_USE_CXX11_CHRONO
+            #define UNBOOST_USE_CXX11_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_BOOST_THREAD)
+        #ifndef UNBOOST_USE_BOOST_CHRONO
+            #define UNBOOST_USE_BOOST_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_WIN32_THREAD)
+        #ifndef UNBOOST_USE_WIN32_CHRONO
+            #define UNBOOST_USE_WIN32_CHRONO
+        #endif
+    #elif defined(UNBOOST_USE_POSIX_THREAD)
+        #ifndef UNBOOST_USE_POSIX_CHRONO
+            #define UNBOOST_USE_POSIX_CHRONO
         #endif
     #endif
 #endif
@@ -127,18 +127,18 @@
 #ifdef UNBOOST_USE_CHRONO
     #ifndef UNBOOST_USE_RATIO
         #define UNBOOST_USE_RATIO
-        #ifdef UNBOOST_USE_CXX11_CHRONO
-            #ifndef UNBOOST_USE_CXX11_RATIO
-                #define UNBOOST_USE_CXX11_RATIO
-            #endif
-        #elif defined(UNBOOST_USE_BOOST_CHRONO)
-            #ifndef UNBOOST_USE_BOOST_RATIO
-                #define UNBOOST_USE_BOOST_RATIO
-            #endif
-        #else
-            #ifndef UNBOOST_USE_UNBOOST_RATIO
-                #define UNBOOST_USE_UNBOOST_RATIO
-            #endif
+    #endif
+    #ifdef UNBOOST_USE_CXX11_CHRONO
+        #ifndef UNBOOST_USE_CXX11_RATIO
+            #define UNBOOST_USE_CXX11_RATIO
+        #endif
+    #elif defined(UNBOOST_USE_BOOST_CHRONO)
+        #ifndef UNBOOST_USE_BOOST_RATIO
+            #define UNBOOST_USE_BOOST_RATIO
+        #endif
+    #else
+        #ifndef UNBOOST_USE_UNBOOST_RATIO
+            #define UNBOOST_USE_UNBOOST_RATIO
         #endif
     #endif
 #endif
@@ -880,6 +880,44 @@
 // ratio
 
 #ifdef UNBOOST_USE_RATIO
+    namespace unboost {
+        // NOTE: unboost::intmax_t is 32-bit
+        typedef int intmax_t;
+        typedef unsigned int uintmax_t;
+
+        template <intmax_t N>
+        struct _SIGN {
+            enum { value = (N < 0 ? -1 : 1) };
+        };
+
+        template <intmax_t N>
+        struct _ABS {
+            enum { value = (N < 0 ? -N : N) };
+        };
+
+        template <intmax_t A, intmax_t B>
+        struct _GCD {
+            enum { value = _GCD<B, A % B>::value };
+        };
+        template <intmax_t A>
+        struct _GCD<A, 0> {
+            enum { value = A };
+        };
+        template <intmax_t B>
+        struct _GCD<0, B> {
+            enum { value = B };
+        };
+
+        inline intmax_t _gcd(intmax_t x, intmax_t y) {
+            if (x == 0 && y == 0)
+                return 1;
+            if (x == 0)
+                return y;
+            if (y == 0)
+                return x;
+            return _gcd(y, x % y);
+        }
+    } // namespace unboost
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_RATIO) + defined(UNBOOST_USE_BOOST_RATIO) + defined(UNBOOST_USE_UNBOOST_RATIO)) == 0)
         #ifdef UNBOOST_USE_CXX11
@@ -968,10 +1006,6 @@
     #elif defined(UNBOOST_USE_UNBOOST_RATIO)
         #include <algorithm>    // for std::swap
         namespace unboost {
-            // NOTE: unboost::intmax_t is 32-bit
-            typedef int intmax_t;
-            typedef unsigned int uintmax_t;
-
             template <class T, T v>
             struct integral_constant {
                 static const T value;
@@ -981,29 +1015,6 @@
             };
             template <class T, T v>
             const T integral_constant<T,v>::value = v;
-
-            template <intmax_t N>
-            struct _SIGN {
-                enum { value = (N < 0 ? -1 : 1) };
-            };
-
-            template <intmax_t N>
-            struct _ABS {
-                enum { value = (N < 0 ? -N : N) };
-            };
-
-            template <intmax_t A, intmax_t B>
-            struct _GCD {
-                enum { value = _GCD<B, A % B>::value };
-            };
-            template <intmax_t A>
-            struct _GCD<A, 0> {
-                enum { value = A };
-            };
-            template <intmax_t B>
-            struct _GCD<0, B> {
-                enum { value = B };
-            };
 
             template <intmax_t Num, intmax_t Den = 1>
             class ratio {
@@ -1277,7 +1288,7 @@
 
 #ifdef UNBOOST_USE_CHRONO
     // If not choosed, choose one
-    #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO)) == 0)
+    #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_CHRONO
         #elif defined(UNBOOST_USE_BOOST)
@@ -1293,14 +1304,14 @@
                     #ifdef _WIN32
                         #define UNBOOST_USE_WIN32_CHRONO
                     #else
-                        #define UNBOOST_USE_BOOST_CHRONO
+                        #define UNBOOST_USE_POSIX_CHRONO
                     #endif
                 #endif
             #else
                 #ifdef _WIN32
                     #define UNBOOST_USE_WIN32_CHRONO
                 #else
-                    #define UNBOOST_USE_BOOST_CHRONO
+                    #define UNBOOST_USE_POSIX_CHRONO
                 #endif
             #endif
         #endif
@@ -1350,9 +1361,11 @@
             } // namespace chrono
         } // namespace unboost
         #define unboost_auto_duration auto
-    #elif defined(UNBOOST_USE_WIN32_CHRONO)
-        #ifndef _INC_WINDOWS
-            #include <windows.h>
+    #elif defined(UNBOOST_USE_WIN32_CHRONO) || defined(UNBOOST_USE_POSIX_CHRONO)
+        #ifdef _WIN32
+            #ifndef _INC_WINDOWS
+                #include <windows.h>
+            #endif
         #endif
         #include <limits>
         #include <cfloat>
@@ -1559,7 +1572,7 @@
                 }
 
                 inline auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs) {
-                    auto_ratio ar(1, _Gcd(lhs.m_period.den, rhs.m_period.den));
+                    auto_ratio ar(1, _gcd(lhs.m_period.den, rhs.m_period.den));
                     auto_duration ret(0, ar);
                     ret += lhs;
                     ret += rhs;
@@ -1621,112 +1634,13 @@
                     return ad;
                 }
 
-                //template <typename Clock, typename Dur = typename Clock::duration>
-                //struct time_point {
-                //    typedef Clock                       clock;
-                //    typedef Dur                         duration;
-                //    typedef typename duration::rep      rep;
-                //    typedef typename duration::period   period;
-                //    typedef time_point<Clock, Dur>      type;
-                //
-                //    time_point() : m_d(duration::zero()) { }
-                //
-                //    explicit time_point(const duration& dur) : m_d(dur) { }
-                //
-                //    template<typename Dur2>
-                //    time_point(const time_point<clock, Dur2>& t)
-                //        : m_d(duration_cast<Dur>(t.time_since_epoch())) { }
-                //
-                //    duration time_since_epoch() const { return m_d; }
-                //
-                //    type& operator+=(const duration& dur) {
-                //        m_d += dur;
-                //        return *this;
-                //    }
-                //    type& operator-=(const duration& dur) {
-                //        m_d -= dur;
-                //        return *this;
-                //    }
-                //    static type min() {
-                //        return type(duration::min());
-                //    }
-                //    static type max() {
-                //        return type(duration::max());
-                //    }
-                //
-                //    friend duration operator-(const type& tp1, const type& tp2) {
-                //        return duration(tp1.m_d.count() - tp2.m_d.count());
-                //    }
-                //    friend duration operator+(const type& tp, const duration& d) {
-                //        type ntp(tp);
-                //        ntp += d;
-                //        return ntp;
-                //    }
-                //
-                //protected:
-                //    duration m_d;
-                //};
-                //
-                //template <typename TP, typename Clock2, typename Dur2>
-                //TP time_point_cast(const time_point<Clock2, Dur2>& t) {
-                //    typedef time_point<Clock2, typename TP::duration> TP2;
-                //    return TP2(duration_cast<typename TP::duration>(t.time_since_epoch()));
-                //}
-                //
-                //struct system_clock {
-                //    typedef duration<uintmax_t, ratio<1, 10000000> >  duration;
-                //    typedef duration::rep               rep;
-                //    typedef duration::period            period;
-                //    typedef time_point<system_clock>    time_point;
-                //    static const bool is_steady = false;
-                //
-                //    static uintmax_t epoch() {
-                //        SYSTEMTIME st;
-                //        FILETIME ft;
-                //        ULARGE_INTEGER uli;
-                //        ZeroMemory(&st, sizeof(st));
-                //        st.wYear = 1601;
-                //        st.wMonth = 1;
-                //        st.wDay = 1;
-                //        ::SystemTimeToFileTime(&st, &ft);
-                //        uli.LowPart = ft.dwLowDateTime;
-                //        uli.HighPart = ft.dwHighDateTime;
-                //        return uli.QuadPart;
-                //    }
-                //
-                //    static time_point now() {
-                //        SYSTEMTIME st;
-                //        FILETIME ft;
-                //        ULARGE_INTEGER uli;
-                //        ::GetSystemTime(&st);
-                //        ::SystemTimeToFileTime(&st, &ft);
-                //        uli.LowPart = ft.dwLowDateTime;
-                //        uli.HighPart = ft.dwHighDateTime;
-                //        duration d(uli.QuadPart - epoch());
-                //        return time_point(d);
-                //    }
-                //
-                //    static std::time_t to_time_t(const time_point& t) {
-                //        return std::time_t(duration_cast<seconds>(t.time_since_epoch()).count());
-                //    }
-                //    //static time_point from_time_t(std::time_t t) {
-                //    //    typedef chrono::time_point<system_clock, seconds> from;
-                //    //    return time_point_cast<system_clock::duration>(from(chrono::seconds(t)));
-                //    //}
-                //}; // struct system_clock
-                //
-                //struct steady_clock {
-                //    typedef duration<DWORD, milliseconds>       duration;
-                //    typedef duration::rep                       rep;
-                //    typedef duration::period                    period;
-                //    typedef time_point<steady_clock>            time_point;
-                //    static const bool is_steady = true;
-                //
-                //    static time_point now() {
-                //        duration d(::GetTickCount());
-                //        return time_point(d);
-                //    }
-                //}; // struct steady_clock
+                #ifdef UNBOOST_USE_WIN32_CHRONO
+                    // FIXME: define time_point
+                #elif defined(UNBOOST_USE_POSIX_CHRONO)
+                    // FIXME: define time_point
+                #else
+                    #error You lose.
+                #endif
             } // namespace chrono
         } // namespace unboost
         #define unboost_auto_duration unboost::chrono::auto_duration
@@ -1740,7 +1654,7 @@
 
 #ifdef UNBOOST_USE_THREAD
     // If not choosed, choose one
-    #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) == 0)
+    #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) + defined(UNBOOST_USE_POSIX_THREAD) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_THREAD
         #elif defined(UNBOOST_USE_BOOST)
@@ -1748,7 +1662,7 @@
         #else
             #ifdef UNBOOST_CXX11    // C++11
                 #define UNBOOST_USE_CXX11_THREAD
-            #elif defined(_MSC_VER)
+            #elif defined(_WIN32)
                 #if (_MSC_VER >= 1800)
                     // Visual C++ 2013 and later
                     #define UNBOOST_USE_CXX11_THREAD
@@ -1756,11 +1670,7 @@
                     #define UNBOOST_USE_WIN32_THREAD
                 #endif
             #else
-                #ifdef _WIN32
-                    #define UNBOOST_USE_WIN32_THREAD
-                #else
-                    #define UNBOOST_USE_BOOST_THREAD
-                #endif
+                #define UNBOOST_USE_POSIX_THREAD
             #endif
         #endif
     #endif
@@ -1802,7 +1712,6 @@
                     FUNC        m_func;
                     THREAD_DATA_ARG0(FUNC func) : m_func(func) { }
                 };
-
                 template <class FUNC>
                 static unsigned __stdcall thread_function_arg0(void *ptr) {
                     THREAD_DATA_ARG0<FUNC> *data;
@@ -1811,7 +1720,6 @@
                     delete data;
                     return 0;
                 }
-
                 template <class FUNC, class ARG1>
                 struct THREAD_DATA_ARG1 {
                     FUNC        m_func;
@@ -1819,7 +1727,6 @@
                     THREAD_DATA_ARG1(FUNC func, ARG1 arg1) :
                         m_func(func), m_arg1(arg1) { }
                 };
-
                 template <class FUNC, class ARG1>
                 static unsigned __stdcall thread_function_arg1(void *ptr) {
                     THREAD_DATA_ARG1<FUNC, ARG1> *data;
@@ -1828,7 +1735,6 @@
                     delete data;
                     return 0;
                 }
-
                 template <class FUNC, class ARG1, class ARG2>
                 struct THREAD_DATA_ARG2 {
                     FUNC        m_func;
@@ -1837,7 +1743,6 @@
                     THREAD_DATA_ARG2(FUNC func, ARG1 arg1, ARG2 arg2) :
                         m_func(func), m_arg1(arg1), m_arg2(arg2) { }
                 };
-
                 template <class FUNC, class ARG1, class ARG2>
                 static unsigned __stdcall thread_function_arg2(void *ptr) {
                     THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
@@ -1846,7 +1751,6 @@
                     delete data;
                     return 0;
                 }
-
                 template <class FUNC, class ARG1, class ARG2, class ARG3>
                 struct THREAD_DATA_ARG3 {
                     FUNC        m_func;
@@ -1856,7 +1760,6 @@
                     THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
                         m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
                 };
-
                 template <class FUNC, class ARG1, class ARG2, class ARG3>
                 static unsigned __stdcall thread_function_arg3(void *ptr) {
                     THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
@@ -1868,6 +1771,12 @@
 
             public:
                 thread() : m_hThread(NULL), m_id() {}
+                ~thread() {
+                    if (m_hThread) {
+                        ::CloseHandle(m_hThread);
+                        std::terminate();
+                    }
+                }
 
                 template <class FUNC>
                 thread(FUNC func) : m_hThread(NULL), m_id() {
@@ -1881,7 +1790,6 @@
                         throw std::runtime_error("unboost::thread");
                     }
                 }
-
                 template <class FUNC, class ARG1>
                 thread(FUNC func, ARG1 arg1) : m_hThread(NULL), m_id() {
                     THREAD_DATA_ARG1<FUNC, ARG1> *data;
@@ -1894,7 +1802,6 @@
                         throw std::runtime_error("unboost::thread");
                     }
                 }
-
                 template <class FUNC, class ARG1, class ARG2>
                 thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_hThread(NULL), m_id() {
                     THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
@@ -1907,7 +1814,6 @@
                         throw std::runtime_error("unboost::thread");
                     }
                 }
-
                 template <class FUNC, class ARG1, class ARG2, class ARG3>
                 thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) :
                     m_hThread(NULL), m_id()
@@ -1923,32 +1829,18 @@
                     }
                 }
 
-                ~thread() {
-                    if (m_hThread) {
-                        ::CloseHandle(m_hThread);
-                        std::terminate();
-                    }
-                }
-
-                id get_id() const {
-                    return m_id;
-                }
-
-                native_handle_type native_handle() {
-                    return m_hThread;
-                }
-
-                bool joinable() {
-                    return m_id != id();
-                }
+                id get_id() const { return m_id; }
+                native_handle_type native_handle() { return m_hThread; }
+                bool joinable() { return m_id != id(); }
 
                 void join() {
                     if (joinable()) {
                         ::WaitForSingleObject(m_hThread, INFINITE);
-                        detach();
+                        ::CloseHandle(m_hThread);
+                        m_hThread = NULL;
+                        m_id = id();
                     }
                 }
-
                 void detach() {
                     if (m_hThread) {
                         ::CloseHandle(m_hThread);
@@ -1961,7 +1853,6 @@
                     std::swap(m_hThread, other.m_hThread);
                     std::swap(m_id, other.m_id);
                 }
-
                 friend void swap(thread& x, thread& y) {
                     x.swap(y);
                 }
@@ -1971,11 +1862,9 @@
                     ::GetSystemInfo(&info);
                     return info.dwNumberOfProcessors;
                 }
-
             protected:
                 HANDLE  m_hThread;
                 id      m_id;
-
             private:
                 thread(const thread&);
                 thread& operator=(const thread&);
@@ -1987,22 +1876,239 @@
                     return i;
                 }
                 template <class Rep, class Period>
-                inline void sleep_for(const chrono::duration<Rep,Period>& sleep_duration) {
+                inline void sleep_for(const unboost::chrono::duration<Rep,Period>& sleep_duration) {
                     using namespace unboost::chrono;
-                    auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
                     ::Sleep(ms.count());
                 }
-                inline void sleep_for(const chrono::auto_duration& sleep_duration) {
+                inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
                     using namespace unboost::chrono;
-                    auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
                     ::Sleep(ms.count());
                 }
                 //template <class Clock, class Duration>
-                //void sleep_until(const chrono::time_point<Clock,Duration>& sleep_time) {
+                //inline void sleep_until(const chrono::time_point<Clock, Duration>&
+                //                        sleep_time)
+                //{
                 //    ;
                 //}
-                void yield() {
+                inline void yield() {
                     ::Sleep(0);
+                }
+            } // namespace this_thread
+        } // namespace unboost
+    #elif defined(UNBOOST_USE_POSIX_THREAD)
+        #include <stdexcept>
+        #include <pthread.h>
+        #ifdef _WIN32
+            #ifndef _INC_WINDOWS
+                #include <windows.h>    // for Sleep
+            #endif
+        #else
+            #include <time.h>     // for nanosleep
+        #endif
+        namespace unboost {
+            class thread {
+            public:
+                typedef pthread_t id;
+                typedef pthread_t native_handle_type;
+
+            protected:
+                template <class FUNC>
+                struct THREAD_DATA_ARG0 {
+                    FUNC        m_func;
+                    THREAD_DATA_ARG0(FUNC func) : m_func(func) { }
+                };
+                template <class FUNC>
+                static void *thread_function_arg0(void *ptr) {
+                    THREAD_DATA_ARG0<FUNC> *data;
+                    data = (THREAD_DATA_ARG0<FUNC> *)ptr;
+                    data->m_func();
+                    delete data;
+                    return NULL;
+                }
+
+                template <class FUNC, class ARG1>
+                struct THREAD_DATA_ARG1 {
+                    FUNC        m_func;
+                    ARG1        m_arg1;
+                    THREAD_DATA_ARG1(FUNC func, ARG1 arg1) :
+                        m_func(func), m_arg1(arg1) { }
+                };
+                template <class FUNC, class ARG1>
+                static void *thread_function_arg1(void *ptr) {
+                    THREAD_DATA_ARG1<FUNC, ARG1> *data;
+                    data = (THREAD_DATA_ARG1<FUNC, ARG1> *)ptr;
+                    data->m_func(data->m_arg1);
+                    delete data;
+                    return NULL;
+                }
+
+                template <class FUNC, class ARG1, class ARG2>
+                struct THREAD_DATA_ARG2 {
+                    FUNC        m_func;
+                    ARG1        m_arg1;
+                    ARG2        m_arg2;
+                    THREAD_DATA_ARG2(FUNC func, ARG1 arg1, ARG2 arg2) :
+                        m_func(func), m_arg1(arg1), m_arg2(arg2) { }
+                };
+                template <class FUNC, class ARG1, class ARG2>
+                static void *thread_function_arg2(void *ptr) {
+                    THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
+                    data = (THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *)ptr;
+                    data->m_func(data->m_arg1, data->m_arg2);
+                    delete data;
+                    return NULL;
+                }
+
+                template <class FUNC, class ARG1, class ARG2, class ARG3>
+                struct THREAD_DATA_ARG3 {
+                    FUNC        m_func;
+                    ARG1        m_arg1;
+                    ARG2        m_arg2;
+                    ARG3        m_arg3;
+                    THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
+                        m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
+                };
+                template <class FUNC, class ARG1, class ARG2, class ARG3>
+                static void *thread_function_arg3(void *ptr) {
+                    THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
+                    data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *)ptr;
+                    data->m_func(data->m_arg1, data->m_arg2, data->m_arg3);
+                    delete data;
+                    return NULL;
+                }
+
+            public:
+                thread() : m_id(_PTHREAD_NULL_THREAD) {}
+                ~thread() {
+                    if (m_id) {
+                        detach();
+                        std::terminate();
+                    }
+                }
+
+                template <class FUNC>
+                thread(FUNC func) : m_id() {
+                    THREAD_DATA_ARG0<FUNC> *data;
+                    data = new THREAD_DATA_ARG0<FUNC>(func);
+                    pthread_create(&m_id, NULL,
+                                   thread_function_arg0<FUNC>, data);
+                    if (m_id == 0) {
+                        delete data;
+                        throw std::runtime_error("unboost::thread");
+                    }
+                }
+                template <class FUNC, class ARG1>
+                thread(FUNC func, ARG1 arg1) : m_id() {
+                    THREAD_DATA_ARG1<FUNC, ARG1> *data;
+                    data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
+                    pthread_create(&m_id, NULL,
+                                   thread_function_arg1<FUNC, ARG1>,
+                                   data);
+                    if (m_id == 0) {
+                        delete data;
+                        throw std::runtime_error("unboost::thread");
+                    }
+                }
+                template <class FUNC, class ARG1, class ARG2>
+                thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_id() {
+                    THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
+                    data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
+                    pthread_create(&m_id, NULL,
+                                   thread_function_arg2<FUNC, ARG1, ARG2>,
+                                   data);
+                    if (m_id == 0) {
+                        delete data;
+                        throw std::runtime_error("unboost::thread");
+                    }
+                }
+                template <class FUNC, class ARG1, class ARG2, class ARG3>
+                thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_id()
+                {
+                    THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
+                    data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3>(func, arg1, arg2, arg3);
+                    pthread_create(&m_id, NULL,
+                                   thread_function_arg3<FUNC, ARG1, ARG2, ARG3>,
+                                   data);
+                    if (m_id == 0) {
+                        delete data;
+                        throw std::runtime_error("unboost::thread");
+                    }
+                }
+
+                id get_id() const { return m_id; }
+                native_handle_type native_handle() { return m_id; }
+                bool joinable() { return m_id != id(); }
+
+                void join() {
+                    if (joinable()) {
+                        pthread_join(m_id, NULL);
+                        m_id = id();
+                    }
+                }
+
+                void detach() {
+                    if (m_id) {
+                        pthread_detach(m_id);
+                        m_id = id();
+                    }
+                }
+
+                void swap(thread& other) {
+                    std::swap(m_id, other.m_id);
+                }
+                friend void swap(thread& x, thread& y) {
+                    x.swap(y);
+                }
+
+                static unsigned hardware_concurrency() {
+                    return pthread_num_processors_np();
+                }
+            protected:
+                pthread_t   m_id;
+            private:
+                thread(const thread&);
+                thread& operator=(const thread&);
+            }; // class thread
+
+            namespace this_thread {
+                inline unboost::thread::id get_id() {
+                    return pthread_self();
+                }
+                template <class Rep, class Period>
+                inline void sleep_for(const unboost::chrono::duration<Rep, Period>& sleep_duration) {
+                    using namespace unboost::chrono;
+                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    #ifdef _WIN32
+                        ::Sleep(ms.count());
+                    #else
+                        time_spec spec;
+                        spec.tv_sec = ms.count() / 1000;
+                        spec.tv_nsec = (ms.count() % 1000) * 1000000;
+                        nanosleep(&spec, NULL);
+                    #endif
+                }
+                inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
+                    using namespace unboost::chrono;
+                    unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                    #ifdef _WIN32
+                        ::Sleep(ms.count());
+                    #else
+                        time_spec spec;
+                        spec.tv_sec = ms.count() / 1000;
+                        spec.tv_nsec = (ms.count() % 1000) * 1000000;
+                        nanosleep(&spec, NULL);
+                    #endif
+                }
+                //template <class Clock, class Duration>
+                //inline void sleep_until(const chrono::time_point<Clock, Duration>&
+                //                        sleep_time)
+                //{
+                //    ;
+                //}
+                inline void yield() {
+                    sched_yield();
                 }
             } // namespace this_thread
         } // namespace unboost
@@ -2048,8 +2154,10 @@
         }
     #elif defined(UNBOOST_USE_WIN32_MUTEX)
         #define UNBOOST_DEFINE_UNIQUE_LOCK
-        #ifndef _INC_WINDOWS
-            #include <windows.h>
+        #ifdef _WIN32
+            #ifndef _INC_WINDOWS
+                #include <windows.h>
+            #endif
         #endif
         namespace unboost {
             class mutex {
@@ -2228,14 +2336,16 @@
                     std::swap(m_pmutex, other.m_pmutex);
                     std::swap(m_locked, other.m_locked);
                 }
+                template <class Mutex2>
+                friend void swap(unique_lock<Mutex2>& ul1,
+                                 unique_lock<Mutex2>& ul2)
+                {
+                    ul1.swap(ul2);
+                }
             protected:
                 mutex_type *m_pmutex;
                 bool m_locked;
             }; // class unique_lock
-            template <class Mutex>
-            void swap(unique_lock<Mutex>& ul1, unique_lock<Mutex>& ul2) {
-                ul1.swap(ul2);
-            }
         } // namespace unboost
     #endif
 #endif
