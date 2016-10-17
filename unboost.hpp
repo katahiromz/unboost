@@ -3034,22 +3034,59 @@
 //////////////////////////////////////////////////////////////////////////////
 // safe delete and safe release
 
-#ifndef UNBOOST_SAFE_DELETE
-    #define UNBOOST_SAFE_DELETE(pobj) do { \
-        delete (pobj); \
-        (pobj) = NULL; \
-    } while (0)
-    #define UNBOOST_SAFE_DELETE_ARRAY(parray) do { \
-        delete[] (parray); \
-        (parray) = NULL; \
-    } while (0)
-#endif
+#if 1
+    template <typename TYPE>
+    inline UNBOOST_SAFE_DELETE(TYPE*& pobj) {
+        delete pobj;
+        pobj = NULL;
+    }
 
-#ifndef UNBOOST_SAFE_RELEASE
-    #define UNBOOST_SAFE_RELEASE(pobj) do { \
-        (pobj)->Release(); \
-        (pobj) = NULL; \
-    } while (0)
+    template <typename TYPE>
+    inline UNBOOST_SAFE_DELETE_ARRAY(TYPE*& parray) {
+        delete[] parray;
+        parray = NULL;
+    }
+
+    template <typename TYPE>
+    inline UNBOOST_SAFE_RELEASE(TYPE*& pobj) {
+        pobj->Release();
+        pobj = NULL;
+    }
+
+    #ifdef UNBOOST_USE_SMART_PTR
+        template <typename TYPE>
+        inline UNBOOST_SAFE_DELETE(unboost::shared_ptr<TYPE>& ptr) {
+            ptr.reset();
+        }
+
+        template <typename TYPE>
+        inline UNBOOST_SAFE_DELETE(unboost::unique_ptr<TYPE>& ptr) {
+            ptr.reset();
+        }
+
+        template <typename TYPE>
+        inline UNBOOST_SAFE_DELETE(unboost::weak_ptr<TYPE>& ptr) {
+            ptr.reset();
+        }
+    #endif
+#else
+    #ifndef UNBOOST_SAFE_DELETE
+        #define UNBOOST_SAFE_DELETE(pobj) do { \
+            delete (pobj); \
+            (pobj) = NULL; \
+        } while (0)
+        #define UNBOOST_SAFE_DELETE_ARRAY(parray) do { \
+            delete[] (parray); \
+            (parray) = NULL; \
+        } while (0)
+    #endif
+
+    #ifndef UNBOOST_SAFE_RELEASE
+        #define UNBOOST_SAFE_RELEASE(pobj) do { \
+            (pobj)->Release(); \
+            (pobj) = NULL; \
+        } while (0)
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
