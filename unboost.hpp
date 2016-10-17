@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    16 // Version 16
+#define UNBOOST_HPP_    17 // Version 17
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
