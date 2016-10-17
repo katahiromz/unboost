@@ -2337,7 +2337,10 @@
                     other->m_pmutex = NULL;
                     other->m_locked = false;
                 }
+
                 bool owns_lock() const { return m_locked; }
+                mutex_type *mutex() const { return m_pmutex; }
+
                 void lock() {
                     if (m_pmutex == NULL || m_locked) 
                         throw std::runtime_error("unboost::unique_lock");
@@ -2355,7 +2358,6 @@
                     mutex()->unlock();
                     m_locked = false;
                 }
-                mutex_type *mutex() const { return m_pmutex; }
                 mutex_type *release() {
                     mutex_type *m = m_pmutex;
                     m_pmutex = NULL;
