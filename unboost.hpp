@@ -16,6 +16,10 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
+#ifdef UNBOOST_USE_ASSERT
+    #include <unboost/assert.hpp>
+#endif
+
 #ifdef UNBOOST_USE_STATIC_ASSERT
     #include <unboost/static_assert.hpp>
 #endif
@@ -82,10 +86,6 @@
 
 #ifdef UNBOOST_USE_STRING_ALGORITHM
     #include <unboost/string_algorithm.hpp>
-#endif
-
-#ifdef UNBOOST_USE_ASSERT
-    #include <unboost/assert.hpp>
 #endif
 
 #ifdef UNBOOST_USE_FILESYSTEM
