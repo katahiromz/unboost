@@ -4,6 +4,8 @@
 #ifndef UNBOOST_COMPLEX_FUNCTIONS_HPP_
 #define UNBOOST_COMPLEX_FUNCTIONS_HPP_
 
+#include <cmath>
+#include <complex>
 #include <unboost/core.hpp>
 
 // If not choosed, choose one
@@ -20,8 +22,7 @@
         #endif
     #endif
 #endif
-#include <cmath>
-#include <complex>
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS
     namespace unboost {

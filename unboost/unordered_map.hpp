@@ -31,6 +31,7 @@
         #endif
     #endif
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_UNORDERED_MAP
     #include <unordered_map>            // for std::unordered_map, ...

@@ -11,6 +11,7 @@
         #define UNBOOST_USE_BOOST_ASSERT
     #endif
 #endif
+
 #if defined(UNBOOST_USE_BOOST_ASSERT)
     #ifdef UNBOOST_DISABLE_ASSERTS
         #define BOOST_DISABLE_ASSERTS

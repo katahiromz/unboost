@@ -20,6 +20,7 @@
         #endif
     #endif
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_STATIC_ASSERT
     // static_assert is available

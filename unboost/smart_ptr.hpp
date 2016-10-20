@@ -36,6 +36,7 @@
         #endif
     #endif  // ndef UNBOOST_USE_CXX11
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_SMART_PTR
     #include <memory>       // for std::shared_ptr, ...
@@ -583,7 +584,7 @@
             lhs.swap(rhs);
         }
 
-        // fIXME: hash
+        // FIXME: hash
 
         template <typename T>
         class weak_ptr : public _ptr_base<T> {
@@ -595,4 +596,4 @@
     #error Your compiler is not supported yet. You lose.
 #endif
 
-#ifndef UNBOOST_SMART_PTR_HPP_
+#endif  // ndef UNBOOST_SMART_PTR_HPP_

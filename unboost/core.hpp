@@ -4,10 +4,11 @@
 #ifndef UNBOOST_CORE_HPP_
 #define UNBOOST_CORE_HPP_
 
-#include <cassert>  // for the assert macro
-#include <string>   // for std::string and std::wstring, ...
-#include <vector>   // for std::vector
-#include <iostream> // for std::cout, std::endl, ...
+#include <cassert>      // for the assert macro
+#include <string>       // for std::string and std::wstring, ...
+#include <vector>       // for std::vector
+#include <iostream>     // for std::cout, std::endl, ...
+#include <algorithm>    // for std::swap
 
 //////////////////////////////////////////////////////////////////////////////
 // Use all?
@@ -232,8 +233,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // swapping
-
-#include <algorithm>    // for std::swap
 
 namespace unboost {
     using std::swap;

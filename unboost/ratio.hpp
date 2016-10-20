@@ -44,6 +44,7 @@ namespace unboost {
         return _gcd(y, x % y);
     }
 } // namespace unboost
+
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_RATIO) + defined(UNBOOST_USE_BOOST_RATIO) + defined(UNBOOST_USE_UNBOOST_RATIO)) == 0)
     #ifdef UNBOOST_USE_CXX11
@@ -54,6 +55,7 @@ namespace unboost {
         #define UNBOOST_USE_UNBOOST_RATIO
     #endif
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_RATIO
     #include <ratio>

@@ -4,6 +4,9 @@
 #ifndef UNBOOST_CONVERSION_HPP_
 #define UNBOOST_CONVERSION_HPP_
 
+#include <cstdlib>
+#include <string>       // for std::string, std::wstring
+#include <sstream>      // for std::stringstream
 #include <unboost/core.hpp>
 
 // If not choosed, choose one
@@ -27,9 +30,7 @@
         #endif
     #endif
 #endif
-#include <cstdlib>
-#include <string>       // for std::string, std::wstring
-#include <sstream>      // for std::stringstream
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_CONVERSION
     #include <typeinfo> // for std::bad_cast

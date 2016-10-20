@@ -20,6 +20,7 @@
         #endif
     #endif
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_FOREACH
     #define UNBOOST_FOREACH(x,y) for (x : y)

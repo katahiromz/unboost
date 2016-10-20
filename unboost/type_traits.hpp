@@ -16,6 +16,7 @@
         #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #endif
 #endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
     #include <utility>          // for std::move
@@ -292,15 +293,16 @@
         #define UNBOOST_RVALREF(value)      (value).m_ref
 
         template <typename T>
-        struct remove_reference { typedef T type; }
+        struct remove_reference { typedef T type; };
         template <typename T>
-        struct remove_reference<T&> { typedef T type; }
+        struct remove_reference<T&> { typedef T type; };
         template <typename T>
-        struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; }
+        struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; };
 
         template <typename T>
-        inline typename rvalue_ref<remove_reference<T>::type> move(T& t) {
-            rvalue_ref ref(t);
+        inline rvalue_ref<typename remove_reference<T>::type>
+        move(T& t) {
+            rvalue_ref<T> ref(t);
             return ref;
         }
 
@@ -332,8 +334,8 @@
 
         template <typename T>
         struct remove_cv {
-            typedef typename remove_volatile<
-                typename remove_const<T>::type>::type type;
+            typedef typename remove_const<T>::type no_const_type;
+            typedef typename remove_volatile<no_const_type>::type type;
         };
 
         template <typename T>
@@ -384,11 +386,11 @@
             is_same<long double, typename remove_cv<T>::type>::value> { };
 
         template <typename>
-        struct is_array : public false_type { }
+        struct is_array : public false_type { };
         template <typename T, size_t N>
-        struct is_array<T[N]> : public true_type { }
+        struct is_array<T[N]> : public true_type { };
         template <typename T>
-        struct is_array<T[]> : public true_type { }
+        struct is_array<T[]> : public true_type { };
 
         // FIXME: is_enum, is_union, is_class, is_function
 
@@ -472,32 +474,16 @@
 
         // FIXME: is_base_of, is_convertible
 
-        template <typename T> struct remove_const
-        { typedef T type; };
-        template <typename T> struct remove_const<const T>
-        { typedef T type; };
-
-        template <typename T> struct remove_volatile
-        { typedef T type; };
-        template <typename T> struct remove_volatile<volatile T>
-        { typedef T type; };
-
         template <typename T>
-        struct remove_cv {
-            typedef typename remove_volatile<
-                typename remove_const<T>::type>::type type;
-        };
+        struct add_const        { typedef const T type; };
+        template <typename T>
+        struct add_volatile     { typedef volatile T type; };
 
         template <typename T>
         struct add_cv {
-            typedef typename add_volatile<
-                typename add_const<T>::type>::type type;
+            typedef typename add_const<T>::type const_added_type;
+            typedef typename add_volatile<const_added_type>::type type;
         };
-
-        template <typename T>
-        struct add_const { typedef const T type; };
-        template <typename T>
-        struct add_volatile { typedef volatile T type; };
 
         template <class T>
         struct add_lvalue_reference {
@@ -526,15 +512,15 @@
         };
 
         template <typename T>
-        struct remove_pointer                    {typedef T type;};
+        struct remove_pointer                    { typedef T type; };
         template <typename T>
-        struct remove_pointer<T*>                {typedef T type;};
+        struct remove_pointer<T*>                { typedef T type; };
         template <typename T>
-        struct remove_pointer<T* const>          {typedef T type;};
+        struct remove_pointer<T* const>          { typedef T type; };
         template <typename T>
-        struct remove_pointer<T* volatile>       {typedef T type;};
+        struct remove_pointer<T* volatile>       { typedef T type; };
         template <typename T>
-        struct remove_pointer<T* const volatile> {typedef T type;};
+        struct remove_pointer<T* const volatile> { typedef T type; };
 
         template <typename T>
         struct add_pointer {

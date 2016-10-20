@@ -6,13 +6,16 @@
 
 #include <unboost/core.hpp>
 
-#if ((defined(UNBOOST_USE_UNBOOST_STRING_ALGORITHM) + defined(UNBOOST_USE_BOOST_STRING_ALGORITHM)) == 0)
+// If not choosed, choose one
+#if ((defined(UNBOOST_USE_BOOST_STRING_ALGORITHM) + defined(UNBOOST_USE_UNBOOST_STRING_ALGORITHM)) == 0)
     #if defined(UNBOOST_USE_BOOST)
         #define UNBOOST_USE_BOOST_STRING_ALGORITHM
     #else
         #define UNBOOST_USE_UNBOOST_STRING_ALGORITHM
     #endif
 #endif
+
+// Adapt choosed one
 #ifdef UNBOOST_USE_BOOST_STRING_ALGORITHM
     #include <boost/algorithm/string.hpp>
     namespace unboost {

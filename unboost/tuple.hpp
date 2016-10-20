@@ -6,6 +6,7 @@
 
 #include <unboost/core.hpp>
 
+// If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_TUPLE) + defined(UNBOOST_USE_BOOST_TUPLE)) == 0)
     #ifdef UNBOOST_USE_CXX11
         #define UNBOOST_USE_CXX11_TUPLE
@@ -19,8 +20,11 @@
         #endif
     #endif
 #endif
+
+// Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TUPLE
     #include <tuple>
+    #include <functional>   // for std::ref, std::cref
     namespace unboost {
         using std::tuple;
         using std::make_tuple;
