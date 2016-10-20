@@ -9,14 +9,9 @@
     #error Unboost needs C++ compiler. You lose.
 #endif
 
-#include <cassert>  // for assert macro
-
 //////////////////////////////////////////////////////////////////////////////
-// Unboost configuration (optional)
 
-#ifdef UNBOOST_HAVE_CONFIG_HPP
-    #include "unboost_config.hpp"
-#endif
+#include <cassert>  // for assert macro
 
 //////////////////////////////////////////////////////////////////////////////
 // swapping
