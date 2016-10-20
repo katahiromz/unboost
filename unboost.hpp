@@ -26,7 +26,7 @@
 
 #ifdef UNBOOST_USE_SMART_PTR
     #include <unboost/smart_ptr.hpp>
-#endif  // def UNBOOST_USE_SMART_PTR
+#endif
 
 #ifdef UNBOOST_USE_ARRAY
     #include <unboost/array.hpp>
@@ -34,27 +34,27 @@
 
 #ifdef UNBOOST_USE_REGEX
     #include <unboost/regex.hpp>
-#endif  // def UNBOOST_USE_REGEX
+#endif
 
 #ifdef UNBOOST_USE_CONVERSION
     #include <unboost/conversion.hpp>
-#endif  // def UNBOOST_USE_CONVERSION
+#endif
 
 #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
     #include <unboost/complex_functions.hpp>
-#endif  // def UNBOOST_USE_COMPLEX_FUNCTIONS
+#endif
 
 #ifdef UNBOOST_USE_RANDOM
     #include <unboost/random.hpp>
-#endif  // def UNBOOST_USE_RANDOM
+#endif
 
 #ifdef UNBOOST_USE_RATIO
     #include <unboost/ratio.hpp>
-#endif  // def UNBOOST_USE_RATIO
+#endif
 
 #ifdef UNBOOST_USE_CHRONO
     #include <unboost/chrono.hpp>
-#endif  // def UNBOOST_USE_CHRONO
+#endif
 
 #ifdef UNBOOST_USE_THREAD
     #include <unboost/thread.hpp>
@@ -66,27 +66,27 @@
 
 #ifdef UNBOOST_USE_UNORDERED_SET
     #include <unboost/unordered_set.hpp>
-#endif  // def UNBOOST_USE_UNORDERED_SET
+#endif
 
 #ifdef UNBOOST_USE_UNORDERED_MAP
     #include <unboost/unordered_map.hpp>
-#endif  // def UNBOOST_USE_UNORDERED_MAP
+#endif
 
 #ifdef UNBOOST_USE_FOREACH
     #include <unboost/for_each.hpp>
-#endif  // def UNBOOST_USE_FOREACH
+#endif
 
 #ifdef UNBOOST_USE_TUPLE
     #include <unboost/tuple.hpp>
-#endif  // def UNBOOST_USE_TUPLE
+#endif
 
 #ifdef UNBOOST_USE_STRING_ALGORITHM
     #include <unboost/string_algorithm.hpp>
-#endif   // def UNBOOST_USE_STRING_ALGORITHM
+#endif
 
 #ifdef UNBOOST_USE_ASSERT
     #include <unboost/assert.hpp>
-#endif  // def UNBOOST_USE_ASSERT
+#endif
 
 #ifdef UNBOOST_USE_FILESYSTEM
     #include <unboost/filesystem.hpp>
