@@ -7,19 +7,19 @@
 int main(void) {
     std::cout << "regex" << std::endl;
 
-    std::vector<std::string> fnames;
-    fnames.push_back("foo.txt");
-    fnames.push_back("bar.txt");
-    fnames.push_back("baz.dat");
-    fnames.push_back("zoidberg");
+    std::vector<std::string> items;
+    items.push_back("foo.txt");
+    items.push_back("bar.txt");
+    items.push_back("baz.dat");
+    items.push_back("zoidberg");
+
     using unboost::regex;
-    regex txt_regex("[a-z]+\\.txt");
- 
-    for (size_t i = 0; i < fnames.size(); ++i) {
-        using namespace unboost;
-        std::string& fname = fnames[i];
-        std::cout << fname << ": " << regex_match(fname, txt_regex) << '\n';
-    }
+    regex target_regex("[a-z]+\\.txt");
+
+    assert(regex_match(items[0], target_regex));
+    assert(regex_match(items[1], target_regex));
+    assert(regex_match(items[2], target_regex));
+    assert(!regex_match(items[3], target_regex));
 
     return 0;
 }

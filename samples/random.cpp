@@ -3,6 +3,7 @@
 
 int main(void) {
     std::cout << "random" << std::endl;
+
     {
         using namespace unboost::random;
         mt19937 engine;

@@ -13,6 +13,7 @@ int main(void) {
         v.push_back(4);
         UNBOOST_FOREACH(int& i, v) {
             i -= 1;
+            std::cout << i << std::endl;
         }
         UNBOOST_FOREACH(int i, v) {
             std::cout << i << std::endl;

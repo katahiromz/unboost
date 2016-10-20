@@ -7,32 +7,38 @@
 int main(void) {
     std::cout << "ratio" << std::endl;
 
-    std::cout << unboost::ratio<7,-21>::num << std::endl;   // 7;
-    std::cout << unboost::ratio<7,-21>::den << std::endl;   // -21;
+    using namespace unboost;
 
-    typedef unboost::ratio<2, 3> two_third;
-    typedef unboost::ratio<1, 6> one_sixth;
+    assert(ratio<7, -21>::num == 7);
+    assert(ratio<7, -21>::den == -21);
 
-    typedef unboost::ratio_add<two_third, one_sixth> sum;
-    std::cout << sum::num << "/" << sum::den << std::endl;  // 5/6
+    typedef ratio<2, 3> two_third;
+    typedef ratio<1, 6> one_sixth;
 
-    typedef unboost::ratio_subtract<two_third, one_sixth> diff;
-    std::cout << diff::num << '/' << diff::den << std::endl;    // 1/2
+    typedef ratio_add<two_third, one_sixth> sum;    // 5/6
+    assert(sum::num == 5);
+    assert(sum::den == 6);
 
-    typedef unboost::ratio_multiply<two_third, one_sixth> prod;
-    std::cout << prod::num << '/' << prod::den << std::endl;    // 1/9
+    typedef ratio_subtract<two_third, one_sixth> diff;  // 1/2
+    assert(diff::num == 1);
+    assert(diff::den == 2);
 
-    typedef unboost::ratio_divide<two_third, one_sixth> quot;
-    std::cout << quot::num << '/' << quot::den << std::endl;    // 4/1
+    typedef ratio_multiply<two_third, one_sixth> prod;  // 1/9
+    assert(prod::num == 1);
+    assert(prod::den == 9);
 
-    typedef unboost::ratio_equal<two_third, two_third> eq;
-    typedef unboost::ratio_equal<two_third, one_sixth> neq;
-    std::cout << "eq: " << eq() << std::endl;
-    std::cout << "neq: " << neq() << std::endl;
+    typedef ratio_divide<two_third, one_sixth> quot;    // 4/1
+    assert(quot::num == 4);
+    assert(quot::den == 1);
 
-    std::cout << "less: " <<
-        unboost::ratio_less<unboost::ratio<23,37>,
-                            unboost::ratio<57,90> >::value << std::endl;
+    typedef ratio_equal<two_third, two_third> eq;
+    assert(eq());
+
+    typedef ratio_equal<two_third, one_sixth> neq;
+    assert(!neq());
+
+    typedef ratio_less<ratio<23,37>, ratio<57,90> > less;
+    assert(less::value);
 
     return 0;
 }

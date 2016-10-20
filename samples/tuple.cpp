@@ -3,6 +3,7 @@
 
 #define UNBOOST_USE_TUPLE
 #include <unboost.hpp>
+#include <cstring>  // for strcmp
 
 template <typename TUP, size_t N>
 struct TuplePrinter {
@@ -32,5 +33,8 @@ int main(void) {
     tup = unboost::make_tuple<int, const char *, std::string>(2, "This is", "a test");
     print_taple(tup);
     std::cout << std::endl;
+    assert(unboost::get<0>(tup) == 2);
+    assert(strcmp(std::get<1>(tup), "This is") == 0);
+    assert(strcmp(std::get<2>(tup), "a test") == 0);
     return 0;
 }

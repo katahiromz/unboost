@@ -9,5 +9,6 @@ static_assert(1, "OK");
 
 int main(void) {
     std::cout << "static_assert" << std::endl;
+    // does nothing
     return 0;
 }

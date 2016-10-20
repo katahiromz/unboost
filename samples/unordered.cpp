@@ -16,6 +16,9 @@ int main(void) {
             std::cout << *it << std::endl;
         }
     }
+    assert(us.count(1) == 1);
+    assert(us.count(2) == 1);
+    assert(us.count(3) == 0);
 
     std::cout << "unorderd map" << std::endl;
     unboost::unordered_map<int, int> um;
@@ -27,5 +30,9 @@ int main(void) {
             std::cout << it->first << ", " << it->second << std::endl;
         }
     }
+    assert(um.count(2) == 1);
+    assert(um.count(4) == 1);
+    assert(um.count(5) == 0);
+
     return 0;
 }

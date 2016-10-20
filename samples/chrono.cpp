@@ -8,9 +8,8 @@ int main(void) {
     std::cout << "chrono" << std::endl;
     {
         // 4807 seconds
-        unboost_auto_duration s = unboost::chrono::hours(1)
-                                  + 2 * unboost::chrono::minutes(10)
-                                  + unboost::chrono::seconds(70) / 10;
+        using namespace unboost::chrono;
+        unboost_auto_duration s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
     }
     {

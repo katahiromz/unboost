@@ -7,7 +7,10 @@
 int main(void) {
     std::cout << "array" << std::endl;
     unboost::array<int, 2> a = {2, 3};
-    std::cout << a[0] << std::endl;
-    std::cout << a[1] << std::endl;
+    assert(a[0] == 2);
+    assert(a[1] == 3);
+    assert(a.size() == 2);
+    assert(sizeof(a) == 2 * sizeof(int));
+    std::cout << "success" << std::endl;
     return 0;
 }
