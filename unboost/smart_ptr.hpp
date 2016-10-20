@@ -469,15 +469,15 @@
             lhs.swap(rhs);
         }
 
-        template <class T1, class T2>
+        template <typename T1, typename T2>
         inline shared_ptr<T1> static_pointer_cast(const shared_ptr<T2>& r) {
             return shared_ptr<T1>(r, static_tag());
         }
-        template <class T1, class T2>
+        template <typename T1, typename T2>
         inline shared_ptr<T1> const_pointer_cast(const shared_ptr<T2>& r) {
             return shared_ptr<T1>(r, const_tag());
         }
-        template <class T1, class T2>
+        template <typename T1, typename T2>
         inline shared_ptr<T1> dynamic_pointer_cast(const shared_ptr<T2>& r) {
             return shared_ptr<T1>(r, dynamic_tag());
         }

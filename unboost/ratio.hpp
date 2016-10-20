@@ -7,7 +7,7 @@
 #include <unboost/core.hpp>
 
 namespace unboost {
-    // NOTE: unboost::intmax_t is 32-bit
+    // NOTE: unboost::intmax_t is not 64-bit
     typedef int intmax_t;
     typedef unsigned int uintmax_t;
 

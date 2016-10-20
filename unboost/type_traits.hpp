@@ -246,28 +246,28 @@
             template <typename T>
             struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
 
-            template <class T>
+            template <typename T>
             struct add_lvalue_reference {
                 typedef T& type;
             };
-            template <class T>
+            template <typename T>
             struct add_lvalue_reference<T&> {
                 typedef T& type;
             };
-            template <class T>
+            template <typename T>
             struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
                 typedef T& type;
             };
 
-            template <class T>
+            template <typename T>
             struct add_rvalue_reference {
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
-            template <class T>
+            template <typename T>
             struct add_rvalue_reference<T&> {
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
-            template <class T>
+            template <typename T>
             struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
@@ -306,7 +306,7 @@
             return ref;
         }
 
-        template <class T, T v>
+        template <typename T, T v>
         struct integral_constant {
             typedef T value_type;
             typedef integral_constant<T, v> type;
@@ -485,28 +485,28 @@
             typedef typename add_volatile<const_added_type>::type type;
         };
 
-        template <class T>
+        template <typename T>
         struct add_lvalue_reference {
             typedef T& type;
         };
-        template <class T>
+        template <typename T>
         struct add_lvalue_reference<T&> {
             typedef T& type;
         };
-        template <class T>
+        template <typename T>
         struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
             typedef T& type;
         };
 
-        template <class T>
+        template <typename T>
         struct add_rvalue_reference {
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
-        template <class T>
+        template <typename T>
         struct add_rvalue_reference<T&> {
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
-        template <class T>
+        template <typename T>
         struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };

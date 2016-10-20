@@ -238,7 +238,7 @@ namespace unboost {
     using std::swap;
 
     #ifndef UNBOOST_CXX11
-        template <class T2, size_t N>
+        template <typename T2, size_t N>
         inline void swap(T2 (&a)[N], T2 (&b)[N]) {
             std::swap_ranges(a, a+N, b);
         }

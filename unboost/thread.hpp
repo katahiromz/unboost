@@ -61,12 +61,12 @@
             typedef HANDLE native_handle_type;
 
         protected:
-            template <class FUNC>
+            template <typename FUNC>
             struct THREAD_DATA_ARG0 {
                 FUNC        m_func;
                 THREAD_DATA_ARG0(FUNC func) : m_func(func) { }
             };
-            template <class FUNC>
+            template <typename FUNC>
             static unsigned __stdcall thread_function_arg0(void *ptr) {
                 THREAD_DATA_ARG0<FUNC> *data;
                 data = (THREAD_DATA_ARG0<FUNC> *)ptr;
@@ -74,14 +74,14 @@
                 delete data;
                 return 0;
             }
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             struct THREAD_DATA_ARG1 {
                 FUNC        m_func;
                 ARG1        m_arg1;
                 THREAD_DATA_ARG1(FUNC func, ARG1 arg1) :
                     m_func(func), m_arg1(arg1) { }
             };
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             static unsigned __stdcall thread_function_arg1(void *ptr) {
                 THREAD_DATA_ARG1<FUNC, ARG1> *data;
                 data = (THREAD_DATA_ARG1<FUNC, ARG1> *)ptr;
@@ -89,7 +89,7 @@
                 delete data;
                 return 0;
             }
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             struct THREAD_DATA_ARG2 {
                 FUNC        m_func;
                 ARG1        m_arg1;
@@ -97,7 +97,7 @@
                 THREAD_DATA_ARG2(FUNC func, ARG1 arg1, ARG2 arg2) :
                     m_func(func), m_arg1(arg1), m_arg2(arg2) { }
             };
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             static unsigned __stdcall thread_function_arg2(void *ptr) {
                 THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                 data = (THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *)ptr;
@@ -105,7 +105,7 @@
                 delete data;
                 return 0;
             }
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             struct THREAD_DATA_ARG3 {
                 FUNC        m_func;
                 ARG1        m_arg1;
@@ -114,7 +114,7 @@
                 THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
                     m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
             };
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             static unsigned __stdcall thread_function_arg3(void *ptr) {
                 THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
                 data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *)ptr;
@@ -132,7 +132,7 @@
                 }
             }
 
-            template <class FUNC>
+            template <typename FUNC>
             thread(FUNC func) : m_hThread(NULL), m_id() {
                 THREAD_DATA_ARG0<FUNC> *data;
                 data = new THREAD_DATA_ARG0<FUNC>(func);
@@ -144,7 +144,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             thread(FUNC func, ARG1 arg1) : m_hThread(NULL), m_id() {
                 THREAD_DATA_ARG1<FUNC, ARG1> *data;
                 data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
@@ -156,7 +156,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_hThread(NULL), m_id() {
                 THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                 data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
@@ -168,7 +168,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) :
                 m_hThread(NULL), m_id()
             {
@@ -268,12 +268,12 @@
             typedef pthread_t native_handle_type;
 
         protected:
-            template <class FUNC>
+            template <typename FUNC>
             struct THREAD_DATA_ARG0 {
                 FUNC        m_func;
                 THREAD_DATA_ARG0(FUNC func) : m_func(func) { }
             };
-            template <class FUNC>
+            template <typename FUNC>
             static void *thread_function_arg0(void *ptr) {
                 THREAD_DATA_ARG0<FUNC> *data;
                 data = (THREAD_DATA_ARG0<FUNC> *)ptr;
@@ -282,14 +282,14 @@
                 return NULL;
             }
 
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             struct THREAD_DATA_ARG1 {
                 FUNC        m_func;
                 ARG1        m_arg1;
                 THREAD_DATA_ARG1(FUNC func, ARG1 arg1) :
                     m_func(func), m_arg1(arg1) { }
             };
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             static void *thread_function_arg1(void *ptr) {
                 THREAD_DATA_ARG1<FUNC, ARG1> *data;
                 data = (THREAD_DATA_ARG1<FUNC, ARG1> *)ptr;
@@ -298,7 +298,7 @@
                 return NULL;
             }
 
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             struct THREAD_DATA_ARG2 {
                 FUNC        m_func;
                 ARG1        m_arg1;
@@ -306,7 +306,7 @@
                 THREAD_DATA_ARG2(FUNC func, ARG1 arg1, ARG2 arg2) :
                     m_func(func), m_arg1(arg1), m_arg2(arg2) { }
             };
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             static void *thread_function_arg2(void *ptr) {
                 THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                 data = (THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *)ptr;
@@ -315,7 +315,7 @@
                 return NULL;
             }
 
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             struct THREAD_DATA_ARG3 {
                 FUNC        m_func;
                 ARG1        m_arg1;
@@ -324,7 +324,7 @@
                 THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
                     m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
             };
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             static void *thread_function_arg3(void *ptr) {
                 THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
                 data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *)ptr;
@@ -342,7 +342,7 @@
                 }
             }
 
-            template <class FUNC>
+            template <typename FUNC>
             thread(FUNC func) : m_id() {
                 THREAD_DATA_ARG0<FUNC> *data;
                 data = new THREAD_DATA_ARG0<FUNC>(func);
@@ -353,7 +353,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1>
+            template <typename FUNC, typename ARG1>
             thread(FUNC func, ARG1 arg1) : m_id() {
                 THREAD_DATA_ARG1<FUNC, ARG1> *data;
                 data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
@@ -365,7 +365,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1, class ARG2>
+            template <typename FUNC, typename ARG1, typename ARG2>
             thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_id() {
                 THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                 data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
@@ -377,7 +377,7 @@
                     throw std::runtime_error("unboost::thread");
                 }
             }
-            template <class FUNC, class ARG1, class ARG2, class ARG3>
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
             thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_id()
             {
                 THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;

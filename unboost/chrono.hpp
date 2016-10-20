@@ -82,14 +82,14 @@
     } // namespace unboost
     #define unboost_auto_duration auto
 #elif defined(UNBOOST_USE_WIN32_CHRONO) || defined(UNBOOST_USE_POSIX_CHRONO)
+    #include <limits>
+    #include <cfloat>
+    #include <ctime>
     #ifdef _WIN32
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
     #endif
-    #include <limits>
-    #include <cfloat>
-    #include <ctime>
     namespace unboost {
         namespace chrono {
             template <class Rep>
