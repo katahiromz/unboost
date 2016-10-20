@@ -84,6 +84,7 @@
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_MUTEX
         #ifndef UNBOOST_USE_CXX11_CHRONO
             #define UNBOOST_USE_CXX11_CHRONO
@@ -105,6 +106,7 @@
     #ifndef UNBOOST_USE_THREAD
         #define UNBOOST_USE_THREAD
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_MUTEX
         #ifndef UNBOOST_USE_CXX11_THREAD
             #define UNBOOST_USE_CXX11_THREAD
@@ -129,6 +131,7 @@
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_THREAD
         #ifndef UNBOOST_USE_CXX11_CHRONO
             #define UNBOOST_USE_CXX11_CHRONO
@@ -153,6 +156,7 @@
     #ifndef UNBOOST_USE_RATIO
         #define UNBOOST_USE_RATIO
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_CHRONO
         #ifndef UNBOOST_USE_CXX11_RATIO
             #define UNBOOST_USE_CXX11_RATIO
@@ -173,6 +177,7 @@
     #ifndef UNBOOST_USE_TYPE_TRAITS
         #define UNBOOST_USE_TYPE_TRAITS
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_RATIO
         #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
             #define UNBOOST_USE_CXX11_TYPE_TRAITS
@@ -190,10 +195,12 @@
     #endif
 #endif
 
+// smart pointer depends on type traits
 #ifdef UNBOOST_USE_SMART_PTR
     #ifndef UNBOOST_USE_TYPE_TRAITS
         #define UNBOOST_USE_TYPE_TRAITS
     #endif
+    //
     #ifdef UNBOOST_USE_CXX11_SMART_PTR
         #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
             #define UNBOOST_USE_CXX11_TYPE_TRAITS
@@ -240,7 +247,7 @@ namespace unboost {
     #ifndef UNBOOST_CXX11
         template <typename T2, size_t N>
         inline void swap(T2 (&a)[N], T2 (&b)[N]) {
-            std::swap_ranges(a, a+N, b);
+            std::swap_ranges(a, a + N, b);
         }
     #endif
 } // namespace unboost
