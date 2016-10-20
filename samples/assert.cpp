@@ -2,16 +2,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #define UNBOOST_USE_ASSERT
-#define UNBOOST_USE_STATIC_ASSERT
 #include <unboost.hpp>
 
-static_assert(1, "OK");
-//static_assert(0, "NG");
-
 int main(void) {
-    std::cout << "assertion" << std::endl;
+    std::cout << "assert" << std::endl;
     UNBOOST_ASSERT(1);
-    UNBOOST_ASSERT_MSG(1, "OK");
-    UNBOOST_ASSERT_MSG(0, "NG");
+    UNBOOST_ASSERT(0);
     return 0;
 }
