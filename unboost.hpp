@@ -10,21 +10,9 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// Unboost core
 
-#include <cassert>  // for assert macro
-
-//////////////////////////////////////////////////////////////////////////////
-// swapping
-
-#include <algorithm>    // for std::swap
-namespace unboost {
-    using std::swap;
-
-    template <class T2, size_t N>
-    inline void swap(T2 (&a)[N], T2 (&b)[N]) {
-        std::swap_ranges(a, a+N, b);
-    }
-};
+#include <unboost/core.hpp>
 
 //////////////////////////////////////////////////////////////////////////////
 // static_assert

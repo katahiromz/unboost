@@ -4,6 +4,11 @@
 #ifndef UNBOOST_CORE_HPP_
 #define UNBOOST_CORE_HPP_
 
+#include <cassert>  // for the assert macro
+#include <string>   // for std::string and std::wstring, ...
+#include <vector>   // for std::vector
+#include <iostream> // for std::cout, std::endl, ...
+
 //////////////////////////////////////////////////////////////////////////////
 // Use all?
 
@@ -224,6 +229,22 @@
 #if ((defined(UNBOOST_USE_CXX11) + defined(UNBOOST_USE_TR1) + defined(UNBOOST_USE_BOOST)) >= 2)
     #error Choose one or none of UNBOOST_USE_CXX11, UNBOOST_USE_TR1 and UNBOOST_USE_BOOST. You lose.
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+// swapping
+
+#include <algorithm>    // for std::swap
+
+namespace unboost {
+    using std::swap;
+
+    #ifndef UNBOOST_CXX11
+        template <class T2, size_t N>
+        inline void swap(T2 (&a)[N], T2 (&b)[N]) {
+            std::swap_ranges(a, a+N, b);
+        }
+    #endif
+} // namespace unboost
 
 //////////////////////////////////////////////////////////////////////////////
 

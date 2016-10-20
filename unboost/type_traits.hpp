@@ -1,4 +1,4 @@
-// type_traits.hpp --- Unboost type traits
+// type_traits.hpp --- Unboost type traits and R-value reference
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_TYPE_TRAITS_HPP_
