@@ -911,9 +911,24 @@ namespace unboost {
                 shared_ptr<T> ptr(new T());
                 return ptr;
             }
-            template <typename T>
-            inline shared_ptr<T> make_shared(const T& value) {
-                shared_ptr<T> ptr(new T(value));
+            template <typename T, typename T1>
+            inline shared_ptr<T> make_shared(const T1& value1) {
+                shared_ptr<T> ptr(new T(value1));
+                return ptr;
+            }
+            template <typename T, typename T1, typename T2>
+            inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
+                shared_ptr<T> ptr(new T(value1, value2));
+                return ptr;
+            }
+            template <typename T, typename T1, typename T2, typename T3>
+            inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
+                shared_ptr<T> ptr(new T(value1, value2, value3));
+                return ptr;
+            }
+            template <typename T, typename T1, typename T2, typename T3, typename T4>
+            inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
+                shared_ptr<T> ptr(new T(value1, value2, value3, value4));
                 return ptr;
             }
             using std::tr1::static_pointer_cast;
