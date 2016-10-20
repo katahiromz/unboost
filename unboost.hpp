@@ -3,13 +3,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_HPP_
-#define UNBOOST_HPP_    17 // Version 17
+#define UNBOOST_HPP_    18 // Version 18
 
 #ifndef __cplusplus
     #error Unboost needs C++ compiler. You lose.
 #endif
 
-#include <cassert>
+#include <cassert>  // for assert macro
 
 //////////////////////////////////////////////////////////////////////////////
 // Unboost configuration (optional)
@@ -73,11 +73,15 @@
     #ifndef UNBOOST_USE_ASSERT
         #define UNBOOST_USE_ASSERT
     #endif
+    #ifndef UNBOOST_USE_TYPE_TRAITS
+        #define UNBOOST_USE_TYPE_TRAITS
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // dependency
 
+// mutex depends on chrono and thread
 #ifdef UNBOOST_USE_MUTEX
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
@@ -122,6 +126,7 @@
     #endif
 #endif
 
+// thread depends on chrono
 #ifdef UNBOOST_USE_THREAD
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
@@ -145,6 +150,7 @@
     #endif
 #endif
 
+// chrono depends on ratio
 #ifdef UNBOOST_USE_CHRONO
     #ifndef UNBOOST_USE_RATIO
         #define UNBOOST_USE_RATIO
@@ -164,6 +170,49 @@
     #endif
 #endif
 
+// ratio depends on type traits
+#ifdef UNBOOST_USE_RATIO
+    #ifndef UNBOOST_USE_TYPE_TRAITS
+        #define UNBOOST_USE_TYPE_TRAITS
+    #endif
+    #ifdef UNBOOST_USE_CXX11_RATIO
+        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
+            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_BOOST_RATIO
+        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
+            #define UNBOOST_USE_BOOST_TYPE_TRAITS
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_UNBOOST_RATIO
+        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #endif
+    #endif
+#endif
+
+#ifdef UNBOOST_USE_SMART_PTR
+    #ifndef UNBOOST_USE_TYPE_TRAITS
+        #define UNBOOST_USE_TYPE_TRAITS
+    #endif
+    #ifdef UNBOOST_USE_CXX11_SMART_PTR
+        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
+            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_BOOST_SMART_PTR
+        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
+            #define UNBOOST_USE_BOOST_TYPE_TRAITS
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_UNBOOST_SMART_PTR
+        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #endif
+    #endif
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // Is Unboost on C++11? (UNBOOST_CXX11)
 
@@ -173,12 +222,29 @@
     #endif
 #endif
 
+#ifdef UNBOOST_NO_CXX11
+    #undef UNBOOST_CXX11
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // consistency checks
 
 #if ((defined(UNBOOST_USE_CXX11) + defined(UNBOOST_USE_TR1) + defined(UNBOOST_USE_BOOST)) >= 2)
     #error Choose one or none of UNBOOST_USE_CXX11, UNBOOST_USE_TR1 and UNBOOST_USE_BOOST. You lose.
 #endif
+
+//////////////////////////////////////////////////////////////////////////////
+// swapping
+
+#include <algorithm>    // for std::swap
+namespace unboost {
+    using std::swap;
+
+    template <class T2, size_t N>
+    inline void swap(T2 (&a)[N], T2 (&b)[N]) {
+        std::swap_ranges(a, a+N, b);
+    }
+};
 
 //////////////////////////////////////////////////////////////////////////////
 // static_assert
@@ -217,11 +283,582 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// type trailts and R-value reference
+
+#ifdef UNBOOST_USE_TYPE_TRAITS
+    // If not choosed, choose one
+    #if ((defined(UNBOOST_USE_CXX11_TYPE_TRAITS) + defined(UNBOOST_USE_BOOST_TYPE_TRAITS) + defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)) == 0)
+        #ifdef UNBOOST_USE_CXX11
+            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+        #elif defined(UNBOOST_USE_BOOST)
+            #define UNBOOST_USE_BOOST_TYPE_TRAITS
+        #else
+            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #endif
+    #endif
+    // Adapt choosed one
+    #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
+        #include <utility>          // for std::move
+        #include <type_traits>
+        namespace unboost {
+            using std::move;
+            using std::integral_constant;
+            using std::true_type;
+            using std::false_type;
+            using std::is_void;
+            using std::is_integral;
+            using std::is_floating_point;
+            using std::is_array;
+            using std::is_enum;
+            using std::is_union;
+            using std::is_class;
+            using std::is_function;
+            using std::is_pointer;
+            using std::is_lvalue_reference;
+            using std::is_rvalue_reference;
+            using std::is_member_object_pointer;
+            using std::is_member_function_pointer;
+            using std::is_fundamental;
+            using std::is_arithmetic;
+            using std::is_scalar;
+            using std::is_object;
+            using std::is_compound;
+            using std::is_reference;
+            using std::is_member_pointer;
+            using std::is_const;
+            using std::is_volatile;
+            using std::is_trivial;
+            using std::is_trivially_copyable;
+            using std::is_standard_layout;
+            using std::is_pod;
+            using std::is_literal_type;
+            using std::is_empty;
+            using std::is_polymorphic;
+            using std::is_abstract;
+            using std::is_signed;
+            using std::is_unsigned;
+            using std::is_constructible;
+            using std::is_trivially_constructible;
+            using std::is_nothrow_constructible;
+            using std::is_default_constructible;
+            using std::is_trivially_default_constructible;
+            using std::is_nothrow_default_constructible;
+            using std::is_copy_constructible;
+            using std::is_trivially_copy_constructible;
+            using std::is_nothrow_copy_constructible;
+            using std::is_move_constructible;
+            using std::is_trivially_move_constructible;
+            using std::is_nothrow_move_constructible;
+            using std::is_assignable;
+            using std::is_trivially_assignable;
+            using std::is_nothrow_assignable;
+            using std::is_copy_assignable;
+            using std::is_trivially_copy_assignable;
+            using std::is_nothrow_copy_assignable;
+            using std::is_move_assignable;
+            using std::is_trivially_move_assignable;
+            using std::is_nothrow_move_assignable;
+            using std::is_destructible;
+            using std::is_trivially_destructible;
+            using std::is_nothrow_destructible;
+            using std::has_virtual_destructor;
+            using std::alignment_of;
+            using std::rank;
+            using std::extent;
+            using std::is_same;
+            using std::is_base_of;
+            using std::is_convertible;
+            using std::remove_cv;
+            using std::remove_const;
+            using std::remove_volatile;
+            using std::add_cv;
+            using std::add_const;
+            using std::add_volatile;
+            using std::remove_reference;
+            using std::add_lvalue_reference;
+            using std::add_rvalue_reference;
+            using std::remove_pointer;
+            using std::add_pointer;
+            using std::make_signed;
+            using std::make_signed;
+            using std::remove_extent;
+            using std::remove_all_extents;
+            using std::aligned_storage;
+            using std::aligned_storage;
+            using std::decay;
+            using std::enable_if;
+            using std::conditional;
+            using std::common_type;
+            using std::underlying_type;
+            using std::result_of;
+        } // namespace unboost
+        #define UNBOOST_RVALREF_TYPE(type)  type&&
+        #define UNBOOST_RVALREF(value)      value
+    #elif defined(UNBOOST_USE_BOOST_TYPE_TRAITS)
+        #include <boost/utility.hpp>    // for boost::move
+        #include <boost/type_traits.hpp>
+        namespace unboost {
+            using boost::move;
+            using boost::integral_constant;
+            using boost::true_type;
+            using boost::false_type;
+            using boost::is_void;
+            using boost::is_integral;
+            using boost::is_floating_point;
+            using boost::is_array;
+            using boost::is_enum;
+            using boost::is_union;
+            using boost::is_class;
+            using boost::is_function;
+            using boost::is_pointer;
+            using boost::is_lvalue_reference;
+            //using boost::is_rvalue_reference;
+            using boost::is_member_object_pointer;
+            using boost::is_member_function_pointer;
+            using boost::is_fundamental;
+            using boost::is_arithmetic;
+            using boost::is_scalar;
+            using boost::is_object;
+            using boost::is_compound;
+            //using boost::is_reference;
+            using boost::is_member_pointer;
+            using boost::is_const;
+            using boost::is_volatile;
+            using boost::is_trivial;
+            using boost::is_trivially_copyable;
+            using boost::is_standard_layout;
+            using boost::is_pod;
+            using boost::is_literal_type;
+            using boost::is_empty;
+            using boost::is_polymorphic;
+            using boost::is_abstract;
+            using boost::is_signed;
+            using boost::is_unsigned;
+            using boost::is_constructible;
+            using boost::is_trivially_constructible;
+            using boost::is_nothrow_constructible;
+            using boost::is_default_constructible;
+            using boost::is_trivially_default_constructible;
+            using boost::is_nothrow_default_constructible;
+            using boost::is_copy_constructible;
+            using boost::is_trivially_copy_constructible;
+            using boost::is_nothrow_copy_constructible;
+            using boost::is_move_constructible;
+            using boost::is_trivially_move_constructible;
+            using boost::is_nothrow_move_constructible;
+            using boost::is_assignable;
+            using boost::is_trivially_assignable;
+            using boost::is_nothrow_assignable;
+            using boost::is_copy_assignable;
+            using boost::is_trivially_copy_assignable;
+            using boost::is_nothrow_copy_assignable;
+            using boost::is_move_assignable;
+            using boost::is_trivially_move_assignable;
+            using boost::is_nothrow_move_assignable;
+            using boost::is_destructible;
+            using boost::is_trivially_destructible;
+            using boost::is_nothrow_destructible;
+            using boost::has_virtual_destructor;
+            using boost::alignment_of;
+            using boost::rank;
+            using boost::extent;
+            using boost::is_same;
+            using boost::is_base_of;
+            using boost::is_convertible;
+            using boost::remove_cv;
+            using boost::remove_const;
+            using boost::remove_volatile;
+            using boost::add_cv;
+            using boost::add_const;
+            using boost::add_volatile;
+            //using boost::remove_reference;
+            //using boost::add_lvalue_reference;
+            //using boost::add_rvalue_reference;
+            using boost::remove_pointer;
+            using boost::add_pointer;
+            using boost::make_signed;
+            using boost::make_signed;
+            using boost::remove_extent;
+            using boost::remove_all_extents;
+            using boost::aligned_storage;
+            using boost::aligned_storage;
+            using boost::decay;
+            using boost::enable_if;
+            using boost::conditional;
+            using boost::common_type;
+            using boost::underlying_type;
+            using boost::result_of;
+
+            #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
+                // R-value reference
+                template <typename T>
+                struct rvalue_ref {
+                    T& m_ref;
+                    rvalue_ref(T& ref) : m_ref(ref) { }
+                };
+                #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type>
+                #define UNBOOST_RVALREF(value)      (value).m_ref
+
+                template <typename T>
+                struct remove_reference { typedef T type; }
+                template <typename T>
+                struct remove_reference<T&> { typedef T type; }
+                template <typename T>
+                struct remove_reference<UNBOOST_RVALREF_TYPE(T) >
+                { typedef T type; }
+
+                template <typename T>
+                inline typename rvalue_ref<remove_reference<T>::type> move(T& t) {
+                    rvalue_ref ref(t);
+                    return ref;
+                }
+
+                template <typename>
+                struct is_rvalue_reference : public false_type { };
+                template <typename T>
+                struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
+
+                template <typename T>
+                struct is_reference : false_type { };
+                template <typename T>
+                struct is_reference<T&> : true_type { };
+                template <typename T>
+                struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
+
+                template <class T>
+                struct add_lvalue_reference {
+                    typedef T& type;
+                };
+                template <class T>
+                struct add_lvalue_reference<T&> {
+                    typedef T& type;
+                };
+                template <class T>
+                struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+                    typedef T& type;
+                };
+
+                template <class T>
+                struct add_rvalue_reference {
+                    typedef UNBOOST_RVALREF_TYPE(T) type;
+                };
+                template <class T>
+                struct add_rvalue_reference<T&> {
+                    typedef UNBOOST_RVALREF_TYPE(T) type;
+                };
+                template <class T>
+                struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+                    typedef UNBOOST_RVALREF_TYPE(T) type;
+                };
+            #else
+                using boost::is_rvalue_reference;
+                using boost::is_reference;
+                using boost::remove_reference;
+                using boost::add_lvalue_reference;
+                using boost::add_rvalue_reference;
+                #define UNBOOST_RVALREF_TYPE(type)  type&&
+                #define UNBOOST_RVALREF(value)      value
+            #endif
+        } // namespace unboost
+    #elif defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)
+        namespace unboost {
+            // R-value reference
+            template <typename T>
+            struct rvalue_ref {
+                T& m_ref;
+                rvalue_ref(T& ref) : m_ref(ref) { }
+            };
+            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type>
+            #define UNBOOST_RVALREF(value)      (value).m_ref
+
+            template <typename T>
+            struct remove_reference { typedef T type; }
+            template <typename T>
+            struct remove_reference<T&> { typedef T type; }
+            template <typename T>
+            struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; }
+
+            template <typename T>
+            inline typename rvalue_ref<remove_reference<T>::type> move(T& t) {
+                rvalue_ref ref(t);
+                return ref;
+            }
+
+            template <class T, T v>
+            struct integral_constant {
+                typedef T value_type;
+                typedef integral_constant<T, v> type;
+                enum { value = (int)v };
+                operator value_type() const { return (value_type)value; }
+            };
+            typedef integral_constant<bool, true> true_type;
+            typedef integral_constant<bool, false> false_type;
+
+            template <typename T, typename U>
+            struct is_same : false_type { };
+
+            template <typename T>
+            struct is_same<T, T> : true_type { };
+
+            template <typename T>
+            struct remove_const          { typedef T type; };
+            template <typename T>
+            struct remove_const<const T> { typedef T type; };
+
+            template <typename T>
+            struct remove_volatile             { typedef T type; };
+            template <typename T>
+            struct remove_volatile<volatile T> { typedef T type; };
+
+            template <typename T>
+            struct remove_cv {
+                typedef typename remove_volatile<
+                    typename remove_const<T>::type>::type type;
+            };
+
+            template <typename T>
+            struct is_integral : public false_type { };
+            template <typename T>
+            struct is_integral<const T> : public is_integral<T> { };
+            template <typename T>
+            struct is_integral<volatile const T> : public is_integral<T>{ };
+            template <typename T>
+            struct is_integral<volatile T> : public is_integral<T> { };
+
+            template <>
+            struct is_integral<unsigned char> : public true_type { };
+            template <>
+            struct is_integral<unsigned short> : public true_type{ };
+            template <>
+            struct is_integral<unsigned int> : public true_type{ };
+            template <>
+            struct is_integral<unsigned long> : public true_type{ };
+
+            template <>
+            struct is_integral<signed char> : public true_type { };
+            template <>
+            struct is_integral<short> : public true_type { };
+            template <>
+            struct is_integral<int> : public true_type { };
+            template <>
+            struct is_integral<long> : public true_type { };
+
+            template <>
+            struct is_integral<char> : public true_type { };
+            template <>
+            struct is_integral<bool> : public true_type { };
+
+            template <>
+            struct is_integral<wchar_t> : public true_type { };
+
+            template <>
+            struct is_integral<unsigned __int64> : public true_type { };
+            template <>
+            struct is_integral<__int64> : public true_type { };
+
+            template <typename T>
+            struct is_floating_point : integral_constant<
+                bool,
+                is_same<float, typename remove_cv<T>::type>::value  ||
+                is_same<double, typename remove_cv<T>::type>::value  ||
+                is_same<long double, typename remove_cv<T>::type>::value> { };
+
+            template <typename>
+            struct is_array : public false_type { }
+            template <typename T, size_t N>
+            struct is_array<T[N]> : public true_type { }
+            template <typename T>
+            struct is_array<T[]> : public true_type { }
+
+            // FIXME: is_enum, is_union, is_class, is_function
+
+            template <typename T>
+            struct _is_pointer_helper     : false_type { };
+            template <typename T>
+            struct _is_pointer_helper<T*> : true_type { };
+            template <typename T>
+            struct is_pointer : _is_pointer_helper<typename remove_cv<T>::type> { };
+
+            template <typename>
+            struct is_lvalue_reference : public false_type { };
+            template <typename T>
+            struct is_lvalue_reference<T&> : public true_type { };
+
+            template <typename>
+            struct is_rvalue_reference : public false_type { };
+            template <typename T>
+            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
+
+            // FIXME: is_member_object_pointer, is_member_function_pointer
+
+            template <typename T>
+            struct is_arithmetic : integral_constant<bool,
+                is_integral<T>::value || is_floating_point<T>::value> { };
+
+            // FIXME: is_scalar, is_object, is_compound
+
+            template <typename T>
+            struct is_reference : false_type { };
+            template <typename T>
+            struct is_reference<T&> : true_type { };
+            template <typename T>
+            struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
+
+            // FIXME: is_member_pointer
+
+            template <typename T>
+            struct is_const : false_type { };
+            template <typename T>
+            struct is_const<const T> : true_type { };
+
+            template <typename T>
+            struct is_volatile : false_type { };
+            template <typename T>
+            struct is_volatile<volatile T> : true_type { };
+
+            // FIXME: is_trivial, is_trivially_copyable
+            // FIXME: is_standard_layout, is_pod, is_literal_type
+            // FIXME: is_empty, is_polymorphic, is_abstract
+            // FIXME: is_signed, is_unsigned
+            // FIXME: operations, alignment_of
+
+            template <typename T>
+            struct rank : integral_constant<size_t, 0> { };
+
+            template <typename T>
+            struct rank<T[]> :
+                public integral_constant<size_t, rank<T>::value + 1> { };
+
+            template<class T, size_t N>
+            struct rank<T[N]> :
+                public integral_constant<size_t, rank<T>::value + 1> { };
+
+            template <typename T, unsigned N = 0>
+            struct extent : integral_constant<size_t, 0> { };
+
+            template <typename T>
+            struct extent<T[], 0> : integral_constant<size_t, 0> { };
+
+            template <typename T, unsigned N>
+            struct extent<T[], N> :
+                integral_constant<size_t, extent<T, N - 1>::value> { };
+
+            template <typename T, size_t N>
+            struct extent<T[N], 0> : integral_constant<size_t, N> { };
+
+            template <typename T, size_t I, unsigned N>
+            struct extent<T[I], N> :
+                integral_constant<size_t, extent<T, N - 1>::value> { };
+
+            // FIXME: is_base_of, is_convertible
+
+            template <typename T> struct remove_const
+            { typedef T type; };
+            template <typename T> struct remove_const<const T>
+            { typedef T type; };
+
+            template <typename T> struct remove_volatile
+            { typedef T type; };
+            template <typename T> struct remove_volatile<volatile T>
+            { typedef T type; };
+
+            template <typename T>
+            struct remove_cv {
+                typedef typename remove_volatile<
+                    typename remove_const<T>::type>::type type;
+            };
+
+            template <typename T>
+            struct add_cv {
+                typedef typename add_volatile<
+                    typename add_const<T>::type>::type type;
+            };
+
+            template <typename T>
+            struct add_const { typedef const T type; };
+            template <typename T>
+            struct add_volatile { typedef volatile T type; };
+
+            template <class T>
+            struct add_lvalue_reference {
+                typedef T& type;
+            };
+            template <class T>
+            struct add_lvalue_reference<T&> {
+                typedef T& type;
+            };
+            template <class T>
+            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+                typedef T& type;
+            };
+
+            template <class T>
+            struct add_rvalue_reference {
+                typedef UNBOOST_RVALREF_TYPE(T) type;
+            };
+            template <class T>
+            struct add_rvalue_reference<T&> {
+                typedef UNBOOST_RVALREF_TYPE(T) type;
+            };
+            template <class T>
+            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+                typedef UNBOOST_RVALREF_TYPE(T) type;
+            };
+
+            template <typename T>
+            struct remove_pointer                    {typedef T type;};
+            template <typename T>
+            struct remove_pointer<T*>                {typedef T type;};
+            template <typename T>
+            struct remove_pointer<T* const>          {typedef T type;};
+            template <typename T>
+            struct remove_pointer<T* volatile>       {typedef T type;};
+            template <typename T>
+            struct remove_pointer<T* const volatile> {typedef T type;};
+
+            template <typename T>
+            struct add_pointer {
+                typedef typename remove_reference<T>::type* type;
+            };
+
+            // FIXME: make_signed, make_unsigned
+
+            template <typename T>
+            struct remove_extent { typedef T type; };
+
+            template <typename T>
+            struct remove_extent<T[]> { typedef T type; };
+
+            template <typename T, size_t N>
+            struct remove_extent<T[N]> { typedef T type; };
+
+            // FIXME: transformations
+
+            template<bool B, typename T = void>
+            struct enable_if { };
+
+            template <typename T>
+            struct enable_if<true, T> { typedef T type; };
+
+            template <bool B, typename T, typename F>
+            struct conditional { typedef T type; };
+
+            template <typename T, typename F>
+            struct conditional<false, T, F> { typedef F type; };
+
+            // FIXME: common_type, underlying_type, result_of
+        } // namespace unboost
+    #else
+        #error Your compiler is not supported yet. You lose.
+    #endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 // smart pointers
 
 #ifdef UNBOOST_USE_SMART_PTR
     // If not choosed, choose one
-    #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR)) == 0)
+    #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR) + defined(UNBOOST_USE_UNBOOST_SMART_PTR)) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_SMART_PTR
         #elif defined(UNBOOST_USE_TR1)
@@ -240,15 +877,13 @@
                     // Visual C++ 2012 and later
                     #define UNBOOST_USE_CXX11_SMART_PTR
                 #else
-                    // Boost
-                    #define UNBOOST_USE_BOOST_SMART_PTR
+                    #define UNBOOST_USE_UNBOOST_SMART_PTR
                 #endif
             #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
                 // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_SMART_PTR
             #else
-                // Boost
-                #define UNBOOST_USE_BOOST_SMART_PTR
+                #define UNBOOST_USE_UNBOOST_SMART_PTR
             #endif
         #endif  // ndef UNBOOST_USE_CXX11
     #endif
@@ -296,9 +931,9 @@
             namespace boost {
                 namespace interprocess {
                     template<typename T>
-                    struct default_delete : checked_deleter<T> {};
+                    struct default_delete : checked_deleter<T> { };
                     template<typename T>
-                    struct default_delete<T[]> : checked_array_deleter<T> {};
+                    struct default_delete<T[]> : checked_array_deleter<T> { };
                     template<typename T, typename D = default_delete<T> >
                     class unique_ptr;
                 } // namespace interprocess
@@ -312,6 +947,486 @@
             using boost::interprocess::unique_ptr;
             using boost::weak_ptr;
         } // namespace unboost
+    #elif defined(UNBOOST_USE_UNBOOST_SMART_PTR)
+        namespace unboost {
+            struct _static_tag { };
+            struct _const_tag { };
+            struct _dynamic_tag { };
+            template <typename T>
+            struct default_delete {
+                void operator()(T *ptr) {
+                    delete ptr;
+                }
+            };
+            class _ref_count_base {
+            public:
+                _ref_count_base() : _m_uses(1), _m_weaks(1) { }
+                virtual ~_ref_count_base() { }
+                bool _inc_ref_nz() {
+                    long count = _m_uses;
+                    if (count == 0)
+                        return false;
+                    _m_uses = count + 1;
+                    return true;
+                }
+                void _inc_ref() {
+                    _m_uses++;
+                }
+                void _inc_wref() {
+                    _m_weaks++;
+                }
+                void _dec_ref() {
+                    if (--_m_uses == 0)
+                    {
+                        _destroy();
+                        _dec_wref();
+                    }
+                }
+                void _dec_wref() {
+                    if (--_m_weaks == 0)
+                        _delete_this();
+                }
+                void _use_count() const {
+                    return _m_uses;
+                }
+                bool _expired() const {
+                    return _m_uses == 0;
+                }
+            protected:
+                long _m_uses;
+                long _m_weaks;
+                virtual void _destroy() = 0;
+                virtual void _delete_this() = 0;
+                virtual void *_get_deleter() { return NULL; }
+            }; // _ref_count_base
+            template <typename T>
+            class _ref_count : public _ref_count_base {
+            public:
+                _ref_count(T *ptr) : _m_ptr(ptr) { }
+            protected:
+                T *_m_ptr;
+                virtual void _destroy() {
+                    delete _m_ptr;
+                }
+                virtual _delete_this() {
+                    delete this;
+                }
+            }; // _ref_count<T>
+            template <typename T, typename DELETER>
+            class _ref_count_del : public _ref_count_base {
+            public:
+                typedef _ref_count_del<T, DELETER> self_type;
+                _ref_count_del(T *ptr, DELETER d) : _m_ptr(ptr), _m_d(d) { }
+            protected:
+                T *_m_ptr;
+                DELETER _m_d;
+                virtual void *_get_deleter() {
+                    return &_m_d;
+                }
+                virtual void _destroy() {
+                    _m_d(_m_ptr);
+                }
+                virtual _delete_this() {
+                    delete this;
+                }
+            }; // _ref_count_del<T, DELETER>
+            template <typename T>
+            class _ptr_base {
+            public:
+                typedef T element_type;
+                typedef _ptr_base<T> self_type;
+
+                _ptr_base() : _m_ptr(NULL), _m_rep(NULL) { }
+                long _use_count() const {
+                    return (_m_rep ? _m_rep->_use_count() : 0);
+                }
+                void _swap(ptr_base<T>& r) {
+                    swap(_m_ptr, r._m_ptr);
+                    swap(_m_rep, r._m_rep);
+                }
+                template <typename T2>
+                void _owner_before(const _ptr_base<T2>& r) {
+                    return _m_rep < r._m_rep;
+                }
+                void *_get_deleter() {
+                    return (_m_rep ? _m_rep->_get_deleter() : NULL);
+                }
+                T *_get() { return _m_ptr; }
+                bool _expired() const {
+                    return _m_rep == NULL || _m_rep->_expired();
+                }
+                void _dec_ref() {
+                    if (_m_rep)
+                        _m_rep->_dec_ref();
+                }
+                void _reset() {
+                    _reset(0, 0);
+                }
+                template <typename T2>
+                void _reset(const _ptr_base<T2>& other) {
+                    _reset(other._m_ptr, other._m_rep, false);
+                }
+                template <typename T2>
+                void _reset(const _ptr_base<T2>& other, bool does_throw) {
+                    _reset(other._m_ptr, other._m_rep, does_throw);
+                }
+                template <typename T2>
+                void _reset(const _ptr_base<T2>& other, const _static_tag&) {
+                    _reset(static_cast<T *>(other._m_ptr), other._m_rep);
+                }
+                template <typename T2>
+                void _reset(const _ptr_base<T2>& other, const _const_tag&) {
+                    _reset(const_cast<T *>(other._m_ptr), other._m_rep);
+                }
+                template <typename T2>
+                void _reset(const _ptr_base<T2>& other, const _dynamic_tag&) {
+                    T *ptr = dynamic_cast<T *>(other._m_ptr);
+                    if (ptr)
+                        _reset(ptr, other._m_rep);
+                    else
+                        _reset();
+                }
+                void _reset(T *other_ptr, _ref_count_base *other_rep) {
+                    if (other_rep)
+                        other_rep->_inc_ref();
+                    _reset0(other_ptr, other_rep);
+                }
+                void _reset(T *other_ptr, ref_count_base *other_rep, bool does_throw) {
+                    if (other_rep && other_rep->_inc_ref_nz())
+                        _reset0(other_ptr, other_rep);
+                    else if (does_throw)
+                        throw bad_weak_ptr();   // ...
+                }
+                void _reset0(T *other_ptr, ref_count_base *other_rep) {
+                    if (rep)
+                        rep->_dec_ref();
+                    _m_rep = other_rep;
+                    _m_ptr = other_ptr;
+                }
+                void _dec_wref() {
+                    if (_m_rep != NULL)
+                        _m_rep->_dec_wref();
+                }
+                void _reset_w() {
+                    _reset_w((element_type *)NULL, NULL);
+                }
+                template <typename T2>
+                void _reset_w(const _ptr_base<T2>& other) {
+                    _reset_w(other._m_ptr, other._m_rep);
+                }
+                template <typename T2>
+                void _reset_w(const T2 *other_ptr, _ref_count_base *other_rep) {
+                    _reset_w(const_cast<T2 *>(other_ptr), other_rep);
+                }
+                template <typename T2>
+                void _reset_w(T2 *other_ptr, _ref_count_base *other_rep) {
+                    if (other_rep)
+                        other_rep->_inc_wref();
+                    if (_m_rep)
+                        _m_rep->_dec_wref();
+                    _m_rep = other_rep;
+                    _m_ptr = other_ptr;
+                }
+            protected:
+                T *m_ptr;
+                ref_count_base *m_rep;
+            }; // _ptr_base<T>
+
+            template <typename T>
+            class shared_ptr;
+            template <typename T>
+            class unique_ptr;
+
+            template <typename T>
+            class enable_shared_from_this {
+            public:
+                typedef enable_shared_from_this<T> self_type;
+                enable_shared_from_this() { }
+                enable_shared_from_this(const self_type& obj) { }
+                ~enable_shared_from_this() { }
+                self_type& operator=(const self_type& obj) { return *this; }
+                shared_ptr<T> shared_from_this();
+                shared_ptr<T const> shared_from_this() const;
+
+            protected:
+                mutable weak_ptr<T> _m_wptr;
+            };
+
+            template <typename T>
+            class shared_ptr : public _ptr_base<T> {
+            public:
+                typedef T element_type;
+                typedef _ptr_base<T> super_type;
+                typedef shared_ptr<T> self_type;
+
+                shared_ptr() { }
+
+                template <typename T2>
+                explicit shared_ptr(T2 *ptr) {
+                    _reset_p(ptr);
+                }
+
+                template <typename T2, typename DELETER>
+                shared_ptr(T2 *ptr, DELETER d) {
+                    _reset_p(ptr, d);
+                }
+
+                shared_ptr(const self_type& other) {
+                    this->_reset(other);
+                }
+
+                template <typename T2>
+                shared_ptr(const weak_ptr<T2>& other, bool does_throw = true) {
+                    this->_reset(other, does_throw);
+                }
+
+                template <typename T2>
+                shared_ptr(const shared_ptr<T2>& other, const static_tag& tag) {
+                    this->_reset(other, tag);
+                }
+
+                template <typename T2>
+                shared_ptr(const shared_ptr<T2>& other, const const_tag& tag) {
+                    this->_reset(other, tag);
+                }
+
+                template <typename T2>
+                shared_ptr(const shared_ptr<T2>& other, const dynamic_tag& tag) {
+                    this->_reset(other, tag);
+                }
+
+                ~shared_ptr() {
+                    this->_dec_ref();
+                }
+
+                self_type operator=(const self_type& r) {
+                    self_type(r).swap(*this);
+                    return *this;
+                }
+
+                template <typename T2>
+                self_type operator=(const shared_ptr<T2>& r) {
+                    self_type(r).swap(*this);
+                    return *this;
+                }
+
+                void reset() {
+                    self_type().swap(*this);
+                }
+
+                template <typename T2>
+                void reset(T2 *ptr) {
+                    self_type(ptr).swap(*this);
+                }
+
+                template <typename T2, typename DELETER>
+                void reset(T2 *ptr, DELETER d) {
+                    self_type(ptr, d).swap(*this);
+                }
+
+                void swap(shared_ptr<T>& other) {
+                    this->_swap(other);
+                }
+                T* get() const {
+                    return this->_get();
+                }
+                T& operator*() const {
+                    return *this->_get();
+                }
+                T* operator->() const {
+                    return this->_get();
+                }
+                bool unique() const {
+                    return (this->_use_count() == 1);
+                }
+                operator bool() const {
+                    return get() != NULL;
+                }
+
+            private:
+                template <typename T2>
+                void _reset_p(T2 *ptr) {
+                    _reset_p0(ptr, new _ref_count<T2>(ptr));
+                }
+                ...
+                template <typename T2, typename DELETER>
+                void _reset_p(T2 *ptr, DELETER d) {
+                    _reset_p0(ptr, new _ref_count_del<T2, DELETER>(ptr, d));
+                }
+            public:
+                template <typename T2>
+                void _reset_p0(T2 *ptr, ref_count_base *r) {
+                    this->_reset0(ptr, r);
+                    enable_shared(ptr, r);
+                    ...
+                }
+                template <typename DELETER, typename T>
+                friend DELETER *get_deleter(const shared_ptr<T>& ptr) {
+                    return (DELETER *)ptr._get_deleter();
+                }
+            };
+
+            template <typename T1, typename T2>
+            inline operator==(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() == rhs.get();
+            }
+            template <typename T1, typename T2>
+            inline operator!=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() != rhs.get();
+            }
+            template <typename T1, typename T2>
+            inline operator<(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() < rhs.get();
+            }
+            template <typename T1, typename T2>
+            inline operator<=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() <= rhs.get();
+            }
+            template <typename T1, typename T2>
+            inline operator>(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() > rhs.get();
+            }
+            template <typename T1, typename T2>
+            inline operator>=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+                return lhs.get() >= rhs.get();
+            }
+
+            template <typename T_CHAR, typename T_TRAITS, typename T>
+            inline basic_ostream<T_CHAR, T_TRAITS>& operator<<(
+                basic_ostream<T_CHAR, T_TRAITS>& os, const shared_ptr<T>& data)
+            {
+                os << data.get();
+                return os;
+            }
+
+            template <typename T>
+            inline void swap(shared_ptr<T>& lhs, shared_ptr<T>& rhs) {
+                lhs.swap(rhs);
+            }
+
+            template <class T1, class T2>
+            inline shared_ptr<T1> static_pointer_cast(const shared_ptr<T2>& r) {
+                return shared_ptr<T1>(r, static_tag());
+            }
+            template <class T1, class T2>
+            inline shared_ptr<T1> const_pointer_cast(const shared_ptr<T2>& r) {
+                return shared_ptr<T1>(r, const_tag());
+            }
+            template <class T1, class T2>
+            inline shared_ptr<T1> dynamic_pointer_cast(const shared_ptr<T2>& r) {
+                return shared_ptr<T1>(r, dynamic_tag());
+            }
+            ...
+
+            template <typename T>
+            inline shared_ptr<T> enable_shared_from_this<T>::shared_from_this() {
+                return shared_ptr<T>(_m_wptr);
+            }
+            inline shared_ptr<T const> enable_shared_from_this<T>::shared_from_this() const {
+                return shared_ptr<T const>(_m_wptr);
+            }
+
+            template <typename T, typename DELETER = default_deleter<T> >
+            class unique_ptr {
+            public:
+                typedef T *pointer;
+                typedef T element_type;
+                typedef DELETER deleter_type;
+                typedef unique_ptr<T, DELETER> self_type;
+
+                unique_ptr() : m_ptr(NULL) { }
+                explicit unique_ptr(pointer *ptr) : m_ptr(ptr) { }
+                ~unique_ptr() {
+                    pointer ptr = get();
+                    if (ptr) {
+                        get_deleter()(ptr);
+                    }
+                }
+                pointer release() {
+                    pointer ptr = m_ptr;
+                    m_ptr = NULL;
+                    return ptr;
+                }
+                void reset(pointer ptr = pointer()) {
+                    pointer old_ptr = m_ptr;
+                    m_ptr = ptr;
+                    if (old_ptr != NULL)
+                        get_deleter()(old_ptr);
+                }
+                void swap(self_type& ptr) {
+                    swap(m_ptr, ptr.m_ptr);
+                    swap(m_d, ptr.m_d);
+                }
+                pointer get() const {
+                    return m_ptr;
+                }
+                deleter_type& get_deleter() {
+                    return m_d;
+                }
+                const deleter_type& get_deleter() const {
+                    return m_d;
+                }
+                operator bool() const {
+                    return get() != NULL;
+                }
+                T& operator*() {
+                    return *get();
+                }
+                const T& operator*() const {
+                    return *get();
+                }
+                pointer operator->() const {
+                    return get();
+                }
+                T& operator[](size_t i) {
+                    return get()[i];
+                }
+                const T& operator[](size_t i) const {
+                    return get()[i];
+                }
+            protected:
+                T *m_ptr;
+                DELETER m_d;
+            };
+
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator==(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() == p2.get();
+            }
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator!=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() != p2.get();
+            }
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator<(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() < p2.get();
+            }
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator<=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() <= p2.get();
+            }
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator>(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() > p2.get();
+            }
+            template <typename T1, typename D1, typename T2, typename D2>
+            inline bool operator>=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+                return p1.get() >= p2.get();
+            }
+
+            template <typename T, typename D>
+            inline void swap(shared_ptr<T, D>& lhs, shared_ptr<T, D>& rhs) {
+                lhs.swap(rhs);
+            }
+
+            // fIXME: hash
+
+            template <typename T>
+            class weak_ptr : public _ptr_base<T> {
+            public:
+            };
+
+        } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
@@ -322,7 +1437,7 @@
 
 #ifdef UNBOOST_USE_ARRAY
     // If not choosed, choose one
-    #if (defined(UNBOOST_USE_CXX11_ARRAY) + defined(UNBOOST_USE_TR1_ARRAY) + defined(UNBOOST_USE_BOOST_ARRAY) == 0)
+    #if (defined(UNBOOST_USE_CXX11_ARRAY) + defined(UNBOOST_USE_TR1_ARRAY) + defined(UNBOOST_USE_BOOST_ARRAY) + defined(UNBOOST_USE_UNBOOST_ARRAY) == 0)
         #ifdef UNBOOST_USE_CXX11
             #define UNBOOST_USE_CXX11_ARRAY
         #elif defined(UNBOOST_USE_TR1)
@@ -340,13 +1455,13 @@
                     // Visual C++ 2008
                     #define UNBOOST_USE_TR1_ARRAY
                 #else
-                    #define UNBOOST_USE_BOOST_ARRAY
+                    #define UNBOOST_USE_UNBOOST_ARRAY
                 #endif
             #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
                 // GCC 4.3 and later
                 #define UNBOOST_USE_TR1_ARRAY
             #else
-                #define UNBOOST_USE_BOOST_ARRAY
+                #define UNBOOST_USE_UNBOOST_ARRAY
             #endif
         #endif
     #endif
@@ -370,6 +1485,115 @@
         namespace unboost {
             using boost::array;
         }
+    #elif defined(UNBOOST_USE_UNBOOST_ARRAY)
+        #include <stdexcept>
+        #include <iterator>
+        #include <limits>
+        namespace unboost {
+            template <typename T, size_t N>
+            struct array {
+            public:
+                typedef T value_type;
+                typedef size_t size_type;
+                typedef ptrdiff_t difference_type;
+                typedef value_type& reference;
+                typedef const value_type& const_reference;
+                // FIXME: iterator, const_iterator,
+                //typedef std::reverse_iterator<iterator> reverse_iterator;
+                //typedef std::reverse_iterator<const_iterator>
+                //          const_reverse_iterator;
+                value_type m_data[N];
+                reference at(size_type pos) {
+                    if (!(pos < size()))
+                        std::out_of_range("unboost::array");
+                    return m_data[pos];
+                }
+                const_reference at(size_type pos) const {
+                    if (!(pos < size()))
+                        std::out_of_range("unboost::array");
+                    return m_data[pos];
+                }
+                reference operator[](size_type pos) {
+                    return m_data[pos];
+                }
+                const_reference operator[](size_type pos) const {
+                    return m_data[pos];
+                }
+                      reference front()         { return m_data[0]; }
+                const_reference front() const   { return m_data[0]; }
+                      reference back()          { return m_data[size() - 1]; }
+                const_reference back() const    { return m_data[size() - 1]; }
+                      T* data()       { return m_data; }
+                const T* data() const { return m_data; }
+
+                bool empty() const { return N == 0; }
+                size_type size() const { return N; }
+                size_t max_size() const { return  std::numeric_limits<size_type>::max(); }
+                void fill(const T& value) {
+                    if (sizeof(T) == 1) {
+                        memset(m_data, value, N * sizeof(T));
+                        return;
+                    }
+                    for (size_type i = 0; i < N; ++i) {
+                        m_data[i] = value;
+                    }
+                }
+                void swap(array<T, N>& other) {
+                    array<T, N> tmp = other;
+                    other = *this;
+                    *this = tmp;
+                }
+                friend void swap(array<T, N>& a1, array<T, N>& a2) {
+                    a1.swap(a2);
+                }
+                template <typename T, size_t N>
+                friend inline void swap(array<T, N>& a1, array<T, N>& a2) {
+                    a1.swap(a2);
+                }
+            }; // array<T, N>
+            template <typename T, size_t N>
+            inline int compare_array(array<T, N>& a1, array<T, N>& a2) {
+                for (size_type i = 0; i < N; ++i) {
+                    if (a1.data()[i] < a2.data()[i])
+                        return -1;
+                    if (a1.data()[i] > a2.data()[i])
+                        return 1;
+                }
+                return 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator==(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) == 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator!=(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) != 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator<(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) < 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator<=(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) <= 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator>(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) > 0;
+            }
+            template <typename T, size_t N>
+            inline bool operator>=(array<T, N>& a1, array<T, N>& a2) {
+                return compare_array(a1, a2) >= 0;
+            }
+            template <size_t I, typename T, size_t N>
+            inline T& get(array<T, N>& a) {
+                return a.data()[I];
+            }
+            template <size_t I, typename T, size_t N>
+            inline const T& get(const array<T, N>& a) {
+                return a.data()[I];
+            }
+        } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
     #endif
@@ -378,6 +1602,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // regular expression (regex)
 
+#undef UNBOOST_USE_REGEX
 #ifdef UNBOOST_USE_REGEX
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_REGEX) + defined(UNBOOST_USE_BOOST_REGEX)) == 0)
@@ -535,6 +1760,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // conversion between number and string
 
+#undef UNBOOST_USE_CONVERSION
 #ifdef UNBOOST_USE_CONVERSION
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION)) == 0)
@@ -566,7 +1792,7 @@
         namespace unboost {
             class bad_lexical_cast : public std::bad_cast {
             public:
-                bad_lexical_cast() {}
+                bad_lexical_cast() { }
             };
             template <typename T, typename U>
             inline T lexical_cast(const U& value) {
@@ -738,6 +1964,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // math functions
 
+#undef UNBOOST_USE_COMPLEX_FUNCTIONS
 #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_COMPLEX_FUNCTIONS) + defined(UNBOOST_USE_BOOST_COMPLEX_FUNCTIONS)) == 0)
@@ -790,6 +2017,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // random generation
 
+#undef UNBOOST_USE_RANDOM
 #ifdef UNBOOST_USE_RANDOM
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_RANDOM) + defined(UNBOOST_USE_BOOST_RANDOM)) == 0)
@@ -1025,18 +2253,7 @@
         } // namespace unboost
         #define unboost_auto_ratio auto
     #elif defined(UNBOOST_USE_UNBOOST_RATIO)
-        #include <algorithm>    // for std::swap
         namespace unboost {
-            template <class T, T v>
-            struct integral_constant {
-                static const T value;
-                typedef T value_type;
-                typedef integral_constant<T, v> type;
-                operator value_type() const { return value; }
-            };
-            template <class T, T v>
-            const T integral_constant<T,v>::value = v;
-
             template <intmax_t Num, intmax_t Den = 1>
             class ratio {
             public:
@@ -1280,12 +2497,12 @@
 
                 auto_ratio& operator+=(const auto_ratio& ar2) {
                     auto_ratio ret = *this + ar2;
-                    std::swap(*this, ret);
+                    swap(*this, ret);
                     return *this;
                 }
                 auto_ratio& operator-=(const auto_ratio& ar2) {
                     auto_ratio ret = *this - ar2;
-                    std::swap(*this, ret);
+                    swap(*this, ret);
                     return *this;
                 }
                 auto_ratio& operator*=(intmax_t n) {
@@ -1589,7 +2806,7 @@
                     return ad;
                 }
                 inline auto_duration operator-(const auto_duration& ad) {
-                    return auto_duration(-ad.m_rep, ad.m_period);
+                    return auto_duration(-(intmax_t)ad.m_rep, ad.m_period);
                 }
 
                 inline auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs) {
@@ -1791,7 +3008,7 @@
                 }
 
             public:
-                thread() : m_hThread(NULL), m_id() {}
+                thread() : m_hThread(NULL), m_id() { }
                 ~thread() {
                     if (m_hThread) {
                         ::CloseHandle(m_hThread);
@@ -1871,8 +3088,8 @@
                 }
 
                 void swap(thread& other) {
-                    std::swap(m_hThread, other.m_hThread);
-                    std::swap(m_id, other.m_id);
+                    swap(m_hThread, other.m_hThread);
+                    swap(m_id, other.m_id);
                 }
                 friend void swap(thread& x, thread& y) {
                     x.swap(y);
@@ -2001,7 +3218,7 @@
                 }
 
             public:
-                thread() : m_id(_PTHREAD_NULL_THREAD) {}
+                thread() : m_id(_PTHREAD_NULL_THREAD) { }
                 ~thread() {
                     if (m_id) {
                         detach();
@@ -2077,7 +3294,7 @@
                 }
 
                 void swap(thread& other) {
-                    std::swap(m_id, other.m_id);
+                    swap(m_id, other.m_id);
                 }
                 friend void swap(thread& x, thread& y) {
                     x.swap(y);
@@ -2341,7 +3558,7 @@
 
                 bool owns_lock() const { return m_locked; }
                 mutex_type *mutex() const { return m_pmutex; }
-                explicit operator bool() const { return owns_lock(); }
+                operator bool() const { return owns_lock(); }
 
                 void move_assignment(unique_lock& other) {
                     if (m_pmutex && m_locked)
@@ -2353,13 +3570,13 @@
                 }
 
                 void lock() {
-                    if (m_pmutex == NULL || m_locked) 
+                    if (m_pmutex == NULL || m_locked)
                         throw std::runtime_error("unboost::unique_lock");
                     m_pmutex->lock();
                     m_locked = true;
                 }
                 bool try_lock() {
-                    if (m_pmutex == NULL || m_locked) 
+                    if (m_pmutex == NULL || m_locked)
                         throw std::runtime_error("unboost::unique_lock");
                     return mutex()->try_lock();
                 }
@@ -2376,8 +3593,8 @@
                     return m;
                 }
                 void swap(unique_lock<Mutex>& other) {
-                    std::swap(m_pmutex, other.m_pmutex);
-                    std::swap(m_locked, other.m_locked);
+                    swap(m_pmutex, other.m_pmutex);
+                    swap(m_locked, other.m_locked);
                 }
                 template <class Mutex2>
                 friend void swap(unique_lock<Mutex2>& ul1,
@@ -2409,6 +3626,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // unordered set
 
+#undef UNBOOST_USE_UNORDERED_SET
 #ifdef UNBOOST_USE_UNORDERED_SET
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_UNORDERED_SET) + defined(UNBOOST_USE_TR1_UNORDERED_SET) + defined(UNBOOST_USE_BOOST_UNORDERED_SET)) == 0)
@@ -2466,6 +3684,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // unordered map
 
+#undef UNBOOST_USE_UNORDERED_MAP
 #ifdef UNBOOST_USE_UNORDERED_MAP
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_UNORDERED_MAP) + defined(UNBOOST_USE_TR1_UNORDERED_MAP) + defined(UNBOOST_USE_BOOST_UNORDERED_MAP)) == 0)
@@ -2523,6 +3742,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // foreach
 
+#undef UNBOOST_USE_FOREACH
 #ifdef UNBOOST_USE_FOREACH
     // If not choosed, choose one
     #if ((defined(UNBOOST_USE_CXX11_FOREACH) + defined(UNBOOST_USE_BOOST_FOREACH)) == 0)
@@ -2552,6 +3772,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // tuple
 
+#undef UNBOOST_USE_TUPLE
 #ifdef UNBOOST_USE_TUPLE
     #if ((defined(UNBOOST_USE_CXX11_TUPLE) + defined(UNBOOST_USE_BOOST_TUPLE)) == 0)
         #ifdef UNBOOST_USE_CXX11
@@ -2686,7 +3907,7 @@
             struct char_set_predicate {
                 std::string     m_char_set;
                 std::wstring    m_wchar_set;
-                char_set_predicate() {}
+                char_set_predicate() { }
                 char_set_predicate(const std::string& str) : m_char_set(str) {
                     for (size_t i = 0; i < str.size(); ++i) {
                         m_wchar_set += wchar_t(str[i]);
@@ -2700,28 +3921,28 @@
                     }
                 }
                 char_set_predicate(const std::string& str, const std::wstring& wstr)
-                    : m_char_set(str), m_wchar_set(wstr) {}
+                    : m_char_set(str), m_wchar_set(wstr) { }
             }; // struct char_set_predicate
             struct is_space : public char_set_predicate {
-                is_space() : char_set_predicate(char_set::spaces, char_set::wspaces) {}
+                is_space() : char_set_predicate(char_set::spaces, char_set::wspaces) { }
             };
             struct is_alpha : public char_set_predicate {
-                is_alpha() : char_set_predicate(char_set::alphas, char_set::walphas) {}
+                is_alpha() : char_set_predicate(char_set::alphas, char_set::walphas) { }
             };
             struct is_alnum : public char_set_predicate {
-                is_alnum() : char_set_predicate(char_set::alnums, char_set::walnums) {}
+                is_alnum() : char_set_predicate(char_set::alnums, char_set::walnums) { }
             };
             struct is_digit : public char_set_predicate {
-                is_digit() : char_set_predicate(char_set::digits, char_set::wdigits) {}
+                is_digit() : char_set_predicate(char_set::digits, char_set::wdigits) { }
             };
             struct is_xdigit : public char_set_predicate {
-                is_xdigit() : char_set_predicate(char_set::xdigits, char_set::wxdigits) {}
+                is_xdigit() : char_set_predicate(char_set::xdigits, char_set::wxdigits) { }
             };
             struct is_lower : public char_set_predicate {
-                is_lower() : char_set_predicate(char_set::lowers, char_set::wlowers) {}
+                is_lower() : char_set_predicate(char_set::lowers, char_set::wlowers) { }
             };
             struct is_upper : public char_set_predicate {
-                is_upper() : char_set_predicate(char_set::uppers, char_set::wuppers) {}
+                is_upper() : char_set_predicate(char_set::uppers, char_set::wuppers) { }
             };
             struct is_from_range : public char_set_predicate {
                 is_from_range(char from, char to) {
@@ -2738,11 +3959,11 @@
                 }
             };
             struct is_punct : public char_set_predicate {
-                is_punct() : char_set_predicate(char_set::puncts, char_set::wpuncts) {}
+                is_punct() : char_set_predicate(char_set::puncts, char_set::wpuncts) { }
             };
             struct is_any_of : public char_set_predicate {
-                is_any_of(const std::string& str) : char_set_predicate(str) {}
-                is_any_of(const std::wstring& str) : char_set_predicate(str) {}
+                is_any_of(const std::string& str) : char_set_predicate(str) { }
+                is_any_of(const std::wstring& str) : char_set_predicate(str) { }
             };
             inline void to_upper(std::string& str) {
                 using namespace std;
@@ -3022,72 +4243,76 @@
         #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
             (obj).emplace_back(__VA_ARGS__)
     #else
-        #define UNBOOST_EMPLACE(type, obj, ...) \
-            (obj).insert(type(__VA_ARGS__))
-        #define UNBOOST_EMPLACE_FRONT(type, obj, ...) \
-            (obj).push_front(type(__VA_ARGS__))
-        #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
-            (obj).push_back(type(__VA_ARGS__))
+        #if defined(__BORLANDC__) && (__BORLANDC__ <= 0x0551)
+            // __VA_ARGS__ is not available
+        #else
+            #define UNBOOST_EMPLACE(type, obj, ...) \
+                (obj).insert(type(__VA_ARGS__))
+            #define UNBOOST_EMPLACE_FRONT(type, obj, ...) \
+                (obj).push_front(type(__VA_ARGS__))
+            #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
+                (obj).push_back(type(__VA_ARGS__))
+        #endif
     #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
 // safe delete and safe release
 
-#if 1
+namespace unboost {
     template <typename TYPE>
-    inline UNBOOST_SAFE_DELETE(TYPE*& pobj) {
+    inline void safe_delete(TYPE*& pobj) {
         delete pobj;
         pobj = NULL;
     }
 
     template <typename TYPE>
-    inline UNBOOST_SAFE_DELETE_ARRAY(TYPE*& parray) {
+    inline void safe_delete_array(TYPE*& parray) {
         delete[] parray;
         parray = NULL;
     }
 
     template <typename TYPE>
-    inline UNBOOST_SAFE_RELEASE(TYPE*& pobj) {
+    inline void safe_release(TYPE*& pobj) {
         pobj->Release();
         pobj = NULL;
     }
 
     #ifdef UNBOOST_USE_SMART_PTR
         template <typename TYPE>
-        inline UNBOOST_SAFE_DELETE(unboost::shared_ptr<TYPE>& ptr) {
+        inline void safe_delete(shared_ptr<TYPE>& ptr) {
             ptr.reset();
         }
 
         template <typename TYPE>
-        inline UNBOOST_SAFE_DELETE(unboost::unique_ptr<TYPE>& ptr) {
+        inline void safe_delete(unique_ptr<TYPE>& ptr) {
             ptr.reset();
         }
 
         template <typename TYPE>
-        inline UNBOOST_SAFE_DELETE(unboost::weak_ptr<TYPE>& ptr) {
+        inline void safe_delete(weak_ptr<TYPE>& ptr) {
+            ptr.reset();
+        }
+
+        template <typename TYPE>
+        inline void safe_release(shared_ptr<TYPE>& ptr) {
+            ptr->Release();
+            ptr.reset();
+        }
+
+        template <typename TYPE>
+        inline void safe_release(unique_ptr<TYPE>& ptr) {
+            ptr->Release();
+            ptr.reset();
+        }
+
+        template <typename TYPE>
+        inline void safe_release(weak_ptr<TYPE>& ptr) {
+            ptr->Release();
             ptr.reset();
         }
     #endif
-#else
-    #ifndef UNBOOST_SAFE_DELETE
-        #define UNBOOST_SAFE_DELETE(pobj) do { \
-            delete (pobj); \
-            (pobj) = NULL; \
-        } while (0)
-        #define UNBOOST_SAFE_DELETE_ARRAY(parray) do { \
-            delete[] (parray); \
-            (parray) = NULL; \
-        } while (0)
-    #endif
-
-    #ifndef UNBOOST_SAFE_RELEASE
-        #define UNBOOST_SAFE_RELEASE(pobj) do { \
-            (pobj)->Release(); \
-            (pobj) = NULL; \
-        } while (0)
-    #endif
-#endif
+} // namespace unboost
 
 //////////////////////////////////////////////////////////////////////////////
 
