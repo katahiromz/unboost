@@ -26,7 +26,6 @@
     // static_assert is available
     #define UNBOOST_STATIC_ASSERT_MSG static_assert
 #elif defined(UNBOOST_USE_BOOST_STATIC_ASSERT)
-    // Use Boost BOOST_STATIC_ASSERT_MSG
     #include <boost/static_assert.hpp>
     #define UNBOOST_STATIC_ASSERT_MSG BOOST_STATIC_ASSERT_MSG
     #ifndef static_assert

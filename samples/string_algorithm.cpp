@@ -1,3 +1,6 @@
+// string_algorithm.cpp --- Unboost sample
+//////////////////////////////////////////////////////////////////////////////
+
 #define UNBOOST_USE_STRING_ALGORITHM
 #include <unboost.hpp>
 

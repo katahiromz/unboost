@@ -1,3 +1,6 @@
+// assert.cpp --- Unboost sample
+//////////////////////////////////////////////////////////////////////////////
+
 #define UNBOOST_USE_ASSERT
 #define UNBOOST_USE_STATIC_ASSERT
 #include <unboost.hpp>

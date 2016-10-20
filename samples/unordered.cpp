@@ -1,3 +1,6 @@
+// unordered.cpp --- Unboost sample
+//////////////////////////////////////////////////////////////////////////////
+
 #define UNBOOST_USE_UNORDERED_SET
 #define UNBOOST_USE_UNORDERED_MAP
 #include <unboost.hpp>

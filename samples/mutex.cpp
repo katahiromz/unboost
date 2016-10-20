@@ -1,3 +1,6 @@
+// mutex.cpp --- Unboost sample
+//////////////////////////////////////////////////////////////////////////////
+
 #define UNBOOST_USE_THREAD
 #define UNBOOST_USE_MUTEX
 #include <unboost.hpp>

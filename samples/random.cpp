@@ -1,11 +1,7 @@
-#define UNBOOST_USE_COMPLEX_FUNCTIONS
 #define UNBOOST_USE_RANDOM
 #include <unboost.hpp>
 
 int main(void) {
-    std::cout << "complex functions" << std::endl;
-    std::cout << unboost::math::asin(std::complex<double>(2, 3)).real() << std::endl;
-
     std::cout << "random" << std::endl;
     {
         using namespace unboost::random;
