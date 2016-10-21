@@ -172,29 +172,6 @@
     #endif
 #endif
 
-// ratio depends on type traits
-#ifdef UNBOOST_USE_RATIO
-    #ifndef UNBOOST_USE_TYPE_TRAITS
-        #define UNBOOST_USE_TYPE_TRAITS
-    #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_RATIO
-        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
-            #define UNBOOST_USE_CXX11_TYPE_TRAITS
-        #endif
-    #endif
-    #ifdef UNBOOST_USE_BOOST_RATIO
-        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
-            #define UNBOOST_USE_BOOST_TYPE_TRAITS
-        #endif
-    #endif
-    #ifdef UNBOOST_USE_UNBOOST_RATIO
-        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
-        #endif
-    #endif
-#endif
-
 // smart pointer depends on type traits
 #ifdef UNBOOST_USE_SMART_PTR
     #ifndef UNBOOST_USE_TYPE_TRAITS

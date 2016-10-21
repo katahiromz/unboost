@@ -5,6 +5,7 @@
 #define UNBOOST_THREAD_HPP
 
 #include <unboost/core.hpp>
+#include <unboost/chrono.hpp>
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) + defined(UNBOOST_USE_POSIX_THREAD) == 0)

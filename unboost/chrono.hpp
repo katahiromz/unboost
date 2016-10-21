@@ -4,7 +4,8 @@
 #ifndef UNBOOST_CHRONO_HPP_
 #define UNBOOST_CHRONO_HPP_
 
-#include <unboost/chrono.hpp>
+#include <unboost/core.hpp>
+#include <unboost/ratio.hpp>
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
