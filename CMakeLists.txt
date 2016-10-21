@@ -1,6 +1,27 @@
 cmake_minimum_required(VERSION 2.8)
 include_directories(.)
 
+option(USE_CXX11 "Use C++11" OFF)
+option(USE_TR1 "Use TR1" OFF)
+option(USE_BOOST "Use Boost" OFF)
+option(NO_CXX11 "No use C++11" ON)
+
+if(USE_CXX11)
+    add_definitions(-DUNBOOST_USE_CXX11)
+endif(USE_CXX11)
+
+if(USE_TR2)
+    add_definitions(-DUNBOOST_USE_TR2)
+endif(USE_TR2)
+
+if(USE_BOOST)
+    add_definitions(-DUNBOOST_USE_BOOST)
+endif(USE_BOOST)
+
+if(NO_CXX11)
+    add_definitions(-DUNBOOST_NO_CXX11)
+endif(NO_CXX11)
+
 add_executable(array samples/array.cpp)
 add_executable(assert samples/assert.cpp)
 add_executable(chrono samples/chrono.cpp)
@@ -18,3 +39,8 @@ add_executable(string_algorithm samples/string_algorithm.cpp)
 add_executable(tuple samples/tuple.cpp)
 add_executable(type_traits samples/type_traits.cpp)
 add_executable(unordered samples/unordered.cpp)
+
+if(USE_BOOST OR NO_CXX11)
+    target_link_libraries(regex boost_regex-mt)
+    target_link_libraries(filesystem boost_filesystem-mt)
+endif(USE_BOOST OR NO_CXX11)

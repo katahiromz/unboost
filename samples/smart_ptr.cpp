@@ -39,7 +39,7 @@ void output(const std::string& msg, int* pInt)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void fun(std::shared_ptr<int> sp)
+void fun(unboost::shared_ptr<int> sp)
 {
     std::cout << "fun: sp.use_count() == " << sp.use_count() << std::endl;
     assert(sp.use_count() == 2);
@@ -92,7 +92,7 @@ int main(void) {
     }
     {
         unboost::shared_ptr<int> sp1 = unboost::make_shared<int>(5);
-        unboost::cout << "sp1.use_count() == " << sp1.use_count() << unboost::endl;
+        std::cout << "sp1.use_count() == " << sp1.use_count() << std::endl;
         assert(sp1.use_count() == 1);
         assert(sp1.unique());
         fun(sp1);
@@ -104,21 +104,6 @@ int main(void) {
         assert(!ptr);
         ptr = IntPtr(new int(7));
         assert(ptr);
-    }
-    {
-        unboost::shared_ptr<Foo2> p1 = unboost::make_shared<Foo2>(1, 2);
-
-        unboost::shared_ptr<int> p2(p1, &p1->n1);
-        unboost::shared_ptr<int> p3(p1, &p1->n2);
-        assert(p2 < p3);
-        assert(!(p2 > p3));
-        assert(p2.owner_before(p3));
-        assert(!p3.owner_before(p2));
-
-        unboost::weak_ptr<int> w2(p2);
-        unboost::weak_ptr<int> w3(p3);
-        assert(!w2.owner_before(w3));
-        assert(!w3.owner_before(w2));
     }
     return 0;
 }

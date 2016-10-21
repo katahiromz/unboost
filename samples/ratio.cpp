@@ -9,8 +9,8 @@ int main(void) {
 
     using namespace unboost;
 
-    assert(ratio<7, -21>::num == 7);
-    assert(ratio<7, -21>::den == -21);
+    assert((ratio<7, -21>::num == 7));
+    assert((ratio<7, -21>::den == -21));
 
     typedef ratio<2, 3> two_third;
     typedef ratio<1, 6> one_sixth;

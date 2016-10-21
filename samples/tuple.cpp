@@ -34,7 +34,7 @@ int main(void) {
     print_taple(tup);
     std::cout << std::endl;
     assert(unboost::get<0>(tup) == 2);
-    assert(strcmp(std::get<1>(tup), "This is") == 0);
-    assert(strcmp(std::get<2>(tup), "a test") == 0);
+    assert(strcmp(unboost::get<1>(tup), "This is") == 0);
+    assert(unboost::get<2>(tup) == "a test");
     return 0;
 }

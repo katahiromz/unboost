@@ -205,8 +205,8 @@
             }
 
             void swap(thread& other) {
-                swap(m_hThread, other.m_hThread);
-                swap(m_id, other.m_id);
+                unboost::swap(m_hThread, other.m_hThread);
+                unboost::swap(m_id, other.m_id);
             }
             friend void swap(thread& x, thread& y) {
                 x.swap(y);

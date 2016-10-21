@@ -339,6 +339,11 @@
         };
 
         template <typename T>
+        struct is_void : false_type { };
+        template <>
+        struct is_void<void> : true_type { };
+
+        template <typename T>
         struct is_integral : public false_type { };
         template <typename T>
         struct is_integral<const T> : public is_integral<T> { };
