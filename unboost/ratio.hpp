@@ -200,6 +200,7 @@ namespace unboost {
             };
             typedef bool value_type;
             operator value_type() const { return value; }
+            value_type operator()() const { return value; }
         };
 
         template <class R1, class R2>

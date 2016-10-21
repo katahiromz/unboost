@@ -3,14 +3,15 @@
 
 #define UNBOOST_USE_FILESYSTEM
 #include <unboost.hpp>
+#include <cstdio>
 
 int main(void) {
     std::cout << "filesystem" << std::endl;
     {
         using namespace unboost::filesystem;
-        FILE *fp = fopen("test.dat", "w");
-        fputs("TEST", fp);
-        fclose(fp);
+        std::FILE *fp = std::fopen("test.dat", "w");
+        std::fputs("TEST", fp);
+        std::fclose(fp);
         #ifdef _WIN32
             std::wcout << current_path().c_str() << std::endl;
             create_directory(L"dir");

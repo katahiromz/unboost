@@ -217,7 +217,7 @@
                 T& m_ref;
                 rvalue_ref(T& ref) : m_ref(ref) { }
             };
-            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type>
+            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type >
             #define UNBOOST_RVALREF(value)      (value).m_ref
 
             template <typename T>
@@ -289,7 +289,7 @@
             T& m_ref;
             rvalue_ref(T& ref) : m_ref(ref) { }
         };
-        #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type>
+        #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type >
         #define UNBOOST_RVALREF(value)      (value).m_ref
 
         template <typename T>
@@ -324,13 +324,17 @@
 
         template <typename T>
         struct remove_const          { typedef T type; };
+#ifndef __BORLANDC__
         template <typename T>
         struct remove_const<const T> { typedef T type; };
+#endif
 
         template <typename T>
         struct remove_volatile             { typedef T type; };
+#ifndef __BORLANDC__
         template <typename T>
         struct remove_volatile<volatile T> { typedef T type; };
+#endif
 
         template <typename T>
         struct remove_cv {
@@ -345,12 +349,14 @@
 
         template <typename T>
         struct is_integral : public false_type { };
+#ifndef __BORLANDC__
         template <typename T>
         struct is_integral<const T> : public is_integral<T> { };
         template <typename T>
         struct is_integral<volatile const T> : public is_integral<T>{ };
         template <typename T>
         struct is_integral<volatile T> : public is_integral<T> { };
+#endif
 
         template <>
         struct is_integral<unsigned char> : public true_type { };
@@ -384,18 +390,23 @@
         struct is_integral<__int64> : public true_type { };
 
         template <typename T>
-        struct is_floating_point : integral_constant<
-            bool,
-            is_same<float, typename remove_cv<T>::type>::value  ||
-            is_same<double, typename remove_cv<T>::type>::value  ||
-            is_same<long double, typename remove_cv<T>::type>::value> { };
+        struct is_floating_point {
+            typedef bool value_type;
+            enum { value = is_same<float, typename remove_cv<T>::type>::value ||
+                           is_same<double, typename remove_cv<T>::type>::value ||
+                           is_same<long double, typename remove_cv<T>::type>::value
+            };
+            operator value_type() const { return (value_type)value; }
+        };
 
         template <typename>
         struct is_array : public false_type { };
         template <typename T, size_t N>
         struct is_array<T[N]> : public true_type { };
+#ifndef __BORLANDC__
         template <typename T>
         struct is_array<T[]> : public true_type { };
+#endif
 
         // FIXME: is_enum, is_union, is_class, is_function
 
@@ -435,13 +446,17 @@
 
         template <typename T>
         struct is_const : false_type { };
+#ifndef __BORLANDC__
         template <typename T>
         struct is_const<const T> : true_type { };
+#endif
 
         template <typename T>
         struct is_volatile : false_type { };
+#ifndef __BORLANDC__
         template <typename T>
         struct is_volatile<volatile T> : true_type { };
+#endif
 
         // FIXME: is_trivial, is_trivially_copyable
         // FIXME: is_standard_layout, is_pod, is_literal_type
@@ -452,30 +467,40 @@
         template <typename T>
         struct rank : integral_constant<size_t, 0> { };
 
-        template <typename T>
-        struct rank<T[]> :
-            public integral_constant<size_t, rank<T>::value + 1> { };
+        // FIXME
+        template <typename T, size_t N>
+        struct rank<T[N]> {
+            typedef size_t value_type;
+            enum { value = rank<T>::value + 1 };
+            operator value_type() const { return (value_type)value; }
+        };
 
-        template<class T, size_t N>
-        struct rank<T[N]> :
-            public integral_constant<size_t, rank<T>::value + 1> { };
-
+#ifndef __BORLANDC__
         template <typename T, unsigned N = 0>
         struct extent : integral_constant<size_t, 0> { };
 
         template <typename T>
         struct extent<T[], 0> : integral_constant<size_t, 0> { };
 
+        // FIXME
         template <typename T, unsigned N>
-        struct extent<T[], N> :
-            integral_constant<size_t, extent<T, N - 1>::value> { };
+        struct extent<T[], N> {
+            typedef size_t value_type;
+            enum { value = extent<T, N - 1>::value + 1 };
+            operator value_type() const { return (value_type)value; }
+        };
 
         template <typename T, size_t N>
-        struct extent<T[N], 0> : integral_constant<size_t, N> { };
+        struct extent<T[N], 0> {
+            typedef size_t value_type;
+            enum { value = 0 };
+            operator value_type() const { return (value_type)value; }
+        };
 
         template <typename T, size_t I, unsigned N>
         struct extent<T[I], N> :
             integral_constant<size_t, extent<T, N - 1>::value> { };
+#endif
 
         // FIXME: is_base_of, is_convertible
 
@@ -537,8 +562,10 @@
         template <typename T>
         struct remove_extent { typedef T type; };
 
+#ifndef __BORLANDC__
         template <typename T>
         struct remove_extent<T[]> { typedef T type; };
+#endif
 
         template <typename T, size_t N>
         struct remove_extent<T[N]> { typedef T type; };

@@ -40,12 +40,12 @@ int main(void) {
         typedef integral_constant<int, 4> four_t;
         assert(two_t::value * 2 == four_t::value);
 
-        enum my_e {
-           e1,
-           e2
-        };
-        typedef integral_constant<my_e, e1> my_e_e1;
-        typedef integral_constant<my_e, e2> my_e_e2;
+        //enum my_e {
+        //   e1,
+        //   e2
+        //};
+        typedef integral_constant<int, 0> my_e_e1;
+        typedef integral_constant<int, 0> my_e_e2;
 
         assert((is_same<my_e_e2, my_e_e2>::value));
     }
@@ -110,6 +110,7 @@ int main(void) {
         assert(!is_volatile<int>::value);
         assert(is_volatile<volatile int>::value);
     }
+#ifndef __BORLANDC__
     {
         assert(extent<int[3]>::value == 3);
         assert(extent<int[3][4]>::value == 3);
@@ -117,6 +118,7 @@ int main(void) {
         assert((extent<int[3][4], 2>::value == 0));
         assert(extent<int[]>::value == 0);
     }
+#endif
     {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));

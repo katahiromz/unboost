@@ -32,10 +32,10 @@ int main(void) {
     assert(quot::den == 1);
 
     typedef ratio_equal<two_third, two_third> eq;
-    assert(eq());
+    assert(eq::value);
 
     typedef ratio_equal<two_third, one_sixth> neq;
-    assert(!neq());
+    assert(!neq::value);
 
     typedef ratio_less<ratio<23,37>, ratio<57,90> > less;
     assert(less::value);

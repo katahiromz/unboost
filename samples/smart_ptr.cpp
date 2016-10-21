@@ -29,7 +29,7 @@ struct D {
 
 //////////////////////////////////////////////////////////////////////////////
 
-typedef std::shared_ptr<int> IntPtr;
+typedef unboost::shared_ptr<int> IntPtr;
  
 void output(const std::string& msg, int* pInt)
 {

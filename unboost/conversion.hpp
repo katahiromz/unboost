@@ -23,10 +23,10 @@
                 // Visual C++ 2010 and later
                 #define UNBOOST_USE_CXX11_CONVERSION
             #else
-                #define UNBOOST_USE_BOOST_CONVERSION
+                #define UNBOOST_USE_UNBOOST_CONVERSION
             #endif
         #else
-            #define UNBOOST_USE_BOOST_CONVERSION
+            #define UNBOOST_USE_UNBOOST_CONVERSION
         #endif
     #endif
 #endif
@@ -68,6 +68,7 @@
     #include <boost/lexical_cast.hpp>           // for lexical_cast
     #include <boost/exception/to_string.hpp>    // for boost::to_string
     #include <climits>      // for INT_MAX, INT_MIN, FLT_MAX, ...
+    #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
     namespace unboost {
         using boost::lexical_cast;
@@ -194,6 +195,148 @@
             return ret;
         }
         using boost::to_string;
+        template <typename T>
+        inline std::wstring to_wstring(const T& value) {
+            std::wstringstream stream;
+            stream << value;
+            return stream.str();
+        }
+    } // namespace unboost
+#elif defined(UNBOOST_USE_UNBOOST_CONVERSION)
+    #include <climits>      // for INT_MAX, INT_MIN, ...
+    #include <cfloat>       // for FLT_MAX, ...
+    #include <stdexcept>    // for std::invalid_argument, ...
+    namespace unboost {
+        // FIXME: lexical_cast
+        inline long stol(const std::string& str, size_t *pos = NULL, int base = 10) {
+            long ret;
+            size_t npos;
+            if (pos == NULL) {
+                pos = &npos;
+            }
+            char *end = NULL;
+            ret = std::strtol(str.c_str(), &end, base);
+            *pos = end - str.c_str();
+            if (*pos == 0) {
+                throw std::invalid_argument("stol");
+            }
+            return ret;
+        }
+        inline long stoul(const std::string& str, size_t *pos = NULL, int base = 10) {
+            long ret;
+            size_t npos;
+            if (pos == NULL) {
+                pos = &npos;
+            }
+            char *end = NULL;
+            ret = std::strtoul(str.c_str(), &end, base);
+            *pos = end - str.c_str();
+            if (*pos == 0) {
+                throw std::invalid_argument("stoul");
+            }
+            return ret;
+        }
+        inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
+            long n = unboost::stol(str, pos, base);
+            if (n > INT_MAX || n < INT_MIN) {
+                throw std::out_of_range("stoi");
+            }
+            return static_cast<int>(n);
+        }
+        #ifdef UNBOOST_CXX11    // C++11
+            inline long long
+            stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
+                long long ret;
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                ret = std::strtoll(str.c_str(), &end, base);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stoll");
+                }
+                return ret;
+            }
+            inline unsigned long long
+            stoull(const std::string& str, size_t *pos = NULL, int base = 10) {
+                unsigned long long ret;
+                size_t npos;
+                if (pos == NULL) {
+                    pos = &npos;
+                }
+                char *end = NULL;
+                ret = std::strtoull(str.c_str(), &end, base);
+                *pos = end - str.c_str();
+                if (*pos == 0) {
+                    throw std::invalid_argument("stoull");
+                }
+                return ret;
+            }
+        #else   // ndef UNBOOST_CXX11
+            inline __int64 stoll(const std::string& str) {
+                // TODO: support pos and base
+                std::stringstream stream;
+                stream << str;
+                __int64 result;
+                stream >> result;
+                if (stream.fail()) {
+                    throw std::invalid_argument("stoll");
+                }
+                return result;
+            }
+            inline unsigned __int64 stoull(const std::string& str) {
+                // TODO: support pos and base
+                std::stringstream stream;
+                stream << str;
+                unsigned __int64 result;
+                stream >> result;
+                if (stream.fail()) {
+                    throw std::invalid_argument("stoull");
+                }
+                return result;
+            }
+        #endif  // ndef UNBOOST_CXX11
+        inline float stof(const std::string& str, size_t *pos = NULL) {
+            using namespace std;
+            double d;
+            size_t npos;
+            if (pos == NULL) {
+                pos = &npos;
+            }
+            char *end = NULL;
+            d = strtod(str.c_str(), &end);
+            *pos = end - str.c_str();
+            if (*pos == 0) {
+                throw invalid_argument("stof");
+            }
+            if (d > FLT_MAX || d < -FLT_MAX) {
+                throw out_of_range("stof");
+            }
+            float ret = static_cast<float>(d);
+            return ret;
+        }
+        inline double stod(const std::string& str, size_t *pos = NULL) {
+            double ret;
+            size_t npos;
+            if (pos == NULL) {
+                pos = &npos;
+            }
+            char *end = NULL;
+            ret = std::strtod(str.c_str(), &end);
+            *pos = end - str.c_str();
+            if (*pos == 0) {
+                throw std::invalid_argument("stod");
+            }
+            return ret;
+        }
+        template <typename T>
+        inline std::string to_string(const T& value) {
+            std::stringstream stream;
+            stream << value;
+            return stream.str();
+        }
         template <typename T>
         inline std::wstring to_wstring(const T& value) {
             std::wstringstream stream;
