@@ -117,12 +117,39 @@
         struct _static_tag { };
         struct _const_tag { };
         struct _dynamic_tag { };
+
+        class bad_weak_ptr : std::exception {
+        public:
+            bad_weak_ptr() { }
+            virtual ~bad_weak_ptr() { }
+            virtual const char *what() const { return "unboost::bad_weak_ptr"; }
+        };
+
         template <typename T>
         struct default_delete {
+            typedef default_delete<T> self_type;
             void operator()(T *ptr) {
-                delete ptr;
+                if (sizeof(T) > 0) {
+                    delete ptr;
+                }
             }
+            template <typename T2>
+            void operator()(T2 *ptr) { }
         };
+
+        template <typename T>
+        struct default_delete<T[]> {
+            typedef default_delete<T[]> self_type;
+            void operator()(T *ptr) {
+                if (sizeof(T) > 0) {
+                    delete[] ptr;
+                }
+            }
+        private:
+            template <typename T2>
+            void operator()(T2 *ptr) { }
+        };
+
         class _ref_count_base {
         public:
             _ref_count_base() : _m_uses(1), _m_weaks(1) { }
@@ -164,6 +191,7 @@
             virtual void _delete_this() = 0;
             virtual void *_get_deleter() { return NULL; }
         }; // _ref_count_base
+
         template <typename T>
         class _ref_count : public _ref_count_base {
         public:
@@ -177,6 +205,7 @@
                 delete this;
             }
         }; // _ref_count<T>
+
         template <typename T, typename DELETER>
         class _ref_count_del : public _ref_count_base {
         public:
@@ -195,6 +224,7 @@
                 delete this;
             }
         }; // _ref_count_del<T, DELETER>
+
         template <typename T>
         class _ptr_base {
         public:
@@ -202,6 +232,35 @@
             typedef _ptr_base<T> self_type;
 
             _ptr_base() : _m_ptr(NULL), _m_rep(NULL) { }
+
+#ifdef UNBOOST_RVALREF_TYPE
+            _ptr_base(UNBOOST_RVALREF_TYPE(self_type) r) :
+                _m_ptr(NULL), _m_rep(NULL)
+            {
+                _assign_rv(forward(r));
+            }
+
+            template <typename T2>
+            _ptr_base(UNBOOST_RVALREF_TYPE(_ptr_base<T2>) r) :
+                _m_ptr(r._m_ptr), _m_rep(r._m_rep)
+            {
+                r._m_ptr = NULL;
+                r._m_rep = NULL;
+            }
+
+            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r)
+            {
+                _assign_rv(forward(r));
+                return *this;
+            }
+
+            void _assign_rv(UNBOOST_RVALREF_TYPE(self_type) r) {
+                if (this != &r) {
+                    _swap(r);
+                }
+            }
+#endif  // def UNBOOST_RVALREF_TYPE
+
             long _use_count() const {
                 return (_m_rep ? _m_rep->_use_count() : 0);
             }
@@ -210,7 +269,7 @@
                 swap(_m_rep, r._m_rep);
             }
             template <typename T2>
-            void _owner_before(const _ptr_base<T2>& r) {
+            void owner_before(const _ptr_base<T2>& r) {
                 return _m_rep < r._m_rep;
             }
             void *_get_deleter() {
@@ -218,14 +277,14 @@
             }
             T *_get() { return _m_ptr; }
             bool _expired() const {
-                return _m_rep == NULL || _m_rep->_expired();
+                return (_m_rep == NULL || _m_rep->_expired());
             }
             void _dec_ref() {
                 if (_m_rep)
                     _m_rep->_dec_ref();
             }
             void _reset() {
-                _reset(0, 0);
+                _reset(NULL, NULLs);
             }
             template <typename T2>
             void _reset(const _ptr_base<T2>& other) {
@@ -256,13 +315,13 @@
                     other_rep->_inc_ref();
                 _reset0(other_ptr, other_rep);
             }
-            void _reset(T *other_ptr, ref_count_base *other_rep, bool does_throw) {
+            void _reset(T *other_ptr, _ref_count_base *other_rep, bool does_throw) {
                 if (other_rep && other_rep->_inc_ref_nz())
                     _reset0(other_ptr, other_rep);
                 else if (does_throw)
-                    throw bad_weak_ptr();   // ...
+                    throw bad_weak_ptr();
             }
-            void _reset0(T *other_ptr, ref_count_base *other_rep) {
+            void _reset0(T *other_ptr, _ref_count_base *other_rep) {
                 if (rep)
                     rep->_dec_ref();
                 _m_rep = other_rep;
@@ -293,36 +352,37 @@
                 _m_ptr = other_ptr;
             }
         protected:
-            T *m_ptr;
-            ref_count_base *m_rep;
+            T *                 _m_ptr;
+            _ref_count_base *   _m_rep;
         }; // _ptr_base<T>
 
         template <typename T>
         class shared_ptr;
         template <typename T>
         class unique_ptr;
+        template <typename T>
+        class weak_ptr;
 
         template <typename T>
-        class enable_shared_from_this {
-        public:
-            typedef enable_shared_from_this<T> self_type;
-            enable_shared_from_this() { }
-            enable_shared_from_this(const self_type& obj) { }
-            ~enable_shared_from_this() { }
-            self_type& operator=(const self_type& obj) { return *this; }
-            shared_ptr<T> shared_from_this();
-            shared_ptr<T const> shared_from_this() const;
+        class enable_shared_from_this;
 
-        protected:
-            mutable weak_ptr<T> _m_wptr;
-        };
+        template <typename T1, typename T2>
+        void _do_enable(T1 *ptr, enable_shared_from_this<T2> *es,
+                        _ref_count_base *ref_ptr);
+
+        template <typename T>
+        void _enable_shared(T *ptr, _ref_count_base *ref_ptr,
+                            typename T::es_type * = NULL);
+
+        inline void _enable_shared(const volatile void *,
+                                   const volatile void *) { }
 
         template <typename T>
         class shared_ptr : public _ptr_base<T> {
         public:
+            typedef shared_ptr<T> self_type;
             typedef T element_type;
             typedef _ptr_base<T> super_type;
-            typedef shared_ptr<T> self_type;
 
             shared_ptr() { }
 
@@ -349,16 +409,33 @@
             shared_ptr(const shared_ptr<T2>& other, const static_tag& tag) {
                 this->_reset(other, tag);
             }
-
             template <typename T2>
             shared_ptr(const shared_ptr<T2>& other, const const_tag& tag) {
                 this->_reset(other, tag);
             }
-
             template <typename T2>
             shared_ptr(const shared_ptr<T2>& other, const dynamic_tag& tag) {
                 this->_reset(other, tag);
             }
+
+#ifdef UNBOOST_RVALREF_TYPE
+            shared_ptr(UNBOOST_RVALREF_TYPE(self_type) r) : super_type(r) { }
+
+            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r) {
+                self_type(r).swap(*this);
+                return *this;
+            }
+
+            template <typename T2>
+            self_type& operator=(UNBOOST_RVALREF_TYPE(shared_ptr<T2>) r) {
+                self_type(r).swap(*this);
+                return *this;
+            }
+
+            void swap(UNBOOST_RVALREF_TYPE(self_type) r) {
+                super_type::swap(r);
+            }
+#endif
 
             ~shared_ptr() {
                 this->_dec_ref();
@@ -413,17 +490,16 @@
             void _reset_p(T2 *ptr) {
                 _reset_p0(ptr, new _ref_count<T2>(ptr));
             }
-            ...
             template <typename T2, typename DELETER>
             void _reset_p(T2 *ptr, DELETER d) {
                 _reset_p0(ptr, new _ref_count_del<T2, DELETER>(ptr, d));
             }
+
         public:
             template <typename T2>
-            void _reset_p0(T2 *ptr, ref_count_base *r) {
+            void _reset_p0(T2 *ptr, _ref_count_base *r) {
                 this->_reset0(ptr, r);
-                enable_shared(ptr, r);
-                ...
+                _enable_shared(ptr, r);
             }
             template <typename DELETER, typename T>
             friend DELETER *get_deleter(const shared_ptr<T>& ptr) {
@@ -481,15 +557,6 @@
         inline shared_ptr<T1> dynamic_pointer_cast(const shared_ptr<T2>& r) {
             return shared_ptr<T1>(r, dynamic_tag());
         }
-        ...
-
-        template <typename T>
-        inline shared_ptr<T> enable_shared_from_this<T>::shared_from_this() {
-            return shared_ptr<T>(_m_wptr);
-        }
-        inline shared_ptr<T const> enable_shared_from_this<T>::shared_from_this() const {
-            return shared_ptr<T const>(_m_wptr);
-        }
 
         template <typename T, typename DELETER = default_deleter<T> >
         class unique_ptr {
@@ -500,6 +567,7 @@
             typedef unique_ptr<T, DELETER> self_type;
 
             unique_ptr() : m_ptr(NULL) { }
+
             explicit unique_ptr(pointer *ptr) : m_ptr(ptr) { }
             ~unique_ptr() {
                 pointer ptr = get();
@@ -507,52 +575,41 @@
                     get_deleter()(ptr);
                 }
             }
+
             pointer release() {
                 pointer ptr = m_ptr;
                 m_ptr = NULL;
                 return ptr;
             }
+
             void reset(pointer ptr = pointer()) {
                 pointer old_ptr = m_ptr;
                 m_ptr = ptr;
                 if (old_ptr != NULL)
                     get_deleter()(old_ptr);
             }
+
             void swap(self_type& ptr) {
                 swap(m_ptr, ptr.m_ptr);
                 swap(m_d, ptr.m_d);
             }
-            pointer get() const {
-                return m_ptr;
-            }
-            deleter_type& get_deleter() {
-                return m_d;
-            }
-            const deleter_type& get_deleter() const {
-                return m_d;
-            }
-            operator bool() const {
-                return get() != NULL;
-            }
-            T& operator*() {
-                return *get();
-            }
-            const T& operator*() const {
-                return *get();
-            }
-            pointer operator->() const {
-                return get();
-            }
-            T& operator[](size_t i) {
-                return get()[i];
-            }
-            const T& operator[](size_t i) const {
-                return get()[i];
-            }
+
+            pointer get() const { return m_ptr; }
+
+                  deleter_type& get_deleter()       { return m_d; }
+            const deleter_type& get_deleter() const { return m_d; }
+
+            operator bool() const               { return get() != NULL; }
+                  T& operator*()                { return *get(); }
+            const T& operator*() const          { return *get(); }
+            pointer operator->() const          { return get(); }
+            T& operator[](size_t i)             { return get()[i]; }
+            const T& operator[](size_t i) const { return get()[i]; }
+
         protected:
-            T *m_ptr;
-            DELETER m_d;
-        };
+            T *         m_ptr;
+            DELETER     m_d;
+        }; // unique_ptr<T, DELETER>
 
         template <typename T1, typename D1, typename T2, typename D2>
         inline bool operator==(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
@@ -587,9 +644,117 @@
         // FIXME: hash
 
         template <typename T>
+        inline void _enable_shared(T *ptr, _ref_count_base *ref_ptr,
+                                   typename T::es_type */* = NULL*/)
+        {
+            if (ptr) {
+                _do_enable(ptr,
+                           (enable_shared_from_this<typename T::es_type>*)ptr,
+                           ref_ptr);
+            }
+        }
+
+        inline void _enable_shared(const volatile void *,
+                                   const volatile void *) { }
+
+        template <typename T>
+        class enable_shared_from_this {
+        public:
+            typedef enable_shared_from_this<T> self_type;
+            typedef T es_type;
+
+            enable_shared_from_this() { }
+            enable_shared_from_this(const self_type& obj) { }
+            ~enable_shared_from_this() { }
+            self_type& operator=(const self_type& obj) { return *this; }
+            shared_ptr<T> shared_from_this();
+            shared_ptr<T const> shared_from_this() const;
+
+        protected:
+            mutable weak_ptr<T> _m_wptr;
+        }; // enable_shared_from_this<T>
+
+        template <typename T>
         class weak_ptr : public _ptr_base<T> {
         public:
+            typedef weak_ptr<T> self_type;
+            typedef typename _ptr_base<T>::element_type element_type;
+
+            weak_ptr() { }
+
+            template <typename T2>
+            weak_ptr(const shared_ptr<T2>& other) {
+                this->_reset_w(other);
+            }
+
+            weak_ptr(const self_type& other) {
+                this->_reset_w(other);
+            }
+
+            template <typename T2>
+            weak_ptr(const weak_ptr<T2>& other) {
+                this->_reset_w(other);
+            }
+
+            ~weak_ptr() {
+                this->_dec_wref();
+            }
+
+            self_type& operator=(const self_type& r) {
+                this->_reset_w(r);
+                return *this;
+            }
+
+            template <typename T2>
+            self_type& operator=(const weak_ptr<T2>& r) {
+                this->_reset_w(r);
+                return *this;
+            }
+
+            template <typename T2>
+            self_type& operator=(const shared_ptr<T2>& r) {
+                this->_reset_w(r);
+                return *this;
+            }
+
+            void reset() {
+                this->_reset_w();
+            }
+
+            void swap(self_type& other) {
+                this->_swap(other);
+            }
+
+            bool expired() const {
+                return this->_expired();
+            }
+
+            shared_ptr<T> lock() const {
+                return shared_ptr<element_type>(*this, false));
+            }
+
+            template <typename T1, typename T2>
+            friend void _do_enable(T1 *ptr, enable_shared_from_this<T2> *es,
+                                   _ref_count_base *ref_ptr)
+            {
+                es->_m_wptr.reset_w(ptr, ref_ptr);
+            }
         };
+
+        template <typename T>
+        inline void swap(weak_ptr<T>& w1, weak_ptr<T>& w2) {
+            w1.swap(w2);
+        }
+
+        template <typename T>
+        inline shared_ptr<T>
+        enable_shared_from_this<T>::shared_from_this() {
+            return shared_ptr<T>(_m_wptr);
+        }
+        inline shared_ptr<T const>
+        enable_shared_from_this<T>::shared_from_this() const {
+            return shared_ptr<T const>(_m_wptr);
+        }
 
     } // namespace unboost
 #else
