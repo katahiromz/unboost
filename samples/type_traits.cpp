@@ -145,9 +145,7 @@ int main(void) {
         assert((is_same<const volatile int*, type4>::value));
         assert((is_same<int*, type5>::value));
     }
-#endif
     {
-#ifndef UNBOOST_OLD_BORLAND
         check = 0;
         call_m<foo>();
         assert(check == 1);
