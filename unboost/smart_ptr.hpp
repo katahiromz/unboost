@@ -380,7 +380,7 @@
         void _enable_shared(const volatile void *, const volatile void *);
 
         template <typename T>
-        class shared_ptr : public _ptr_base<T> {
+        class shared_ptr : protected _ptr_base<T> {
         public:
             typedef shared_ptr<T> self_type;
             typedef T element_type;
@@ -721,7 +721,7 @@
                                    const volatile void *) { }
 
         template <typename T>
-        class weak_ptr : public _ptr_base<T> {
+        class weak_ptr : protected _ptr_base<T> {
         public:
             typedef weak_ptr<T> self_type;
             typedef typename _ptr_base<T>::element_type element_type;
