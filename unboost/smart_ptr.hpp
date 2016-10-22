@@ -57,31 +57,7 @@
     #endif
     namespace unboost {
         using std::tr1::shared_ptr;
-        template <typename T>
-        inline shared_ptr<T> make_shared() {
-            shared_ptr<T> ptr(new T());
-            return ptr;
-        }
-        template <typename T, typename T1>
-        inline shared_ptr<T> make_shared(const T1& value1) {
-            shared_ptr<T> ptr(new T(value1));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
-            shared_ptr<T> ptr(new T(value1, value2));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
-            shared_ptr<T> ptr(new T(value1, value2, value3));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3, typename T4>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
-            shared_ptr<T> ptr(new T(value1, value2, value3, value4));
-            return ptr;
-        }
+        #define UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
         using std::tr1::static_pointer_cast;
         using std::tr1::dynamic_pointer_cast;
         using std::tr1::weak_ptr;
@@ -919,31 +895,7 @@
             return shared_ptr<T const>(_m_wptr);
         }
 
-        template <typename T>
-        inline shared_ptr<T> make_shared() {
-            shared_ptr<T> ptr(new T());
-            return ptr;
-        }
-        template <typename T, typename T1>
-        inline shared_ptr<T> make_shared(const T1& value1) {
-            shared_ptr<T> ptr(new T(value1));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
-            shared_ptr<T> ptr(new T(value1, value2));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
-            shared_ptr<T> ptr(new T(value1, value2, value3));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3, typename T4>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
-            shared_ptr<T> ptr(new T(value1, value2, value3, value4));
-            return ptr;
-        }
+        #define UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
@@ -979,6 +931,34 @@ namespace unboost {
         using self_type::operator->;
         using self_type::operator[];
     };
+
+    #ifdef UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+        template <typename T>
+        inline shared_ptr<T> make_shared() {
+            shared_ptr<T> ptr(new T());
+            return ptr;
+        }
+        template <typename T, typename T1>
+        inline shared_ptr<T> make_shared(const T1& value1) {
+            shared_ptr<T> ptr(new T(value1));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
+            shared_ptr<T> ptr(new T(value1, value2));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2, typename T3>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
+            shared_ptr<T> ptr(new T(value1, value2, value3));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2, typename T3, typename T4>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
+            shared_ptr<T> ptr(new T(value1, value2, value3, value4));
+            return ptr;
+        }
+    #endif
 } // namespace unboost
 
 #endif  // ndef UNBOOST_SMART_PTR_HPP_
