@@ -152,8 +152,8 @@ int main(void) {
         check = 0;
         call_m<add_const<foo>::type>();
         assert(check == -1);
-#endif
     }
+#endif
     {
         assert((is_same<remove_reference<int&>::type, int>::value));
         assert((is_same<add_lvalue_reference<int>::type, int&>::value));
