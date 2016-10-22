@@ -118,6 +118,13 @@ int main(void) {
 #endif
     }
     {
+        assert(rank<int[1][2][3]>::value == 3);
+#ifndef __BORLANDC__
+        assert(rank<int[][2][3][4]>::value == 4);
+#endif
+        assert(rank<int>::value == 0);
+    }
+    {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));
     }

@@ -491,13 +491,33 @@
         // FIXME: operations, alignment_of
 
         template <typename T>
-        struct rank : integral_constant<size_t, 0> { };
+        struct rank {
+            // integral_constant<std::size_t, 0>
+            typedef size_t value_type;
+            typedef rank<T> type;
+            enum { value = 0 };
+            operator value_type() const { return (value_type)value; }
+        };
 
-        // FIXME
+#ifndef __BORLANDC__
+        template <typename T>
+        struct rank<T[]> {
+            // integral_constant<std::size_t, rank<T>::value + 1>
+            typedef size_t value_type;
+            typedef rank<T[]> type;
+            typedef rank<T> _refered_type;
+            enum { value = _refered_type::value + 1 };
+            operator value_type() const { return (value_type)value; }
+        };
+#endif
+
         template <typename T, size_t N>
         struct rank<T[N]> {
+            // integral_constant<std::size_t, rank<T>::value + 1>
             typedef size_t value_type;
-            enum { value = rank<T>::value + 1 };
+            typedef rank<T[]> type;
+            typedef rank<T> _refered_type;
+            enum { value = _refered_type::value + 1 };
             operator value_type() const { return (value_type)value; }
         };
 
