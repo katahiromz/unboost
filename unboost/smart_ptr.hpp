@@ -47,6 +47,7 @@
         using std::dynamic_pointer_cast;
         using std::unique_ptr;
         using std::weak_ptr;
+        using std::get_deleter;
     } // namespace unboost
 #elif defined(UNBOOST_USE_TR1_SMART_PTR)
     #ifdef _MSC_VER
@@ -85,6 +86,7 @@
         using std::tr1::dynamic_pointer_cast;
         // NOTE: There is no unique_ptr for TR1
         using std::tr1::weak_ptr;
+        using std::tr1::get_deleter;
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
     #include <boost/shared_ptr.hpp>
@@ -95,11 +97,11 @@
     #ifdef UNBOOST_FIX_UNIQUE_PTR
         namespace boost {
             namespace interprocess {
-                template<typename T>
+                template <typename T>
                 struct default_delete : checked_deleter<T> { };
-                template<typename T>
+                template <typename T>
                 struct default_delete<T[]> : checked_array_deleter<T> { };
-                template<typename T, typename D = default_delete<T> >
+                template <typename T, typename D = default_delete<T> >
                 class unique_ptr;
             } // namespace interprocess
         } // namespace boost
@@ -111,6 +113,7 @@
         using boost::dynamic_pointer_cast;
         using boost::interprocess::unique_ptr;
         using boost::weak_ptr;
+        using boost::get_deleter;
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_SMART_PTR)
     namespace unboost {
@@ -261,7 +264,7 @@
             }
 #endif  // def UNBOOST_RVALREF_TYPE
 
-            long use_count() const {
+            long _use_count() const {
                 return (_m_rep ? _m_rep->_use_count() : 0);
             }
             void _swap(_ptr_base<T>& r) {
@@ -269,7 +272,7 @@
                 unboost::swap(_m_rep, r._m_rep);
             }
             template <typename T2>
-            void owner_before(const _ptr_base<T2>& r) {
+            void _owner_before(const _ptr_base<T2>& r) {
                 return _m_rep < r._m_rep;
             }
             void *_get_deleter() {
@@ -400,6 +403,16 @@
             }
 
             template <typename T2>
+            shared_ptr(const shared_ptr<T2>& r, T *ptr) {
+                this->_reset(ptr, r);
+            }
+
+            template <typename T2>
+            shared_ptr(const shared_ptr<T2>& other) {
+                this->_reset(other);
+            }
+
+            template <typename T2>
             shared_ptr(const weak_ptr<T2>& other, bool does_throw = true) {
                 this->_reset(other, does_throw);
             }
@@ -428,6 +441,12 @@
             template <typename T2>
             self_type& operator=(UNBOOST_RVALREF_TYPE(shared_ptr<T2>) r) {
                 self_type(r).swap(*this);
+                return *this;
+            }
+
+            template <typename T2, typename DELETER>
+            self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, DELETER>) r) {
+                self_type(move(r)).swap(*this);
                 return *this;
             }
 
@@ -465,23 +484,25 @@
                 self_type(ptr, d).swap(*this);
             }
 
-            void swap(shared_ptr<T>& other) {
+            void swap(self_type& other) {
                 this->_swap(other);
             }
-            T* get() const {
-                return this->_get();
+
+            T* get() const          { return this->_get(); }
+            T& operator*() const    { return *this->_get(); }
+            T* operator->() const   { return this->_get(); }
+
+            long use_count() const  { return this->_use_count(); }
+            bool unique() const     { return (this->_use_count() == 1); }
+            operator bool() const   { return get() != NULL; }
+
+            template <typename T2>
+            bool owner_before(const shared_ptr<T2>& other) const {
+                return this->_owner_before(other);
             }
-            T& operator*() const {
-                return *this->_get();
-            }
-            T* operator->() const {
-                return this->_get();
-            }
-            bool unique() const {
-                return (this->use_count() == 1);
-            }
-            operator bool() const {
-                return get() != NULL;
+            template <typename T2>
+            bool owner_before(const weak_ptr<T2>& other) const {
+                return this->_owner_before(other);
             }
 
         private:
@@ -501,7 +522,7 @@
                 _enable_shared(ptr, r);
             }
             template <typename DELETER, typename T>
-            friend DELETER *get_deleter(const shared_ptr<T>& ptr) {
+            friend DELETER* get_deleter(const shared_ptr<T>& ptr) {
                 return (DELETER *)ptr._get_deleter();
             }
         }; // shared_ptr<T>
@@ -546,15 +567,15 @@
 
         template <typename T1, typename T2>
         inline shared_ptr<T1> static_pointer_cast(const shared_ptr<T2>& r) {
-            return shared_ptr<T1>(r, static_tag());
+            return shared_ptr<T1>(r, _static_tag());
         }
         template <typename T1, typename T2>
         inline shared_ptr<T1> const_pointer_cast(const shared_ptr<T2>& r) {
-            return shared_ptr<T1>(r, const_tag());
+            return shared_ptr<T1>(r, _const_tag());
         }
         template <typename T1, typename T2>
         inline shared_ptr<T1> dynamic_pointer_cast(const shared_ptr<T2>& r) {
-            return shared_ptr<T1>(r, dynamic_tag());
+            return shared_ptr<T1>(r, _dynamic_tag());
         }
 
         template <typename T, typename DELETER/* = default_delete<T>*/ >
@@ -679,17 +700,17 @@
 
             weak_ptr() { }
 
-            template <typename T2>
-            weak_ptr(const shared_ptr<T2>& other) {
-                this->_reset_w(other);
-            }
-
             weak_ptr(const self_type& other) {
                 this->_reset_w(other);
             }
 
             template <typename T2>
             weak_ptr(const weak_ptr<T2>& other) {
+                this->_reset_w(other);
+            }
+
+            template <typename T2>
+            weak_ptr(const shared_ptr<T2>& other) {
                 this->_reset_w(other);
             }
 
@@ -722,12 +743,25 @@
                 this->_swap(other);
             }
 
+            long use_count() const {
+                return this->_use_count();
+            }
+
             bool expired() const {
                 return this->_expired();
             }
 
             shared_ptr<T> lock() const {
                 return shared_ptr<element_type>(*this, false));
+            }
+
+            template <typename T2>
+            bool owner_before(const weak_ptr<T2>& other) const {
+                return this->_owner_before(other);
+            }
+            template <typename T2>
+            bool owner_before(const shared_ptr<T2>& other) const {
+                return this->_owner_before(other);
             }
 
             template <typename T1, typename T2>
