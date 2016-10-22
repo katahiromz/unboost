@@ -225,10 +225,10 @@
 
             #ifdef UNBOOST_OLD_BORLAND
                 #define UNBOOST_RVALREF_TYPE(type) \
-                    unboost::rvalue_ref<type> /**/
+                    unboost::rvalue_ref<type > /**/
             #else
                 #define UNBOOST_RVALREF_TYPE(...) \
-                    unboost::rvalue_ref<__VA_ARGS__> /**/
+                    unboost::rvalue_ref<__VA_ARGS__ > /**/
             #endif
             #define UNBOOST_RVALREF(value)          (value).m_ref
 
@@ -237,7 +237,7 @@
             template <typename T>
             struct remove_reference<T&> { typedef T type; }
             template <typename T>
-            struct remove_reference<UNBOOST_RVALREF_TYPE(T)>
+            struct remove_reference<UNBOOST_RVALREF_TYPE(T) >
             { typedef T type; }
 
             template <typename T>
@@ -249,25 +249,25 @@
             template <typename T>
             inline UNBOOST_RVALREF_TYPE(T)
             forward(typename remove_reference<T>::type& t) {
-                return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+                return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
             }
             template <typename T>
             inline UNBOOST_RVALREF_TYPE(T)
             forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
-                return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+                return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
             }
 
             template <typename>
             struct is_rvalue_reference : public false_type { };
             template <typename T>
-            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> : public true_type { };
+            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
 
             template <typename T>
             struct is_reference : false_type { };
             template <typename T>
             struct is_reference<T&> : true_type { };
             template <typename T>
-            struct is_reference<UNBOOST_RVALREF_TYPE(T)> : true_type { };
+            struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
 
             template <typename T>
             struct add_lvalue_reference {
@@ -278,7 +278,7 @@
                 typedef T& type;
             };
             template <typename T>
-            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
+            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
                 typedef T& type;
             };
 
@@ -291,7 +291,7 @@
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
             template <typename T>
-            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
+            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
         #else
@@ -316,10 +316,10 @@
 
         #ifdef UNBOOST_OLD_BORLAND
             #define UNBOOST_RVALREF_TYPE(type) \
-                unboost::rvalue_ref<type> /**/
+                unboost::rvalue_ref<type > /**/
         #else
             #define UNBOOST_RVALREF_TYPE(...) \
-                unboost::rvalue_ref<__VA_ARGS__> /**/
+                unboost::rvalue_ref<__VA_ARGS__ > /**/
         #endif
         #define UNBOOST_RVALREF(value)      (value).m_ref
 
@@ -328,7 +328,7 @@
         template <typename T>
         struct remove_reference<T&> { typedef T type; };
         template <typename T>
-        struct remove_reference<UNBOOST_RVALREF_TYPE(T)> { typedef T type; };
+        struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; };
 
         template <typename T>
         inline rvalue_ref<typename remove_reference<T>::type>
@@ -340,12 +340,12 @@
         template <typename T>
         inline UNBOOST_RVALREF_TYPE(T)
         forward(typename remove_reference<T>::type& t) {
-            return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+            return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
         }
         template <typename T>
         inline UNBOOST_RVALREF_TYPE(T)
         forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
-            return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+            return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
         }
 
         template <typename T, T v>
@@ -374,13 +374,13 @@
         struct remove_volatile             { typedef T type; };
         template <typename T>
         struct remove_volatile<volatile T> { typedef T type; };
-#endif
 
         template <typename T>
         struct remove_cv {
             typedef typename remove_const<T>::type no_const_type;
             typedef typename remove_volatile<no_const_type>::type type;
         };
+#endif
 
         template <typename T>
         struct is_void : false_type { };
@@ -429,15 +429,28 @@
         template <>
         struct is_integral<__int64> : public true_type { };
 
+#ifdef UNBOOST_OLD_BORLAND
         template <typename T>
         struct is_floating_point {
             typedef bool value_type;
-            enum { value = is_same<float, typename remove_cv<T>::type>::value ||
-                           is_same<double, typename remove_cv<T>::type>::value ||
-                           is_same<long double, typename remove_cv<T>::type>::value
+            enum {
+                value = (is_same<float, T>::value || is_same<double, T>::value ||
+                         is_same<long double, T>::value)
             };
             operator value_type() const { return (value_type)value; }
         };
+#else
+        template <typename T>
+        struct is_floating_point {
+            typedef bool value_type;
+            enum {
+                value = (is_same<float, typename remove_cv<T>::type>::value ||
+                         is_same<double, typename remove_cv<T>::type>::value ||
+                         is_same<long double, typename remove_cv<T>::type>::value)
+            };
+            operator value_type() const { return (value_type)value; }
+        };
+#endif
 
         template <typename>
         struct is_array : public false_type { };
@@ -454,8 +467,13 @@
         struct _is_pointer_helper     : false_type { };
         template <typename T>
         struct _is_pointer_helper<T*> : true_type { };
+#ifndef UNBOOST_OLD_BORLAND
         template <typename T>
         struct is_pointer : _is_pointer_helper<typename remove_cv<T>::type> { };
+#else
+        template <typename T>
+        struct is_pointer : _is_pointer_helper<T> { };
+#endif
 
         template <typename>
         struct is_lvalue_reference : public false_type { };
@@ -465,7 +483,7 @@
         template <typename>
         struct is_rvalue_reference : public false_type { };
         template <typename T>
-        struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> : public true_type { };
+        struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
 
         // FIXME: is_member_object_pointer, is_member_function_pointer
 
@@ -480,7 +498,7 @@
         template <typename T>
         struct is_reference<T&> : true_type { };
         template <typename T>
-        struct is_reference<UNBOOST_RVALREF_TYPE(T)> : true_type { };
+        struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
 
         // FIXME: is_member_pointer
 
@@ -531,7 +549,8 @@
         };
 #endif
 
-        template <typename T, unsigned N = 0>
+#ifndef UNBOOST_OLD_BORLAND
+        template <typename T, size_t N = 0>
         struct extent {
             // integral_constant<std::size_t, 0>
             typedef size_t value_type;
@@ -541,17 +560,16 @@
         };
         template <typename T, size_t N>
         struct extent<T[N], 0> {
-            // std::integral_constant<std::size_t, N>
+            // integral_constant<std::size_t, N>
             typedef size_t value_type;
             typedef extent<T[N], 0> type;
             enum { value = N };
             operator value_type() const { return (value_type)value; }
         };
-        template <typename T, size_t I, unsigned N>
-        struct extent<T[I], N> : std::extent<T, N - 1> {
+        template <typename T, unsigned I, size_t N>
+        struct extent<T[I], N> : extent<T, N - 1> {
             // integral_constant<std::size_t, std::extent<T, N-1>::value>
         };
-#ifndef UNBOOST_OLD_BORLAND
         template <typename T>
         struct extent<T[], 0> {
             // std::integral_constant<std::size_t, 0>
@@ -588,7 +606,7 @@
             typedef T& type;
         };
         template <typename T>
-        struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
+        struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
             typedef T& type;
         };
 
@@ -601,7 +619,7 @@
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
         template <typename T>
-        struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
+        struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
 

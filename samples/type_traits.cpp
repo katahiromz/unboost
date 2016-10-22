@@ -100,6 +100,7 @@ int main(void) {
         assert(is_reference<int&>::value);
         assert(is_reference<UNBOOST_RVALREF_TYPE(int) >::value);
     }
+#ifndef UNBOOST_OLD_BORLAND
     {
         assert(!is_const<int>::value);
         assert(is_const<const int>::value);
@@ -109,14 +110,17 @@ int main(void) {
         assert(is_volatile<volatile int>::value);
     }
     {
+        std::cout << "extent<int[3]>::value: " << extent<int[3]>::value << std::endl;
+        std::cout << "extent<int[3][4]>::value: " << extent<int[3][4]>::value << std::endl;
+        std::cout << "extent<int[3][4], 1>::value: " << extent<int[3][4], 1>::value << std::endl;
+        std::cout << "extent<int[3][4], 2>::value: " << extent<int[3][4], 2>::value << std::endl;
         assert(extent<int[3]>::value == 3);
         assert(extent<int[3][4]>::value == 3);
         assert((extent<int[3][4], 1>::value == 4));
         assert((extent<int[3][4], 2>::value == 0));
-#ifndef UNBOOST_OLD_BORLAND
         assert(extent<int[]>::value == 0);
-#endif
     }
+#endif
     {
         assert(rank<int[1][2][3]>::value == 3);
 #ifndef UNBOOST_OLD_BORLAND
@@ -128,6 +132,7 @@ int main(void) {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));
     }
+#ifndef UNBOOST_OLD_BORLAND
     {
         typedef remove_cv<const int>::type type1;
         typedef remove_cv<volatile int>::type type2;
@@ -140,13 +145,16 @@ int main(void) {
         assert((is_same<const volatile int*, type4>::value));
         assert((is_same<int*, type5>::value));
     }
+#endif
     {
+#ifndef UNBOOST_OLD_BORLAND
         check = 0;
         call_m<foo>();
         assert(check == 1);
         check = 0;
         call_m<add_const<foo>::type>();
         assert(check == -1);
+#endif
     }
     {
         assert((is_same<remove_reference<int&>::type, int>::value));
