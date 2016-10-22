@@ -58,10 +58,10 @@ else(USE_BOOST)
     endif(NO_BOOST)
 endif(USE_BOOST)
 
-if (${Boost_FOUND})
+if(${Boost_FOUND})
     include_directories(${Boost_INCLUDE_DIR})
     link_libraries(${Boost_LIBRARIES})
-endif (${Boost_FOUND})
+endif(${Boost_FOUND})
 
 #
 # C++11
