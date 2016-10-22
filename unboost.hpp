@@ -83,6 +83,10 @@
     #include "unboost/tuple.hpp"
 #endif
 
+#ifdef UNBOOST_USE_SAFE_DELETE
+    #include "unboost/safe_delete.hpp"
+#endif
+
 #ifdef UNBOOST_USE_STRING_ALGORITHM
     #include "unboost/string_algorithm.hpp"
 #endif
