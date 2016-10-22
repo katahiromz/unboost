@@ -198,7 +198,6 @@
             struct rvalue_ref {
                 T& m_ref;
                 rvalue_ref(T& ref) : m_ref(ref) { }
-                rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
             };
 
             #ifdef UNBOOST_OLD_BORLAND
@@ -289,7 +288,6 @@
         struct rvalue_ref {
             T& m_ref;
             rvalue_ref(T& ref) : m_ref(ref) { }
-            rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
         };
 
         #ifdef UNBOOST_OLD_BORLAND
