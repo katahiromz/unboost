@@ -4,8 +4,8 @@
 #ifndef UNBOOST_CORE_HPP_
 #define UNBOOST_CORE_HPP_
 
-#define UNBOOST_VERSION             23
-#define UNBOOST_VERSION_STRING      "Unboost 23 by Katayama Hirofumi MZ"
+#define UNBOOST_VERSION             24
+#define UNBOOST_VERSION_STRING      "Unboost 24 by Katayama Hirofumi MZ"
 
 #include <cassert>      // for the assert macro
 #include <string>       // for std::string and std::wstring, ...
