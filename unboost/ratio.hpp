@@ -96,7 +96,6 @@ namespace unboost {
 #elif defined(UNBOOST_USE_BOOST_RATIO)
     #include <boost/ratio/ratio.hpp>
     #include <boost/ratio/ratio_io.hpp>
-    #include <boost/ratio/rational_constant.hpp>
     namespace unboost {
         using boost::ratio;
         using boost::ratio_add;
@@ -109,26 +108,26 @@ namespace unboost {
         using boost::ratio_less_equal;
         using boost::ratio_greater;
         using boost::ratio_greater_equal;
-        using boost::yocto;
-        using boost::zepto;
-        using boost::atto;
-        using boost::femto;
-        using boost::pico;
-        using boost::nano;
-        using boost::micro;
-        using boost::milli;
-        using boost::centi;
-        using boost::deci;
-        using boost::deca;
-        using boost::hecto;
-        using boost::kilo;
-        using boost::mega;
-        using boost::giga;
-        using boost::tera;
-        using boost::peta;
-        using boost::exa;
-        using boost::zetta;
-        using boost::yotta;
+        //yocto
+        //zepto
+        typedef ratio<1, 1000000000000000000> atto;
+        typedef ratio<1, 1000000000000000> femto;
+        typedef ratio<1, 1000000000000> pico;
+        typedef ratio<1, 1000000000> nano;
+        typedef ratio<1, 1000000> micro;
+        typedef ratio<1, 1000> milli;
+        typedef ratio<1, 100> centi;
+        typedef ratio<1, 10> deci;
+        typedef ratio<10, 1> deca;
+        typedef ratio<100, 1> hecto;
+        typedef ratio<1000, 1> kilo;
+        typedef ratio<1000000, 1> mega;
+        typedef ratio<1000000000, 1> giga;
+        typedef ratio<1000000000000, 1> tera;
+        typedef ratio<1000000000000000, 1> peta;
+        typedef ratio<1000000000000000000, 1> exa;
+        //zetta
+        //yotta
     } // namespace unboost
     #define unboost_auto_ratio auto
 #elif defined(UNBOOST_USE_UNBOOST_RATIO)

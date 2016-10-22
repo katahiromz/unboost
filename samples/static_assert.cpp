@@ -4,8 +4,8 @@
 #define UNBOOST_USE_STATIC_ASSERT
 #include <unboost.hpp>
 
-static_assert(1, "OK");
-//static_assert(0, "NG");
+UNBOOST_STATIC_ASSERT_MSG(1, "OK");
+//UNBOOST_STATIC_ASSERT_MSG(0, "NG");
 
 int main(void) {
     std::cout << "static_assert" << std::endl;

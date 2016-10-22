@@ -28,13 +28,9 @@
 #elif defined(UNBOOST_USE_BOOST_STATIC_ASSERT)
     #include <boost/static_assert.hpp>
     #define UNBOOST_STATIC_ASSERT_MSG BOOST_STATIC_ASSERT_MSG
-    #ifndef static_assert
-        #define static_assert BOOST_STATIC_ASSERT_MSG
-    #endif
 #else
     #define UNBOOST_STATIC_ASSERT_MSG(x,y) \
         typedef char UNBOOST_STATIC_ASSERTION[(x) ? 1 : -1]
-    #define static_assert(x,y) UNBOOST_STATIC_ASSERT_MSG((x),(y))
 #endif
 
 #endif  // ndef UNBOOST_STATIC_ASSERT_HPP_

@@ -149,40 +149,20 @@
         using boost::is_member_pointer;
         using boost::is_const;
         using boost::is_volatile;
-        using boost::is_trivial;
-        using boost::is_trivially_copyable;
-        using boost::is_standard_layout;
         using boost::is_pod;
-        using boost::is_literal_type;
         using boost::is_empty;
         using boost::is_polymorphic;
         using boost::is_abstract;
         using boost::is_signed;
         using boost::is_unsigned;
         using boost::is_constructible;
-        using boost::is_trivially_constructible;
-        using boost::is_nothrow_constructible;
         using boost::is_default_constructible;
-        using boost::is_trivially_default_constructible;
-        using boost::is_nothrow_default_constructible;
         using boost::is_copy_constructible;
-        using boost::is_trivially_copy_constructible;
-        using boost::is_nothrow_copy_constructible;
-        using boost::is_move_constructible;
-        using boost::is_trivially_move_constructible;
         using boost::is_nothrow_move_constructible;
         using boost::is_assignable;
-        using boost::is_trivially_assignable;
-        using boost::is_nothrow_assignable;
         using boost::is_copy_assignable;
-        using boost::is_trivially_copy_assignable;
-        using boost::is_nothrow_copy_assignable;
-        using boost::is_move_assignable;
-        using boost::is_trivially_move_assignable;
         using boost::is_nothrow_move_assignable;
         using boost::is_destructible;
-        using boost::is_trivially_destructible;
-        using boost::is_nothrow_destructible;
         using boost::has_virtual_destructor;
         using boost::alignment_of;
         using boost::rank;
@@ -211,8 +191,6 @@
         using boost::enable_if;
         using boost::conditional;
         using boost::common_type;
-        using boost::underlying_type;
-        using boost::result_of;
 
         #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
             // R-value reference
