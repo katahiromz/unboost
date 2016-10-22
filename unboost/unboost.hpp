@@ -183,6 +183,24 @@
     #endif
 #endif
 
+// filesystem depends on smart_ptr
+#ifdef UNBOOST_USE_FILESYSTEM
+    #ifndef UNBOOST_USE_SMART_PTR
+        #define UNBOOST_USE_SMART_PTR
+    #endif
+    //
+    #ifdef UNBOOST_USE_BOOST_FILESYSTEM
+        #ifndef UNBOOST_USE_BOOST_SMART_PTR
+            #define UNBOOST_USE_BOOST_SMART_PTR
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
+        #ifndef UNBOOST_USE_UNBOOST_SMART_PTR
+            #define UNBOOST_USE_UNBOOST_SMART_PTR
+        #endif
+    #endif
+#endif
+
 // smart pointer depends on type traits
 #ifdef UNBOOST_USE_SMART_PTR
     #ifndef UNBOOST_USE_TYPE_TRAITS
