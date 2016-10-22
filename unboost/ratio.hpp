@@ -71,26 +71,26 @@ namespace unboost {
         using std::ratio_less_equal;
         using std::ratio_greater;
         using std::ratio_greater_equal;
-        using std::yocto;
-        using std::zepto;
-        using std::atto;
-        using std::femto;
-        using std::pico;
-        using std::nano;
-        using std::micro;
-        using std::milli;
-        using std::centi;
-        using std::deci;
-        using std::deca;
-        using std::hecto;
-        using std::kilo;
-        using std::mega;
-        using std::giga;
-        using std::tera;
-        using std::peta;
-        using std::exa;
-        using std::zetta;
-        using std::yotta;
+        //yocto
+        //zepto
+        typedef ratio<1, 1000000000000000000> atto;
+        typedef ratio<1, 1000000000000000> femto;
+        typedef ratio<1, 1000000000000> pico;
+        typedef ratio<1, 1000000000> nano;
+        typedef ratio<1, 1000000> micro;
+        typedef ratio<1, 1000> milli;
+        typedef ratio<1, 100> centi;
+        typedef ratio<1, 10> deci;
+        typedef ratio<10, 1> deca;
+        typedef ratio<100, 1> hecto;
+        typedef ratio<1000, 1> kilo;
+        typedef ratio<1000000, 1> mega;
+        typedef ratio<1000000000, 1> giga;
+        typedef ratio<1000000000000, 1> tera;
+        typedef ratio<1000000000000000, 1> peta;
+        typedef ratio<1000000000000000000, 1> exa;
+        //zetta
+        //yotta
     } // namespace unboost
     #define unboost_auto_ratio auto
 #elif defined(UNBOOST_USE_BOOST_RATIO)
