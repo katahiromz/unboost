@@ -114,11 +114,13 @@
         using std::underlying_type;
         using std::result_of;
     } // namespace unboost
-    #define UNBOOST_RVALREF_TYPE(type)  type&&
-    #define UNBOOST_RVALREF(value)      value
+
+    #define UNBOOST_RVALREF_TYPE(...)     __VA_ARGS__&&
+    #define UNBOOST_RVALREF(value)        value
 #elif defined(UNBOOST_USE_BOOST_TYPE_TRAITS)
     #include <boost/utility.hpp>    // for boost::move, boost::forward
     #include <boost/type_traits.hpp>
+
     namespace unboost {
         //using boost::move;
         //using boost::forward;
@@ -220,8 +222,15 @@
                 rvalue_ref(T& ref) : m_ref(ref) { }
                 rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
             };
-            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type > /**/
-            #define UNBOOST_RVALREF(value)      (value).m_ref
+
+            #ifndef __BORLANDC__
+                #define UNBOOST_RVALREF_TYPE(...) \
+                    unboost::rvalue_ref<__VA_ARGS__> /**/
+            #else
+                #define UNBOOST_RVALREF_TYPE(type) \
+                    unboost::rvalue_ref<type> /**/
+            #endif
+            #define UNBOOST_RVALREF(value)          (value).m_ref
 
             template <typename T>
             struct remove_reference { typedef T type; }
@@ -291,8 +300,8 @@
             using boost::remove_reference;
             using boost::add_lvalue_reference;
             using boost::add_rvalue_reference;
-            #define UNBOOST_RVALREF_TYPE(type)  type&&
-            #define UNBOOST_RVALREF(value)      value
+            #define UNBOOST_RVALREF_TYPE(...)       __VA_ARGS__&&
+            #define UNBOOST_RVALREF(value)          value
         #endif
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)
@@ -304,7 +313,14 @@
             rvalue_ref(T& ref) : m_ref(ref) { }
             rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
         };
-        #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type > /**/
+
+        #ifndef __BORLANDC__
+            #define UNBOOST_RVALREF_TYPE(...) \
+                unboost::rvalue_ref<__VA_ARGS__> /**/
+        #else
+            #define UNBOOST_RVALREF_TYPE(type) \
+                unboost::rvalue_ref<type> /**/
+        #endif
         #define UNBOOST_RVALREF(value)      (value).m_ref
 
         template <typename T>

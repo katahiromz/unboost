@@ -105,6 +105,11 @@ int main(void) {
         ptr = IntPtr(new int(7));
         assert(ptr);
     }
+    {
+        unboost::unique_array<int> a(new int[32]);
+        a[0] = 1;
+        assert(a[0] == 1);
+    }
 
     std::cout << "success" << std::endl;
     return 0;

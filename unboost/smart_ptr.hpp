@@ -84,9 +84,117 @@
         }
         using std::tr1::static_pointer_cast;
         using std::tr1::dynamic_pointer_cast;
-        // NOTE: There is no unique_ptr for TR1
         using std::tr1::weak_ptr;
         using std::tr1::get_deleter;
+
+        template <typename T>
+        struct default_delete {
+            typedef default_delete<T> self_type;
+            void operator()(T *ptr) {
+                if (sizeof(T) > 0) {
+                    delete ptr;
+                }
+            }
+            template <typename T2>
+            void operator()(T2 *ptr) { }
+        };
+
+        template <typename T>
+        struct default_delete<T[]> {
+            typedef default_delete<T[]> self_type;
+            void operator()(T *ptr) {
+                if (sizeof(T) > 0) {
+                    delete[] ptr;
+                }
+            }
+        private:
+            template <typename T2>
+            void operator()(T2 *ptr) { }
+        };
+
+        template <typename T, typename DELETER = default_delete<T> >
+        class unique_ptr {
+        public:
+            typedef T *pointer;
+            typedef T element_type;
+            typedef DELETER deleter_type;
+            typedef unique_ptr<T, DELETER> self_type;
+
+            unique_ptr() : m_ptr(NULL) { }
+
+            explicit unique_ptr(pointer ptr) : m_ptr(ptr) { }
+
+            unique_ptr(pointer ptr, DELETER d) : m_ptr(ptr), m_d(d) { }
+
+#ifdef UNBOOST_RVALREF
+            unique_ptr(UNBOOST_RVALREF_TYPE(self_type)& u) :
+                m_ptr(UNBOOST_RVALREF(u).m_ptr)
+            {
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+            }
+
+            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r) {
+                m_ptr = UNBOOST_RVALREF(r).m_ptr;
+                UNBOOST_RVALREF(r).m_ptr = NULL;
+                return *this;
+            }
+
+            template <typename T2, typename D2>
+            unique_ptr(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) :
+                m_ptr(UNBOOST_RVALREF(u).m_ptr)
+            {
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+            }
+
+            template <typename T2, typename D2>
+            self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) {
+                m_ptr = UNBOOST_RVALREF(u).m_ptr;
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+                return *this;
+            }
+#endif
+
+            ~unique_ptr() {
+                pointer ptr = get();
+                if (ptr) {
+                    get_deleter()(ptr);
+                }
+            }
+
+            pointer release() {
+                pointer ptr = m_ptr;
+                m_ptr = NULL;
+                return ptr;
+            }
+
+            void reset(pointer ptr = pointer()) {
+                pointer old_ptr = m_ptr;
+                m_ptr = ptr;
+                if (old_ptr != NULL)
+                    get_deleter()(old_ptr);
+            }
+
+            void swap(self_type& ptr) {
+                swap(m_ptr, ptr.m_ptr);
+                swap(m_d, ptr.m_d);
+            }
+
+            pointer get() const { return m_ptr; }
+
+                  deleter_type& get_deleter()       { return m_d; }
+            const deleter_type& get_deleter() const { return m_d; }
+
+            operator bool() const               { return get() != NULL; }
+                  T& operator*()                { return *get(); }
+            const T& operator*() const          { return *get(); }
+            pointer operator->() const          { return get(); }
+            T& operator[](size_t i)             { return get()[i]; }
+            const T& operator[](size_t i) const { return get()[i]; }
+
+        protected:
+            T *         m_ptr;
+            DELETER     m_d;
+        }; // unique_ptr<T, DELETER>
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
     #include <boost/shared_ptr.hpp>
@@ -840,5 +948,37 @@
 #else
     #error Your compiler is not supported yet. You lose.
 #endif
+
+// unboost::unique_array<T>
+namespace unboost {
+    template <typename T>
+    struct _default_array_delete {
+        typedef _default_array_delete<T> self_type;
+        void operator()(T *ptr) {
+            if (sizeof(T) > 0) {
+                delete[] ptr;
+            }
+        }
+        template <typename T2>
+        void operator()(T2 *ptr) { }
+    };
+
+    template <typename T>
+    class unique_array : public unique_ptr<T, _default_array_delete<T> > {
+    public:
+        typedef unique_ptr<T, _default_array_delete<T> > self_type;
+        using self_type::self_type;
+        using self_type::operator=;
+        using self_type::release;
+        using self_type::reset;
+        using self_type::swap;
+        using self_type::get;
+        using self_type::get_deleter;
+        using self_type::operator bool;
+        using self_type::operator*;
+        using self_type::operator->;
+        using self_type::operator[];
+    };
+} // namespace unboost
 
 #endif  // ndef UNBOOST_SMART_PTR_HPP_
