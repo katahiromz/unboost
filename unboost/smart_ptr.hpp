@@ -924,8 +924,8 @@ namespace unboost {
     public:
         typedef unique_array<T> self_type;
         typedef unique_ptr<T, _default_array_delete<T> > super_type;
-        typedef super_type::pointer pointer;
-        typedef super_type::deleter_type deleter_type;
+        typedef typename super_type::pointer pointer;
+        typedef typename super_type::deleter_type deleter_type;
 
         unique_array() { }
         unique_array(pointer ptr) : super_type(ptr) { }
