@@ -20,7 +20,11 @@
         #elif defined(_MSC_VER)
             #if (1500 <= _MSC_VER) && (_MSC_VER <= 1600)
                 // Visual C++ 2008 SP1 and 2010
-                #define UNBOOST_USE_TR1_SMART_PTR
+                #ifndef UNBOOST_NO_TR1
+                    #define UNBOOST_USE_TR1_SMART_PTR
+                #else
+                    #define UNBOOST_USE_UNBOOST_SMART_PTR
+                #endif
                 // NOTE: On MSVC 2008, you needs SP1.
             #elif (_MSC_VER >= 1700)
                 // Visual C++ 2012 and later
@@ -30,7 +34,11 @@
             #endif
         #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
             // GCC 4.3 and later
-            #define UNBOOST_USE_TR1_SMART_PTR
+            #ifndef UNBOOST_NO_TR1
+                #define UNBOOST_USE_TR1_SMART_PTR
+            #else
+                #define UNBOOST_USE_UNBOOST_SMART_PTR
+            #endif
         #else
             #define UNBOOST_USE_UNBOOST_SMART_PTR
         #endif
@@ -121,42 +129,48 @@
         using boost::get_deleter;
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_SMART_PTR)
+    #include <memory>       // for std::shared_ptr, ...
     namespace unboost {
         struct _static_tag { };
         struct _const_tag { };
         struct _dynamic_tag { };
 
-        class bad_weak_ptr : std::exception {
-        public:
-            bad_weak_ptr() { }
-            virtual ~bad_weak_ptr() { }
-            virtual const char *what() const { return "unboost::bad_weak_ptr"; }
-        };
+        #if (__cplusplus >= 201103L)    // C++11
+            using std::bad_weak_ptr;
+            using std::default_delete;
+        #else   // not C++11
+            class bad_weak_ptr : std::exception {
+            public:
+                bad_weak_ptr() { }
+                virtual ~bad_weak_ptr() { }
+                virtual const char *what() const { return "unboost::bad_weak_ptr"; }
+            };
 
-        template <typename T>
-        struct default_delete {
-            typedef default_delete<T> self_type;
-            void operator()(T *ptr) {
-                if (sizeof(T) > 0) {
-                    delete ptr;
+            template <typename T>
+            struct default_delete {
+                typedef default_delete<T> self_type;
+                void operator()(T *ptr) {
+                    if (sizeof(T) > 0) {
+                        delete ptr;
+                    }
                 }
-            }
-            template <typename T2>
-            void operator()(T2 *ptr) { }
-        };
+                template <typename T2>
+                void operator()(T2 *ptr) { }
+            };
 
-        template <typename T>
-        struct default_delete<T[]> {
-            typedef default_delete<T[]> self_type;
-            void operator()(T *ptr) {
-                if (sizeof(T) > 0) {
-                    delete[] ptr;
+            template <typename T>
+            struct default_delete<T[]> {
+                typedef default_delete<T[]> self_type;
+                void operator()(T *ptr) {
+                    if (sizeof(T) > 0) {
+                        delete[] ptr;
+                    }
                 }
-            }
-        private:
-            template <typename T2>
-            void operator()(T2 *ptr) { }
-        };
+            private:
+                template <typename T2>
+                void operator()(T2 *ptr) { }
+            };
+        #endif  // not C++11
 
         class _ref_count_base {
         public:
@@ -283,7 +297,10 @@
             void *_get_deleter() {
                 return (_m_rep ? _m_rep->_get_deleter() : NULL);
             }
-            T *_get() { return _m_ptr; }
+
+                  T *_get()       { return _m_ptr; }
+            const T *_get() const { return _m_ptr; }
+
             bool _expired() const {
                 return (_m_rep == NULL || _m_rep->_expired());
             }
@@ -292,7 +309,7 @@
                     _m_rep->_dec_ref();
             }
             void _reset() {
-                _reset(NULL, NULLs);
+                _reset(NULL, NULL);
             }
             template <typename T2>
             void _reset(const _ptr_base<T2>& other) {
@@ -445,7 +462,7 @@
                 super_type(forward(UNBOOST_RVALREF(r))) { }
 
             template <typename T2>
-            self_type& operator=(UNBOOST_RVALREF_TYPE(shared_ptr<T2>)) {
+            self_type& operator=(UNBOOST_RVALREF_TYPE(shared_ptr<T2>) r) {
                 self_type(UNBOOST_RVALREF(r)).swap(*this);
                 return *this;
             }
@@ -490,7 +507,8 @@
                 this->_swap(other);
             }
 
-            T* get() const          { return this->_get(); }
+                  T* get()          { return this->_get(); }
+            const T* get() const    { return this->_get(); }
             T& operator*() const    { return *this->_get(); }
             T* operator->() const   { return this->_get(); }
 
@@ -523,11 +541,12 @@
                 this->_reset0(ptr, r);
                 _enable_shared(ptr, r);
             }
-            template <typename DELETER, typename T>
-            friend DELETER* get_deleter(const shared_ptr<T>& ptr) {
-                return (DELETER *)ptr._get_deleter();
-            }
         }; // shared_ptr<T>
+
+        template <typename DELETER, typename T2>
+        inline DELETER* get_deleter(const shared_ptr<T2>& ptr) {
+            return (DELETER *)ptr._get_deleter();
+        }
 
         template <typename T1, typename T2>
         inline operator==(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
@@ -668,7 +687,7 @@
             bool expired() const    { return this->_expired(); }
 
             shared_ptr<T> lock() const {
-                return shared_ptr<element_type>(*this, false));
+                return shared_ptr<element_type>(*this, false);
             }
 
             template <typename T2>

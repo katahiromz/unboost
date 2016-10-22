@@ -19,13 +19,21 @@
                 #define UNBOOST_USE_CXX11_UNORDERED_SET
             #elif (_MSC_VER >= 1500)
                 // Visual C++ 2008
-                #define UNBOOST_USE_TR1_UNORDERED_SET
+                #ifndef UNBOOST_NO_TR1
+                    #define UNBOOST_USE_TR1_UNORDERED_SET
+                #else
+                    #define UNBOOST_USE_BOOST_UNORDERED_SET
+                #endif
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_SET
             #endif
         #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
             // GCC 4.3 and later
-            #define UNBOOST_USE_TR1_UNORDERED_SET
+            #ifndef UNBOOST_NO_TR1
+                #define UNBOOST_USE_TR1_UNORDERED_SET
+            #else
+                #define UNBOOST_USE_BOOST_UNORDERED_SET
+            #endif
         #else
             #define UNBOOST_USE_BOOST_UNORDERED_SET
         #endif

@@ -23,13 +23,21 @@
                 #define UNBOOST_USE_CXX11_ARRAY
             #elif (1500 <= _MSC_VER) && (_MSC_VER < 1600)
                 // Visual C++ 2008
-                #define UNBOOST_USE_TR1_ARRAY
+                #ifndef UNBOOST_NO_TR1
+                    #define UNBOOST_USE_TR1_ARRAY
+                #else
+                    #define UNBOOST_USE_UNBOOST_ARRAY
+                #endif
             #else
                 #define UNBOOST_USE_UNBOOST_ARRAY
             #endif
         #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
             // GCC 4.3 and later
-            #define UNBOOST_USE_TR1_ARRAY
+            #ifndef UNBOOST_NO_TR1
+                #define UNBOOST_USE_TR1_ARRAY
+            #else
+                #define UNBOOST_USE_UNBOOST_ARRAY
+            #endif
         #else
             #define UNBOOST_USE_UNBOOST_ARRAY
         #endif
@@ -117,14 +125,14 @@
             friend void swap(array<T, N>& a1, array<T, N>& a2) {
                 a1.swap(a2);
             }
-            template <typename T, size_t N>
-            friend inline void swap(array<T, N>& a1, array<T, N>& a2) {
-                a1.swap(a2);
-            }
         }; // array<T, N>
         template <typename T, size_t N>
+        inline void swap(array<T, N>& a1, array<T, N>& a2) {
+            a1.swap(a2);
+        }
+        template <typename T, size_t N>
         inline int compare_array(array<T, N>& a1, array<T, N>& a2) {
-            for (size_type i = 0; i < N; ++i) {
+            for (typename array<T, N>::size_type i = 0; i < N; ++i) {
                 if (a1.data()[i] < a2.data()[i])
                     return -1;
                 if (a1.data()[i] > a2.data()[i])

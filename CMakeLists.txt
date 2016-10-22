@@ -5,6 +5,7 @@ option(USE_CXX11 "Use C++11" OFF)
 option(USE_TR1 "Use TR1" OFF)
 option(USE_BOOST "Use Boost" OFF)
 option(NO_CXX11 "Don't use C++11" OFF)
+option(NO_TR1 "Don't use TR1" OFF)
 
 if(USE_CXX11)
     add_definitions(-DUNBOOST_USE_CXX11)
@@ -21,6 +22,10 @@ endif(USE_BOOST)
 if(NO_CXX11)
     add_definitions(-DUNBOOST_NO_CXX11)
 endif(NO_CXX11)
+
+if(NO_TR1)
+    add_definitions(-DUNBOOST_NO_TR1)
+endif(NO_TR1)
 
 add_executable(array samples/array.cpp)
 add_executable(assert samples/assert.cpp)
