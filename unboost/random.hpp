@@ -4,7 +4,7 @@
 #ifndef UNBOOST_RANDOM_HPP_
 #define UNBOOST_RANDOM_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_RANDOM) + defined(UNBOOST_USE_BOOST_RANDOM)) == 0)

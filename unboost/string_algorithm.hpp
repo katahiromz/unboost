@@ -4,7 +4,7 @@
 #ifndef UNBOOST_STRING_ALGORITHM_HPP_
 #define UNBOOST_STRING_ALGORITHM_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_BOOST_STRING_ALGORITHM) + defined(UNBOOST_USE_UNBOOST_STRING_ALGORITHM)) == 0)

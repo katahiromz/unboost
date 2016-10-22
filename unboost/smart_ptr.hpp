@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SMART_PTR_HPP_
 #define UNBOOST_SMART_PTR_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR) + defined(UNBOOST_USE_UNBOOST_SMART_PTR)) == 0)

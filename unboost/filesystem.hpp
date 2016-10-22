@@ -4,7 +4,7 @@
 #ifndef UNBOOST_FILESYSTEM_HPP_
 #define UNBOOST_FILESYSTEM_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 // include directory interface
 #ifdef _WIN32

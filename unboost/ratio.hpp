@@ -4,7 +4,7 @@
 #ifndef UNBOOST_RATIO_HPP_
 #define UNBOOST_RATIO_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 namespace unboost {
     // NOTE: unboost::intmax_t is not 64-bit

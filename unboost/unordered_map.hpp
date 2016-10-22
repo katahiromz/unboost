@@ -4,7 +4,7 @@
 #ifndef UNBOOST_UNORDERED_MAP_HPP_
 #define UNBOOST_UNORDERED_MAP_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_UNORDERED_MAP) + defined(UNBOOST_USE_TR1_UNORDERED_MAP) + defined(UNBOOST_USE_BOOST_UNORDERED_MAP)) == 0)

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_THREAD_HPP
 #define UNBOOST_THREAD_HPP
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 #include "chrono.hpp"
 
 // If not choosed, choose one

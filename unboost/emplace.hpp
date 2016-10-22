@@ -4,7 +4,7 @@
 #ifndef UNBOOST_EMPLACE_HPP_
 #define UNBOOST_EMPLACE_HPP_
 
-#include "unboost_core.hpp"
+#include "unboost.hpp"
 
 #ifndef UNBOOST_EMPLACE
     #ifdef UNBOOST_CXX11
