@@ -65,7 +65,7 @@
     #endif
     namespace unboost {
         using std::tr1::shared_ptr;
-        #define UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+        #define UNBOOST_NEED_UNBOOST_MAKE_SHARED
         using std::tr1::static_pointer_cast;
         using std::tr1::dynamic_pointer_cast;
         using std::tr1::weak_ptr;
@@ -99,7 +99,7 @@
         template <typename T, typename DELETER = default_delete<T> >
         class unique_ptr;
 
-        #define UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+        #define UNBOOST_NEED_UNBOOST_UNIQUE_PTR
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
     #include <boost/shared_ptr.hpp>
@@ -176,6 +176,7 @@
         public:
             _ref_count_base() : _m_uses(1), _m_weaks(1) { }
             virtual ~_ref_count_base() { }
+
             bool _inc_ref_nz() {
                 long count = _m_uses;
                 if (count == 0)
@@ -183,12 +184,14 @@
                 _m_uses = count + 1;
                 return true;
             }
+
             void _inc_ref() {
                 _m_uses++;
             }
             void _inc_wref() {
                 _m_weaks++;
             }
+
             void _dec_ref() {
                 if (--_m_uses == 0)
                 {
@@ -200,12 +203,9 @@
                 if (--_m_weaks == 0)
                     _delete_this();
             }
-            long _use_count() const {
-                return _m_uses;
-            }
-            bool _expired() const {
-                return _m_uses == 0;
-            }
+
+            long _use_count() const     { return _m_uses; }
+            bool _expired() const       { return _m_uses == 0; }
         protected:
             long _m_uses;
             long _m_weaks;
@@ -286,14 +286,17 @@
             long _use_count() const {
                 return (_m_rep ? _m_rep->_use_count() : 0);
             }
+
             void _swap(_ptr_base<T>& r) {
                 unboost::swap(_m_ptr, r._m_ptr);
                 unboost::swap(_m_rep, r._m_rep);
             }
+
             template <typename T2>
             void _owner_before(const _ptr_base<T2>& r) {
                 return _m_rep < r._m_rep;
             }
+
             void *_get_deleter() {
                 return (_m_rep ? _m_rep->_get_deleter() : NULL);
             }
@@ -304,10 +307,7 @@
             bool _expired() const {
                 return (_m_rep == NULL || _m_rep->_expired());
             }
-            void _dec_ref() {
-                if (_m_rep)
-                    _m_rep->_dec_ref();
-            }
+
             void _reset() {
                 _reset(NULL, NULL);
             }
@@ -346,16 +346,23 @@
                 else if (does_throw)
                     throw bad_weak_ptr();
             }
+
             void _reset0(T *other_ptr, _ref_count_base *other_rep) {
                 if (_m_rep)
                     _m_rep->_dec_ref();
                 _m_rep = other_rep;
                 _m_ptr = other_ptr;
             }
+
+            void _dec_ref() {
+                if (_m_rep)
+                    _m_rep->_dec_ref();
+            }
             void _dec_wref() {
                 if (_m_rep != NULL)
                     _m_rep->_dec_wref();
             }
+
             void _reset_w() {
                 _reset_w((element_type *)NULL, NULL);
             }
@@ -376,6 +383,7 @@
                 _m_rep = other_rep;
                 _m_ptr = other_ptr;
             }
+
         protected:
             T *                 _m_ptr;
             _ref_count_base *   _m_rep;
@@ -599,7 +607,7 @@
             return shared_ptr<T1>(r, _dynamic_tag());
         }
 
-        #define UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+        #define UNBOOST_NEED_UNBOOST_UNIQUE_PTR
 
         // FIXME: hash
 
@@ -723,15 +731,14 @@
             return shared_ptr<T const>(_m_wptr);
         }
 
-        #define UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+        #define UNBOOST_NEED_UNBOOST_MAKE_SHARED
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
 #endif
 
-// unboost::unique_array<T>
 namespace unboost {
-    #ifdef UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+    #ifdef UNBOOST_NEED_UNBOOST_MAKE_SHARED
         template <typename T>
         inline shared_ptr<T> make_shared() {
             shared_ptr<T> ptr(new T());
@@ -757,9 +764,9 @@ namespace unboost {
             shared_ptr<T> ptr(new T(value1, value2, value3, value4));
             return ptr;
         }
-    #endif  // def UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+    #endif  // def UNBOOST_NEED_UNBOOST_MAKE_SHARED
 
-    #ifdef UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+    #ifdef UNBOOST_NEED_UNBOOST_UNIQUE_PTR
         template <typename T, typename DELETER/* = default_delete<T>*/ >
         class unique_ptr {
         public:
@@ -873,7 +880,7 @@ namespace unboost {
         inline void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) {
             lhs.swap(rhs);
         }
-    #endif  // def UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+    #endif  // def UNBOOST_NEED_UNBOOST_UNIQUE_PTR
 
     template <typename T>
     struct _default_array_delete {
