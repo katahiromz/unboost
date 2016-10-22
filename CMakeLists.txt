@@ -38,8 +38,6 @@ if(NO_BOOST)
     add_definitions(-DUNBOOST_NO_BOOST)
 endif(NO_BOOST)
 
-include_directories(.)
-
 #
 # Boost
 #
@@ -77,6 +75,8 @@ endif((CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD GREATER 11))
 #
 # sample programs
 #
+include_directories(.)
+
 add_executable(array samples/array.cpp)
 add_executable(assert samples/assert.cpp)
 add_executable(chrono samples/chrono.cpp)
