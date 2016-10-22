@@ -7,34 +7,33 @@
 #include "unboost.hpp"
 
 namespace unboost {
-    // NOTE: unboost::intmax_t is not 64-bit
-    typedef int intmax_t;
-    typedef unsigned int uintmax_t;
+    typedef int _ratio_intmax_t;
+    typedef unsigned int _ratio_uintmax_t;
 
-    template <intmax_t N>
+    template <_ratio_intmax_t N>
     struct _SIGN {
         enum { value = (N < 0 ? -1 : 1) };
     };
 
-    template <intmax_t N>
+    template <_ratio_intmax_t N>
     struct _ABS {
         enum { value = (N < 0 ? -N : N) };
     };
 
-    template <intmax_t A, intmax_t B>
+    template <_ratio_intmax_t A, _ratio_intmax_t B>
     struct _GCD {
         enum { value = _GCD<B, A % B>::value };
     };
-    template <intmax_t A>
+    template <_ratio_intmax_t A>
     struct _GCD<A, 0> {
         enum { value = A };
     };
-    template <intmax_t B>
+    template <_ratio_intmax_t B>
     struct _GCD<0, B> {
         enum { value = B };
     };
 
-    inline intmax_t _gcd(intmax_t x, intmax_t y) {
+    inline _ratio_intmax_t _gcd(_ratio_intmax_t x, _ratio_intmax_t y) {
         if (x == 0 && y == 0)
             return 1;
         if (x == 0)
@@ -132,7 +131,7 @@ namespace unboost {
     #define unboost_auto_ratio auto
 #elif defined(UNBOOST_USE_UNBOOST_RATIO)
     namespace unboost {
-        template <intmax_t Num, intmax_t Den = 1>
+        template <_ratio_intmax_t Num, _ratio_intmax_t Den = 1>
         class ratio {
         public:
             typedef ratio<Num, Den> type;
@@ -194,8 +193,8 @@ namespace unboost {
         template <class R1, class R2>
         struct ratio_equal {
             enum {
-                value = ((intmax_t)R1::num == (intmax_t)R2::num &&
-                         (intmax_t)R1::den == (intmax_t)R2::den)
+                value = ((_ratio_intmax_t)R1::num == (_ratio_intmax_t)R2::num &&
+                         (_ratio_intmax_t)R1::den == (_ratio_intmax_t)R2::den)
             };
             typedef bool value_type;
             operator value_type() const { return value; }
@@ -269,14 +268,14 @@ namespace unboost {
         //static const ratio<1000000000000000000000000LL, 1> yotta;
 
         struct auto_ratio {
-            intmax_t num;
-            intmax_t den;
+            _ratio_intmax_t num;
+            _ratio_intmax_t den;
 
             auto_ratio() : num(1), den(1) { }
-            auto_ratio(intmax_t n, intmax_t d) : num(n), den(d) { }
+            auto_ratio(_ratio_intmax_t n, _ratio_intmax_t d) : num(n), den(d) { }
             auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
 
-            template <intmax_t Num, intmax_t Den>
+            template <_ratio_intmax_t Num, _ratio_intmax_t Den>
             auto_ratio(const ratio<Num, Den>&) {
                 num = ratio<Num, Den>::num;
                 den = ratio<Num, Den>::den;
@@ -307,7 +306,7 @@ namespace unboost {
                 den = ar.den;
                 return *this;
             }
-            template <intmax_t Num, intmax_t Den>
+            template <_ratio_intmax_t Num, _ratio_intmax_t Den>
             auto_ratio& operator=(const ratio<Num, Den>&) {
                 num = ratio<Num, Den>::num;
                 den = ratio<Num, Den>::den;
@@ -350,26 +349,26 @@ namespace unboost {
                 ret.den = ar1.den * ar2.den;
                 return ret;
             }
-            friend auto_ratio operator*(const auto_ratio& ar1, const intmax_t& n) {
+            friend auto_ratio operator*(const auto_ratio& ar1, const _ratio_intmax_t& n) {
                 auto_ratio ret;
                 ret.num = ar1.num * n;
                 ret.den = ar1.den;
                 return ret;
             }
-            friend auto_ratio operator*(const intmax_t& n, const auto_ratio& ar1) {
+            friend auto_ratio operator*(const _ratio_intmax_t& n, const auto_ratio& ar1) {
                 auto_ratio ret;
                 ret.num = ar1.num * n;
                 ret.den = ar1.den;
                 return ret;
             }
-            friend auto_ratio operator/(const auto_ratio& ar1, const intmax_t& n) {
+            friend auto_ratio operator/(const auto_ratio& ar1, const _ratio_intmax_t& n) {
                 auto_ratio ret;
                 ret.num = ar1.num / n;
                 ret.den = ar1.den;
                 return ret;
             }
-            friend intmax_t operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
-                intmax_t ret;
+            friend _ratio_intmax_t operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
+                _ratio_intmax_t ret;
                 ret = (ar1.num * ar2.den + ar1.den * ar2.num) / (ar1.den * ar2.den);
                 return ret;
             }
@@ -384,11 +383,11 @@ namespace unboost {
                 swap(*this, ret);
                 return *this;
             }
-            auto_ratio& operator*=(intmax_t n) {
+            auto_ratio& operator*=(_ratio_intmax_t n) {
                 num *= n;
                 return *this;
             }
-            auto_ratio& operator/=(intmax_t n) {
+            auto_ratio& operator/=(_ratio_intmax_t n) {
                 den *= n;
                 return *this;
             }
