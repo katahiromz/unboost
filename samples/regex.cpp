@@ -18,8 +18,10 @@ int main(void) {
 
     assert(regex_match(items[0], target_regex));
     assert(regex_match(items[1], target_regex));
-    assert(regex_match(items[2], target_regex));
+    assert(!regex_match(items[2], target_regex));
     assert(!regex_match(items[3], target_regex));
+
+    std::cout << "success" << std::endl;
 
     return 0;
 }

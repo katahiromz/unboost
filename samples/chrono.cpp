@@ -11,6 +11,7 @@ int main(void) {
         using namespace unboost::chrono;
         unboost_auto_duration s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
+        assert(s.count() == 4807);
     }
     {
         using namespace unboost::chrono;
@@ -18,7 +19,9 @@ int main(void) {
         std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
         std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
         std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
-        std::cout << duration_cast<hours>(sec).count() << " hours" << std::endl;
+        assert(duration_cast<microseconds>(sec).count() == 1000000);
+        assert(duration_cast<milliseconds>(sec).count() == 1000);
+        assert(duration_cast<seconds>(sec).count() == 1);
     }
     {
         //unboost::chrono::time_point<unboost::chrono::steady_clock> t1, t2;
@@ -31,6 +34,7 @@ int main(void) {
         //    std::cout << size << ": " << (t1 - t2).count() << std::endl;
         //}
     }
+    std::cout << "success" << std::endl;
 
     return 0;
 }

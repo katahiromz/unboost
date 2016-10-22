@@ -36,5 +36,6 @@ int main(void) {
     assert(unboost::get<0>(tup) == 2);
     assert(strcmp(unboost::get<1>(tup), "This is") == 0);
     assert(unboost::get<2>(tup) == "a test");
+    std::cout << "success" << std::endl;
     return 0;
 }

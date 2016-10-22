@@ -93,5 +93,7 @@ int main(void) {
     unboost::this_thread::sleep_for(unboost::chrono::seconds(10));
     assert(checked);
 
+    std::cout << "success" << std::endl;
+
     return 0;
 }

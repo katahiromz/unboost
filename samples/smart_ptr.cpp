@@ -57,7 +57,7 @@ struct Foo2 {
 //////////////////////////////////////////////////////////////////////////////
 
 int main(void) {
-    std::cout << "smart ptr" << std::endl;
+    std::cout << "smart pointer" << std::endl;
 
     {
         assert(count == 0);
@@ -105,6 +105,8 @@ int main(void) {
         ptr = IntPtr(new int(7));
         assert(ptr);
     }
+
+    std::cout << "success" << std::endl;
     return 0;
 }
 

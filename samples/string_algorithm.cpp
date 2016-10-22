@@ -43,5 +43,6 @@ int main(void) {
     wstr = unboost::replace_all_copy(wstr, L"<>", L"===");
     assert(wstr == L"TEST1===TEST2===TEST3");
 
+    std::cout << "success" << std::endl;
     return 0;
 }

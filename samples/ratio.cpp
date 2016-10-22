@@ -40,5 +40,6 @@ int main(void) {
     typedef ratio_less<ratio<23,37>, ratio<57,90> > less;
     assert(less::value);
 
+    std::cout << "success" << std::endl;
     return 0;
 }
