@@ -29,6 +29,8 @@ int main(void) {
             remove_all(L"mydir1");
             assert(!is_directory(L"mydir1/mydir2/mydir3"));
             assert(!is_directory(L"mydir1"));
+            remove_all(L"dir");
+            assert(!is_directory(L"dir"));
         #else
             std::cout << current_path().c_str() << std::endl;
             create_directory("dir");
@@ -46,6 +48,8 @@ int main(void) {
             remove_all("mydir1");
             assert(!is_directory("mydir1/mydir2/mydir3"));
             assert(!is_directory("mydir1"));
+            remove_all("dir");
+            assert(!is_directory("dir"));
         #endif
     }
     std::cout << "success" << std::endl;

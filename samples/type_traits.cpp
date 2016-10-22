@@ -11,8 +11,7 @@ struct A { };
 //////////////////////////////////////////////////////////////////////////////
 
 int check = 0;
-struct foo
-{
+struct foo {
     void m() {
         std::cout << "Non-cv\n";
         check = 1;
@@ -24,8 +23,7 @@ struct foo
 };
  
 template <class T>
-void call_m()
-{
+void call_m() {
     T().m();
 }
 
@@ -110,15 +108,15 @@ int main(void) {
         assert(!is_volatile<int>::value);
         assert(is_volatile<volatile int>::value);
     }
-#ifndef __BORLANDC__
     {
         assert(extent<int[3]>::value == 3);
         assert(extent<int[3][4]>::value == 3);
         assert((extent<int[3][4], 1>::value == 4));
         assert((extent<int[3][4], 2>::value == 0));
+#ifndef __BORLANDC__
         assert(extent<int[]>::value == 0);
-    }
 #endif
+    }
     {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));
@@ -144,11 +142,13 @@ int main(void) {
         assert(check == -1);
     }
     {
-        assert((is_same<remove_reference<int&>, int>::value));
-        assert((is_same<add_lvalue_reference<int>, int&>::value));
-        assert((is_same<add_rvalue_reference<int>, UNBOOST_RVALREF_TYPE(int) >::value));
-        assert((is_same<remove_pointer<int*>, int>::value));
-        assert((is_same<add_pointer<int>, int*>::value));
+        assert((is_same<remove_reference<int&>::type, int>::value));
+        assert((is_same<add_lvalue_reference<int>::type, int&>::value));
+        assert((is_same<add_rvalue_reference<int>::type, UNBOOST_RVALREF_TYPE(int) >::value));
+        assert((is_same<remove_pointer<int*>::type, int>::value));
+        assert((is_same<add_pointer<int>::type, int*>::value));
     }
+
+    std::cout << "success" << std::endl;
     return 0;
 }

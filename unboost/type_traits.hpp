@@ -19,10 +19,11 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
-    #include <utility>          // for std::move
+    #include <utility>          // for std::move, std::forward
     #include <type_traits>
     namespace unboost {
         using std::move;
+        using std::forward;
         using std::integral_constant;
         using std::true_type;
         using std::false_type;
@@ -116,10 +117,11 @@
     #define UNBOOST_RVALREF_TYPE(type)  type&&
     #define UNBOOST_RVALREF(value)      value
 #elif defined(UNBOOST_USE_BOOST_TYPE_TRAITS)
-    #include <boost/utility.hpp>    // for boost::move
+    #include <boost/utility.hpp>    // for boost::move, boost::forward
     #include <boost/type_traits.hpp>
     namespace unboost {
-        using boost::move;
+        //using boost::move;
+        //using boost::forward;
         using boost::integral_constant;
         using boost::true_type;
         using boost::false_type;
@@ -216,8 +218,9 @@
             struct rvalue_ref {
                 T& m_ref;
                 rvalue_ref(T& ref) : m_ref(ref) { }
+                rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
             };
-            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type >
+            #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type > /**/
             #define UNBOOST_RVALREF(value)      (value).m_ref
 
             template <typename T>
@@ -225,7 +228,7 @@
             template <typename T>
             struct remove_reference<T&> { typedef T type; }
             template <typename T>
-            struct remove_reference<UNBOOST_RVALREF_TYPE(T) >
+            struct remove_reference<UNBOOST_RVALREF_TYPE(T)>
             { typedef T type; }
 
             template <typename T>
@@ -234,17 +237,28 @@
                 return ref;
             }
 
+            template <typename T>
+            inline UNBOOST_RVALREF_TYPE(T)
+            forward(typename remove_reference<T>::type& t) {
+                return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+            }
+            template <typename T>
+            inline UNBOOST_RVALREF_TYPE(T)
+            forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
+                return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+            }
+
             template <typename>
             struct is_rvalue_reference : public false_type { };
             template <typename T>
-            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
+            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> : public true_type { };
 
             template <typename T>
             struct is_reference : false_type { };
             template <typename T>
             struct is_reference<T&> : true_type { };
             template <typename T>
-            struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
+            struct is_reference<UNBOOST_RVALREF_TYPE(T)> : true_type { };
 
             template <typename T>
             struct add_lvalue_reference {
@@ -255,7 +269,7 @@
                 typedef T& type;
             };
             template <typename T>
-            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
                 typedef T& type;
             };
 
@@ -268,7 +282,7 @@
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
             template <typename T>
-            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
                 typedef UNBOOST_RVALREF_TYPE(T) type;
             };
         #else
@@ -288,8 +302,9 @@
         struct rvalue_ref {
             T& m_ref;
             rvalue_ref(T& ref) : m_ref(ref) { }
+            rvalue_ref(rvalue_ref<T>& ref) : m_ref(ref.m_ref) { }
         };
-        #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type >
+        #define UNBOOST_RVALREF_TYPE(type)  unboost::rvalue_ref<type > /**/
         #define UNBOOST_RVALREF(value)      (value).m_ref
 
         template <typename T>
@@ -297,13 +312,24 @@
         template <typename T>
         struct remove_reference<T&> { typedef T type; };
         template <typename T>
-        struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; };
+        struct remove_reference<UNBOOST_RVALREF_TYPE(T)> { typedef T type; };
 
         template <typename T>
         inline rvalue_ref<typename remove_reference<T>::type>
         move(T& t) {
             rvalue_ref<T> ref(t);
             return ref;
+        }
+
+        template <typename T>
+        inline UNBOOST_RVALREF_TYPE(T)
+        forward(typename remove_reference<T>::type& t) {
+            return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
+        }
+        template <typename T>
+        inline UNBOOST_RVALREF_TYPE(T)
+        forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
+            return static_cast<UNBOOST_RVALREF_TYPE(T)>(t);
         }
 
         template <typename T, T v>
@@ -425,7 +451,7 @@
         template <typename>
         struct is_rvalue_reference : public false_type { };
         template <typename T>
-        struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
+        struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> : public true_type { };
 
         // FIXME: is_member_object_pointer, is_member_function_pointer
 
@@ -440,7 +466,7 @@
         template <typename T>
         struct is_reference<T&> : true_type { };
         template <typename T>
-        struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
+        struct is_reference<UNBOOST_RVALREF_TYPE(T)> : true_type { };
 
         // FIXME: is_member_pointer
 
@@ -475,32 +501,44 @@
             operator value_type() const { return (value_type)value; }
         };
 
-#ifndef __BORLANDC__
         template <typename T, unsigned N = 0>
-        struct extent : integral_constant<size_t, 0> { };
-
-        template <typename T>
-        struct extent<T[], 0> : integral_constant<size_t, 0> { };
-
-        // FIXME
-        template <typename T, unsigned N>
-        struct extent<T[], N> {
+        struct extent {
+            // integral_constant<std::size_t, 0>
             typedef size_t value_type;
-            enum { value = extent<T, N - 1>::value + 1 };
-            operator value_type() const { return (value_type)value; }
-        };
-
-        template <typename T, size_t N>
-        struct extent<T[N], 0> {
-            typedef size_t value_type;
+            typedef extent<T, N> type;
             enum { value = 0 };
             operator value_type() const { return (value_type)value; }
         };
 
-        template <typename T, size_t I, unsigned N>
-        struct extent<T[I], N> :
-            integral_constant<size_t, extent<T, N - 1>::value> { };
+#ifndef __BORLANDC__
+        template <typename T>
+        struct extent<T[], 0> {
+            // std::integral_constant<std::size_t, 0>
+            typedef size_t value_type;
+            typedef extent<T[], 0> type;
+            enum { value = 0 };
+            operator value_type() const { return (value_type)value; }
+        };
+
+        template <typename T, unsigned N>
+        struct extent<T[], N> : extent<T, N - 1>::value {
+            // integral_constant<std::size_t, std::extent<T, N-1>::value>
+        };
 #endif
+
+        template <typename T, size_t N>
+        struct extent<T[N], 0> {
+            // std::integral_constant<std::size_t, N>
+            typedef size_t value_type;
+            typedef extent<T[N], 0> type;
+            enum { value = N };
+            operator value_type() const { return (value_type)value; }
+        };
+
+        template <typename T, size_t I, unsigned N>
+        struct extent<T[I], N> : std::extent<T, N - 1> {
+            // integral_constant<std::size_t, std::extent<T, N-1>::value>
+        };
 
         // FIXME: is_base_of, is_convertible
 
@@ -524,7 +562,7 @@
             typedef T& type;
         };
         template <typename T>
-        struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+        struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
             typedef T& type;
         };
 
@@ -537,7 +575,7 @@
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
         template <typename T>
-        struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
+        struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T)> {
             typedef UNBOOST_RVALREF_TYPE(T) type;
         };
 
