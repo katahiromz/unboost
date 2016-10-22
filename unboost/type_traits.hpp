@@ -4,7 +4,7 @@
 #ifndef UNBOOST_TYPE_TRAITS_HPP_
 #define UNBOOST_TYPE_TRAITS_HPP_
 
-#include <unboost/core.hpp>
+#include "unboost_core.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_TYPE_TRAITS) + defined(UNBOOST_USE_BOOST_TYPE_TRAITS) + defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)) == 0)

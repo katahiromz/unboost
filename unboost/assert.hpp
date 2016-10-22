@@ -4,7 +4,7 @@
 #ifndef UNBOOST_ASSERT_HPP_
 #define UNBOOST_ASSERT_HPP_
 
-#include <unboost/core.hpp>
+#include "unboost_core.hpp"
 
 #if ((defined(UNBOOST_USE_UNBOOST_ASSERT) + defined(UNBOOST_USE_BOOST_ASSERT)) == 0)
     #ifdef UNBOOST_USE_BOOST

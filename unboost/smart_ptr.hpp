@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SMART_PTR_HPP_
 #define UNBOOST_SMART_PTR_HPP_
 
-#include <unboost/core.hpp>
+#include "unboost_core.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR) + defined(UNBOOST_USE_UNBOOST_SMART_PTR)) == 0)
@@ -771,13 +771,8 @@
                 this->_swap(other);
             }
 
-            long use_count() const {
-                return this->_use_count();
-            }
-
-            bool expired() const {
-                return this->_expired();
-            }
+            long use_count() const  { return this->_use_count(); }
+            bool expired() const    { return this->_expired(); }
 
             shared_ptr<T> lock() const {
                 return shared_ptr<element_type>(*this, false));

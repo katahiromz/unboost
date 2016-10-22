@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <string>       // for std::string, std::wstring
 #include <sstream>      // for std::stringstream
-#include <unboost/core.hpp>
+#include "unboost_core.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION)) == 0)

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SAFE_DELETE_HPP_
 #define UNBOOST_SAFE_DELETE_HPP_
 
-#include <unboost/core.hpp>
+#include "unboost_core.hpp"
 
 namespace unboost {
     template <typename TYPE>
