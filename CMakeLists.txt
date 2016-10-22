@@ -58,8 +58,21 @@ else(USE_BOOST)
     endif(NO_BOOST)
 endif(USE_BOOST)
 
-include_directories(${Boost_INCLUDE_DIR})
-link_libraries(${Boost_LIBRARIES})
+if (${Boost_FOUND})
+    include_directories(${Boost_INCLUDE_DIR})
+    link_libraries(${Boost_LIBRARIES})
+endif (${Boost_FOUND})
+
+#
+# C++11
+#
+if(USE_CXX11)
+    set(CMAKE_CXX_STANDARD 11)
+endif(USE_CXX11)
+
+if(CMAKE_CXX_STANDARD EQUAL 11 OR CMAKE_CXX_STANDARD GREATER 11)
+    set(CXX11_AVAILABLE ON)
+endif(CMAKE_CXX_STANDARD EQUAL 11 OR CMAKE_CXX_STANDARD GREATER 11)
 
 #
 # sample programs
@@ -75,20 +88,11 @@ add_executable(smart_ptr samples/smart_ptr.cpp)
 add_executable(static_assert samples/static_assert.cpp)
 add_executable(string_algorithm samples/string_algorithm.cpp)
 add_executable(type_traits samples/type_traits.cpp)
-if(NOT BORLAND)
+if(Boost_FOUND OR CXX11_AVAILABLE)
     add_executable(complex samples/complex.cpp)
     add_executable(for_each samples/for_each.cpp)
     add_executable(random samples/random.cpp)
     add_executable(regex samples/regex.cpp)
     add_executable(tuple samples/tuple.cpp)
     add_executable(unordered samples/unordered.cpp)
-endif(NOT BORLAND)
-
-if(USE_BOOST)
-    target_link_libraries(filesystem ${Boost_LIBRARIES})
-else(USE_BOOST)
-    if(NO_BOOST)
-    else(NO_BOOST)
-        target_link_libraries(filesystem ${Boost_LIBRARIES})
-    endif(NO_BOOST)
-endif(USE_BOOST)
+endif(Boost_FOUND OR CXX11_AVAILABLE)

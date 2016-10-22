@@ -868,7 +868,7 @@ namespace unboost {
                   T& operator*()                { return *get(); }
             const T& operator*() const          { return *get(); }
             pointer operator->() const          { return get(); }
-            T& operator[](size_t i)             { return get()[i]; }
+                  T& operator[](size_t i)       { return get()[i]; }
             const T& operator[](size_t i) const { return get()[i]; }
 
         protected:
@@ -955,6 +955,7 @@ namespace unboost {
         const deleter_type& get_deleter() const {
             return super_type::get_deleter();
         }
+
         operator bool() const {
             return super_type::operator bool();
         }
@@ -967,12 +968,9 @@ namespace unboost {
         pointer operator->() const {
             return super_type::operator->();
         }
-        T& operator[](size_t i) {
-            return super_type::operator[](i);
-        }
-        const T& operator[](size_t i) const {
-            return super_type::operator[](i);
-        }
+
+              T& operator[](size_t i)       { return get()[i]; }
+        const T& operator[](size_t i) const { return get()[i]; }
     };
 } // namespace unboost
 
