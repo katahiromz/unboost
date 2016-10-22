@@ -392,7 +392,6 @@
             explicit shared_ptr(T2 *ptr) {
                 _reset_p(ptr);
             }
-
             template <typename T2, typename DELETER>
             shared_ptr(T2 *ptr, DELETER d) {
                 _reset_p(ptr, d);
@@ -401,7 +400,6 @@
             shared_ptr(const self_type& other) {
                 this->_reset(other);
             }
-
             template <typename T2>
             shared_ptr(const shared_ptr<T2>& r, T *ptr) {
                 this->_reset(ptr, r);
@@ -411,7 +409,6 @@
             shared_ptr(const shared_ptr<T2>& other) {
                 this->_reset(other);
             }
-
             template <typename T2>
             shared_ptr(const weak_ptr<T2>& other, bool does_throw = true) {
                 this->_reset(other, does_throw);
@@ -437,13 +434,11 @@
                 self_type(r).swap(*this);
                 return *this;
             }
-
             template <typename T2>
             self_type& operator=(UNBOOST_RVALREF_TYPE(shared_ptr<T2>) r) {
                 self_type(r).swap(*this);
                 return *this;
             }
-
             template <typename T2, typename DELETER>
             self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, DELETER>) r) {
                 self_type(move(r)).swap(*this);
@@ -463,7 +458,6 @@
                 self_type(r).swap(*this);
                 return *this;
             }
-
             template <typename T2>
             self_type operator=(const shared_ptr<T2>& r) {
                 self_type(r).swap(*this);
@@ -473,12 +467,10 @@
             void reset() {
                 self_type().swap(*this);
             }
-
             template <typename T2>
             void reset(T2 *ptr) {
                 self_type(ptr).swap(*this);
             }
-
             template <typename T2, typename DELETER>
             void reset(T2 *ptr, DELETER d) {
                 self_type(ptr, d).swap(*this);
