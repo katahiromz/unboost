@@ -89,88 +89,9 @@
         };
 
         template <typename T, typename DELETER = default_delete<T> >
-        class unique_ptr {
-        public:
-            typedef T *pointer;
-            typedef T element_type;
-            typedef DELETER deleter_type;
-            typedef unique_ptr<T, DELETER> self_type;
+        class unique_ptr;
 
-            unique_ptr() : m_ptr(NULL) { }
-
-            explicit unique_ptr(pointer ptr) : m_ptr(ptr) { }
-
-            unique_ptr(pointer ptr, DELETER d) : m_ptr(ptr), m_d(d) { }
-
-#ifdef UNBOOST_RVALREF
-            unique_ptr(UNBOOST_RVALREF_TYPE(self_type)& u) :
-                m_ptr(UNBOOST_RVALREF(u).m_ptr)
-            {
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-            }
-
-            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r) {
-                m_ptr = UNBOOST_RVALREF(r).m_ptr;
-                UNBOOST_RVALREF(r).m_ptr = NULL;
-                return *this;
-            }
-
-            template <typename T2, typename D2>
-            unique_ptr(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) :
-                m_ptr(UNBOOST_RVALREF(u).m_ptr)
-            {
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-            }
-
-            template <typename T2, typename D2>
-            self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) {
-                m_ptr = UNBOOST_RVALREF(u).m_ptr;
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-                return *this;
-            }
-#endif
-
-            ~unique_ptr() {
-                pointer ptr = get();
-                if (ptr) {
-                    get_deleter()(ptr);
-                }
-            }
-
-            pointer release() {
-                pointer ptr = m_ptr;
-                m_ptr = NULL;
-                return ptr;
-            }
-
-            void reset(pointer ptr = pointer()) {
-                pointer old_ptr = m_ptr;
-                m_ptr = ptr;
-                if (old_ptr != NULL)
-                    get_deleter()(old_ptr);
-            }
-
-            void swap(self_type& ptr) {
-                swap(m_ptr, ptr.m_ptr);
-                swap(m_d, ptr.m_d);
-            }
-
-            pointer get() const { return m_ptr; }
-
-                  deleter_type& get_deleter()       { return m_d; }
-            const deleter_type& get_deleter() const { return m_d; }
-
-            operator bool() const               { return get() != NULL; }
-                  T& operator*()                { return *get(); }
-            const T& operator*() const          { return *get(); }
-            pointer operator->() const          { return get(); }
-            T& operator[](size_t i)             { return get()[i]; }
-            const T& operator[](size_t i) const { return get()[i]; }
-
-        protected:
-            T *         m_ptr;
-            DELETER     m_d;
-        }; // unique_ptr<T, DELETER>
+        #define UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
     #include <boost/shared_ptr.hpp>
@@ -659,119 +580,7 @@
             return shared_ptr<T1>(r, _dynamic_tag());
         }
 
-        template <typename T, typename DELETER/* = default_delete<T>*/ >
-        class unique_ptr {
-        public:
-            typedef T *pointer;
-            typedef T element_type;
-            typedef DELETER deleter_type;
-            typedef unique_ptr<T, DELETER> self_type;
-
-            unique_ptr() : m_ptr(NULL) { }
-
-            explicit unique_ptr(pointer ptr) : m_ptr(ptr) { }
-
-            unique_ptr(pointer ptr) : m_ptr(ptr) { }
-            unique_ptr(pointer ptr, DELETER d) : m_ptr(ptr), m_d(d) { }
-
-#ifdef UNBOOST_RVALREF
-            unique_ptr(UNBOOST_RVALREF_TYPE(self_type)& u) :
-                m_ptr(UNBOOST_RVALREF(u).m_ptr)
-            {
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-            }
-
-            template <typename T2, typename D2>
-            unique_ptr(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>)& u) :
-                m_ptr(UNBOOST_RVALREF(u).m_ptr)
-            {
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-            }
-
-            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r) {
-                m_ptr = UNBOOST_RVALREF(r).m_ptr;
-                UNBOOST_RVALREF(r).m_ptr = NULL;
-                return *this;
-            }
-
-            self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>)& u) {
-                m_ptr = UNBOOST_RVALREF(u).m_ptr;
-                UNBOOST_RVALREF(u).m_ptr = NULL;
-                return *this;
-            }
-#endif
-
-            ~unique_ptr() {
-                pointer ptr = get();
-                if (ptr) {
-                    get_deleter()(ptr);
-                }
-            }
-
-            pointer release() {
-                pointer ptr = m_ptr;
-                m_ptr = NULL;
-                return ptr;
-            }
-
-            void reset(pointer ptr = pointer()) {
-                pointer old_ptr = m_ptr;
-                m_ptr = ptr;
-                if (old_ptr != NULL)
-                    get_deleter()(old_ptr);
-            }
-
-            void swap(self_type& ptr) {
-                swap(m_ptr, ptr.m_ptr);
-                swap(m_d, ptr.m_d);
-            }
-
-            pointer get() const { return m_ptr; }
-
-                  deleter_type& get_deleter()       { return m_d; }
-            const deleter_type& get_deleter() const { return m_d; }
-
-            operator bool() const               { return get() != NULL; }
-                  T& operator*()                { return *get(); }
-            const T& operator*() const          { return *get(); }
-            pointer operator->() const          { return get(); }
-            T& operator[](size_t i)             { return get()[i]; }
-            const T& operator[](size_t i) const { return get()[i]; }
-
-        protected:
-            T *         m_ptr;
-            DELETER     m_d;
-        }; // unique_ptr<T, DELETER>
-
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator==(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() == p2.get();
-        }
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator!=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() != p2.get();
-        }
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator<(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() < p2.get();
-        }
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator<=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() <= p2.get();
-        }
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator>(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() > p2.get();
-        }
-        template <typename T1, typename D1, typename T2, typename D2>
-        inline bool operator>=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
-            return p1.get() >= p2.get();
-        }
-
-        template <typename T, typename D>
-        inline void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) {
-            lhs.swap(rhs);
-        }
+        #define UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
 
         // FIXME: hash
 
@@ -903,6 +712,150 @@
 
 // unboost::unique_array<T>
 namespace unboost {
+    #ifdef UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+        template <typename T>
+        inline shared_ptr<T> make_shared() {
+            shared_ptr<T> ptr(new T());
+            return ptr;
+        }
+        template <typename T, typename T1>
+        inline shared_ptr<T> make_shared(const T1& value1) {
+            shared_ptr<T> ptr(new T(value1));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
+            shared_ptr<T> ptr(new T(value1, value2));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2, typename T3>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
+            shared_ptr<T> ptr(new T(value1, value2, value3));
+            return ptr;
+        }
+        template <typename T, typename T1, typename T2, typename T3, typename T4>
+        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
+            shared_ptr<T> ptr(new T(value1, value2, value3, value4));
+            return ptr;
+        }
+    #endif  // def UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
+
+    #ifdef UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+        template <typename T, typename DELETER/* = default_delete<T>*/ >
+        class unique_ptr {
+        public:
+            typedef T *pointer;
+            typedef T element_type;
+            typedef DELETER deleter_type;
+            typedef unique_ptr<T, DELETER> self_type;
+
+            unique_ptr() : m_ptr(NULL) { }
+
+            explicit unique_ptr(pointer ptr) : m_ptr(ptr) { }
+
+            unique_ptr(pointer ptr, DELETER d) : m_ptr(ptr), m_d(d) { }
+
+#ifdef UNBOOST_RVALREF
+            unique_ptr(UNBOOST_RVALREF_TYPE(self_type)& u) :
+                m_ptr(UNBOOST_RVALREF(u).m_ptr)
+            {
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+            }
+
+            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) r) {
+                m_ptr = UNBOOST_RVALREF(r).m_ptr;
+                UNBOOST_RVALREF(r).m_ptr = NULL;
+                return *this;
+            }
+
+            template <typename T2, typename D2>
+            unique_ptr(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) :
+                m_ptr(UNBOOST_RVALREF(u).m_ptr)
+            {
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+            }
+
+            template <typename T2, typename D2>
+            self_type& operator=(UNBOOST_RVALREF_TYPE(unique_ptr<T2, D2>) u) {
+                m_ptr = UNBOOST_RVALREF(u).m_ptr;
+                UNBOOST_RVALREF(u).m_ptr = NULL;
+                return *this;
+            }
+#endif  // def UNBOOST_RVALREF
+
+            ~unique_ptr() {
+                pointer ptr = get();
+                if (ptr) {
+                    get_deleter()(ptr);
+                }
+            }
+
+            pointer release() {
+                pointer ptr = m_ptr;
+                m_ptr = NULL;
+                return ptr;
+            }
+
+            void reset(pointer ptr = pointer()) {
+                pointer old_ptr = m_ptr;
+                m_ptr = ptr;
+                if (old_ptr != NULL)
+                    get_deleter()(old_ptr);
+            }
+
+            void swap(self_type& ptr) {
+                swap(m_ptr, ptr.m_ptr);
+                swap(m_d, ptr.m_d);
+            }
+
+            pointer get() const { return m_ptr; }
+
+                  deleter_type& get_deleter()       { return m_d; }
+            const deleter_type& get_deleter() const { return m_d; }
+
+            operator bool() const               { return get() != NULL; }
+                  T& operator*()                { return *get(); }
+            const T& operator*() const          { return *get(); }
+            pointer operator->() const          { return get(); }
+            T& operator[](size_t i)             { return get()[i]; }
+            const T& operator[](size_t i) const { return get()[i]; }
+
+        protected:
+            T *         m_ptr;
+            DELETER     m_d;
+        }; // unique_ptr<T, DELETER>
+
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator==(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() == p2.get();
+        }
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator!=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() != p2.get();
+        }
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator<(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() < p2.get();
+        }
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator<=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() <= p2.get();
+        }
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator>(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() > p2.get();
+        }
+        template <typename T1, typename D1, typename T2, typename D2>
+        inline bool operator>=(const unique_ptr<T1, D1>& p1, const unique_ptr<T2, D2>& p2) {
+            return p1.get() >= p2.get();
+        }
+
+        template <typename T, typename D>
+        inline void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) {
+            lhs.swap(rhs);
+        }
+    #endif  // def UNBOOST_NEEDS_UNBOOST_UNIQUE_PTR
+
     template <typename T>
     struct _default_array_delete {
         typedef _default_array_delete<T> self_type;
@@ -931,34 +884,6 @@ namespace unboost {
         using self_type::operator->;
         using self_type::operator[];
     };
-
-    #ifdef UNBOOST_NEEDS_UNBOOST_MAKE_SHARED
-        template <typename T>
-        inline shared_ptr<T> make_shared() {
-            shared_ptr<T> ptr(new T());
-            return ptr;
-        }
-        template <typename T, typename T1>
-        inline shared_ptr<T> make_shared(const T1& value1) {
-            shared_ptr<T> ptr(new T(value1));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2) {
-            shared_ptr<T> ptr(new T(value1, value2));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3) {
-            shared_ptr<T> ptr(new T(value1, value2, value3));
-            return ptr;
-        }
-        template <typename T, typename T1, typename T2, typename T3, typename T4>
-        inline shared_ptr<T> make_shared(const T1& value1, const T2& value2, const T3& value3, const T4& value4) {
-            shared_ptr<T> ptr(new T(value1, value2, value3, value4));
-            return ptr;
-        }
-    #endif
 } // namespace unboost
 
 #endif  // ndef UNBOOST_SMART_PTR_HPP_
