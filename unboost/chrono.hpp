@@ -139,7 +139,7 @@
             struct auto_duration;
 
             template <typename CT, typename Period1, typename Period2>
-            struct _duration_common_type_internal {
+            struct _duration_common_type_helper {
             private:
                 typedef _GCD<Period1::num, Period2::num> _gcd_num;
                 typedef _GCD<Period1::den, Period2::den> _gcd_den;
@@ -157,7 +157,7 @@
             struct duration_common_type<duration<Rep1, Period1>,
                                         duration<Rep2, Period2> >
             {
-                typedef typename _duration_common_type_internal<
+                typedef typename _duration_common_type_helper<
                     common_type<Rep1, Rep2>, Period1, Period2>::type type;
             };
 
