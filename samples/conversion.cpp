@@ -9,6 +9,7 @@ int main(void) {
     assert(unboost::to_string(unboost::stoi("2016")) == "2016");
     assert(unboost::stod("999.99999999999999999999999") == 999.99999999999999999999999);
     assert(unboost::stoull("100000000000000") == 100000000000000);
+    assert(unboost::lexical_cast<int>(1.2) == 1);
     std::cout << "success" << std::endl;
     return 0;
 }

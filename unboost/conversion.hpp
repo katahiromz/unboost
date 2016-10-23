@@ -35,7 +35,8 @@
 #ifdef UNBOOST_USE_CXX11_CONVERSION
     #include <typeinfo> // for std::bad_cast
     namespace unboost {
-        class bad_lexical_cast : public std::bad_cast {
+        using std::bad_cast;
+        class bad_lexical_cast : public bad_cast {
         public:
             bad_lexical_cast() { }
         };
@@ -207,7 +208,25 @@
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
     namespace unboost {
-        // FIXME: lexical_cast
+        using std::bad_cast;
+        class bad_lexical_cast : public bad_cast {
+        public:
+            bad_lexical_cast() { }
+        };
+        template <typename T, typename U>
+        inline T lexical_cast(const U& value) {
+            std::stringstream stream;
+            stream << value;
+            if (stream.fail()) {
+                throw bad_lexical_cast();
+            }
+            T result;
+            stream >> result;
+            if (stream.fail()) {
+                throw bad_lexical_cast();
+            }
+            return result;
+        }
         inline long stol(const std::string& str, size_t *pos = NULL, int base = 10) {
             long ret;
             size_t npos;
