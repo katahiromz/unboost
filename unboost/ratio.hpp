@@ -343,62 +343,7 @@ namespace unboost {
                 den = ratio_divide<R1, R2>::den;
                 return *this;
             }
-
-            friend auto_ratio operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
-                auto_ratio ret;
-                ret.num = ar1.num * ar2.den + ar1.den * ar2.num;
-                ret.den = ar1.den * ar2.den;
-                return ret;
-            }
-            friend auto_ratio operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
-                auto_ratio ret;
-                ret.num = ar1.num * ar2.den - ar1.den * ar2.num;
-                ret.den = ar1.den * ar2.den;
-                return ret;
-            }
-            friend auto_ratio operator*(const auto_ratio& ar1, const _ratio_intmax_t& n) {
-                auto_ratio ret;
-                ret.num = ar1.num * n;
-                ret.den = ar1.den;
-                return ret;
-            }
-            friend auto_ratio operator*(const _ratio_intmax_t& n, const auto_ratio& ar1) {
-                auto_ratio ret;
-                ret.num = ar1.num * n;
-                ret.den = ar1.den;
-                return ret;
-            }
-            friend auto_ratio operator/(const auto_ratio& ar1, const _ratio_intmax_t& n) {
-                auto_ratio ret;
-                ret.num = ar1.num / n;
-                ret.den = ar1.den;
-                return ret;
-            }
-            friend _ratio_intmax_t operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
-                _ratio_intmax_t ret;
-                ret = (ar1.num * ar2.den + ar1.den * ar2.num) / (ar1.den * ar2.den);
-                return ret;
-            }
-
-            auto_ratio& operator+=(const auto_ratio& ar2) {
-                auto_ratio ret = *this + ar2;
-                swap(*this, ret);
-                return *this;
-            }
-            auto_ratio& operator-=(const auto_ratio& ar2) {
-                auto_ratio ret = *this - ar2;
-                swap(*this, ret);
-                return *this;
-            }
-            auto_ratio& operator*=(_ratio_intmax_t n) {
-                num *= n;
-                return *this;
-            }
-            auto_ratio& operator/=(_ratio_intmax_t n) {
-                den *= n;
-                return *this;
-            }
-        };
+        }; // struct auto_ratio
     } // namespace unboost
     #define unboost_auto_ratio unboost::auto_ratio
 #else
