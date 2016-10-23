@@ -505,26 +505,60 @@
         // FIXME: is_trivial, is_trivially_copyable
         // FIXME: is_standard_layout, is_pod, is_literal_type
         // FIXME: is_empty, is_polymorphic, is_abstract
-        // FIXME: is_signed
 
         template <typename T>
-        struct is_unsigned : false_type { };
+        struct is_signed {
+            enum { value = 0 };
+        };
+        template <>
+        struct is_signed<char> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_signed<signed char> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_signed<short> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_signed<int> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_signed<long> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_signed<_int64_t> {
+            enum { value = 1 };
+        };
 
+        template <typename T>
+        struct is_unsigned {
+            enum { value = 0 };
+        };
         template <>
-        struct is_unsigned<unsigned char> : true_type { };
+        struct is_unsigned<unsigned char> {
+            enum { value = 1 };
+        };
         template <>
-        struct is_unsigned<unsigned short> : true_type { };
+        struct is_unsigned<unsigned short> {
+            enum { value = 1 };
+        };
         template <>
-        struct is_unsigned<unsigned int> : true_type { };
+        struct is_unsigned<unsigned int> {
+            enum { value = 1 };
+        };
         template <>
-        struct is_unsigned<unsigned long> : true_type { };
-        #ifdef _WIN32
-            template <>
-            struct is_unsigned<unsigned __int64> : true_type { };
-        #else
-            template <>
-            struct is_unsigned<unsigned long long> : true_type { };
-        #endif
+        struct is_unsigned<unsigned long> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_unsigned<_uint64_t> {
+            enum { value = 1 };
+        };
 
         // FIXME: operations, alignment_of
 
@@ -676,7 +710,51 @@
         template <typename T, typename F>
         struct conditional<false, T, F> { typedef F type; };
 
-        // FIXME: common_type, underlying_type, result_of
+        template <typename T1, typename T2 = T1>
+        struct common_type { };
+
+        template <typename T>
+        struct common_type<T, T> {
+            typedef T type;
+        };
+
+        #define UNBOOST_DEFINE_COMMON_TYPE(t1, t2, t) \
+            template <> struct common_type<t1, t2> { typedef t type; }; \
+            template <> struct common_type<t2, t1> { typedef t type; } \
+
+        UNBOOST_DEFINE_COMMON_TYPE(char, unsigned char, int);
+        UNBOOST_DEFINE_COMMON_TYPE(char, short, int);
+        UNBOOST_DEFINE_COMMON_TYPE(char, unsigned short, int);
+        UNBOOST_DEFINE_COMMON_TYPE(char, int, int);
+        UNBOOST_DEFINE_COMMON_TYPE(char, unsigned int, unsigned int);
+        UNBOOST_DEFINE_COMMON_TYPE(char, long, long);
+        UNBOOST_DEFINE_COMMON_TYPE(char, unsigned long, unsigned long);
+        UNBOOST_DEFINE_COMMON_TYPE(char, _int64_t, _int64_t);
+        UNBOOST_DEFINE_COMMON_TYPE(char, _uint64_t, _uint64_t);
+
+        UNBOOST_DEFINE_COMMON_TYPE(short, int, int);
+        UNBOOST_DEFINE_COMMON_TYPE(short, unsigned int, unsigned int);
+        UNBOOST_DEFINE_COMMON_TYPE(short, long, long);
+        UNBOOST_DEFINE_COMMON_TYPE(short, unsigned long, unsigned long);
+        UNBOOST_DEFINE_COMMON_TYPE(short, _int64_t, _int64_t);
+        UNBOOST_DEFINE_COMMON_TYPE(short, _uint64_t, _uint64_t);
+
+        UNBOOST_DEFINE_COMMON_TYPE(int, unsigned int, unsigned int);
+        UNBOOST_DEFINE_COMMON_TYPE(int, long, long);
+        UNBOOST_DEFINE_COMMON_TYPE(int, unsigned long, unsigned long);
+        UNBOOST_DEFINE_COMMON_TYPE(int, _int64_t, _int64_t);
+        UNBOOST_DEFINE_COMMON_TYPE(int, _uint64_t, _uint64_t);
+
+        template <typename T1, typename T2>
+        struct common_type<T1*, T2*> {
+            typedef void *type;
+        };
+        template <typename T1, typename T2>
+        struct common_type<const T1*, const T2*> {
+            typedef const void *type;
+        };
+
+        // FIXME: underlying_type, result_of
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.

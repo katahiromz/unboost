@@ -11,15 +11,9 @@
     #ifndef _INC_WINDOWS
         #include <windows.h>    // for Windows API
     #endif
-    #ifndef UNBOOST_UINT64
-        #define UNBOOST_UINT64  DWORDLONG
-    #endif
 #else
     #include <direct.h>     // for DIR, opendir, readdir, closedir
     #include <sys/stat.h>   // for stat
-    #ifndef UNBOOST_UINT64
-        #define UNBOOST_UINT64  unsigned long long
-    #endif
 #endif
 
 // If not choosed, choose one
@@ -557,20 +551,22 @@
                 #endif
                 current_path(cur_dir);
             } // copy_directory_tree
-            inline UNBOOST_UINT64 file_size(const path& p) {
+            inline _uint64_t file_size(const path& p) {
                 #ifdef _WIN32
                     WIN32_FIND_DATAW find;
                     HANDLE hFind = ::FindFirstFileW(p.c_str(), &find);
-                    if (hFind == INVALID_HANDLE_VALUE) return (ULONGLONG)-1;
+                    if (hFind == INVALID_HANDLE_VALUE)
+                        return (_uint64_t)-1;
                     ::FindClose(hFind);
-                    ULONGLONG ull = find.nFileSizeHigh;
+                    _uint64_t ull = find.nFileSizeHigh;
                     ull <<= 32;
                     return ull | find.nFileSizeLow;
                 #else
                     struct stat st;
                     st.st_size = 0;
-                    if (stat(p.c_str(), &st) == 0) return st.st_size;
-                    return (UNBOOST_UINT64)-1;
+                    if (stat(p.c_str(), &st) == 0)
+                        return st.st_size;
+                    return (_uint64_t)-1;
                 #endif
             }
             inline bool remove(const path& p) {

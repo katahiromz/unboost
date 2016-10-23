@@ -266,6 +266,22 @@ namespace unboost {
 } // namespace unboost
 
 //////////////////////////////////////////////////////////////////////////////
+// 64-bit integer
+
+namespace unboost {
+    #ifdef _WIN32
+        #ifndef _INC_WINDOWS
+            #include <windows.h>
+        #endif
+        typedef LONGLONG            _int64_t;
+        typedef DWORDLONG           _uint64_t;
+    #else
+        typedef long long           _int64_t;
+        typedef unsigned long long  _uint64_t;
+    #endif
+} // namespace unboost
+
+//////////////////////////////////////////////////////////////////////////////
 
 #endif  // ndef UNBOOST_CORE_HPP_
 

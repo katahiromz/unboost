@@ -108,9 +108,9 @@
             return static_cast<int>(n);
         }
         #ifdef UNBOOST_CXX11    // C++11
-            inline long long
+            inline _int64_t
             stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
-                long long ret;
+                _int64_t ret;
                 size_t npos;
                 if (pos == NULL) {
                     pos = &npos;
@@ -123,9 +123,9 @@
                 }
                 return ret;
             }
-            inline unsigned long long
+            inline _uint64_t
             stoull(const std::string& str, size_t *pos = NULL, int base = 10) {
-                unsigned long long ret;
+                _uint64_t ret;
                 size_t npos;
                 if (pos == NULL) {
                     pos = &npos;
@@ -139,22 +139,22 @@
                 return ret;
             }
         #else   // ndef UNBOOST_CXX11
-            inline __int64 stoll(const std::string& str) {
+            inline _int64_t stoll(const std::string& str) {
                 // TODO: support pos and base
                 std::stringstream stream;
                 stream << str;
-                __int64 result;
+                _int64_t result;
                 stream >> result;
                 if (stream.fail()) {
                     throw std::invalid_argument("stoll");
                 }
                 return result;
             }
-            inline unsigned __int64 stoull(const std::string& str) {
+            inline _uint64_t stoull(const std::string& str) {
                 // TODO: support pos and base
                 std::stringstream stream;
                 stream << str;
-                unsigned __int64 result;
+                _uint64_t result;
                 stream >> result;
                 if (stream.fail()) {
                     throw std::invalid_argument("stoull");
@@ -244,9 +244,9 @@
             return static_cast<int>(n);
         }
         #ifdef UNBOOST_CXX11    // C++11
-            inline long long
+            inline _int64_t
             stoll(const std::string& str, size_t *pos = NULL, int base = 10) {
-                long long ret;
+                _int64_t ret;
                 size_t npos;
                 if (pos == NULL) {
                     pos = &npos;
@@ -259,9 +259,9 @@
                 }
                 return ret;
             }
-            inline unsigned long long
+            inline _uint64_t
             stoull(const std::string& str, size_t *pos = NULL, int base = 10) {
-                unsigned long long ret;
+                _uint64_t ret;
                 size_t npos;
                 if (pos == NULL) {
                     pos = &npos;
