@@ -192,6 +192,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_equal {
+            typedef ratio_equal<R1, R2> type;
             enum {
                 value = ((_ratio_intmax_t)R1::num == (_ratio_intmax_t)R2::num &&
                          (_ratio_intmax_t)R1::den == (_ratio_intmax_t)R2::den)
@@ -203,6 +204,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_not_equal {
+            typedef ratio_not_equal<R1, R2> type;
             enum {
                 value = (R1::num != R2::num || R1::den != R2::den)
             };
@@ -212,6 +214,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_less {
+            typedef ratio_less<R1, R2> type;
             enum {
                 value = (R1::num * R2::den < R2::num * R1::den)
             };
@@ -221,6 +224,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_less_equal {
+            typedef ratio_less_equal<R1, R2> type;
             enum {
                 value = (R1::num * R2::den <= R2::num * R1::den)
             };
@@ -230,6 +234,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_greater {
+            typedef ratio_greater<R1, R2> type;
             enum {
                 value = (R1::num * R2::den > R2::num * R1::den)
             };
@@ -239,6 +244,7 @@ namespace unboost {
 
         template <class R1, class R2>
         struct ratio_greater_equal {
+            typedef ratio_greater_equal<R1, R2> type;
             enum {
                 value = (R1::num * R2::den >= R2::num * R1::den)
             };
@@ -268,6 +274,7 @@ namespace unboost {
         //static const ratio<1000000000000000000000000LL, 1> yotta;
 
         struct auto_ratio {
+            typedef auto_ratio type;
             _ratio_intmax_t num;
             _ratio_intmax_t den;
 
