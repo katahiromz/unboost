@@ -195,6 +195,15 @@
                     fix_floating();
                 }
 
+                template <class Rep2, class Period2>
+                auto_duration& operator=(const duration<Rep2, Period2>& d) {
+                    rep_ = auto_duration_cast(*this, d).count();
+                    period_ = Period2();
+                    is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
+                    fix_floating();
+                    return *this;
+                }
+
                 auto_duration(const auto_duration& ad) {
                     rep_ = auto_duration_cast(*this, ad).count();
                     period_ = ad.period_;
