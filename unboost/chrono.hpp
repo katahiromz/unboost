@@ -5,6 +5,7 @@
 #define UNBOOST_CHRONO_HPP_
 
 #include "unboost.hpp"
+#include "type_traits.hpp"
 #include "ratio.hpp"
 
 // If not choosed, choose one
@@ -83,9 +84,9 @@
     } // namespace unboost
     #define unboost_auto_duration auto
 #elif defined(UNBOOST_USE_WIN32_CHRONO) || defined(UNBOOST_USE_POSIX_CHRONO)
-    #include <limits>
-    #include <cfloat>
-    #include <ctime>
+    #include <limits>   // for std::numeric_limits
+    #include <cfloat>   // for FLT_MAX
+    #include <ctime>    // for time_t
     #ifdef _WIN32
         #ifndef _INC_WINDOWS
             #include <windows.h>
@@ -94,29 +95,37 @@
     namespace unboost {
         namespace chrono {
             template <class Rep>
-            struct treat_as_floating_point {
-                static const bool value = false;
-            };
+            struct treat_as_floating_point : is_floating_point<Rep> { };
+
+            template <class Rep>
+            inline Rep _numeric_limits_lowest() {
+                #ifdef UNBOOST_CXX11
+                    return std::numeric_limits<Rep>::lowest();
+                #else
+                    Rep r = (Rep)0.1;
+                    if ((int)r != 0) {
+                        if (sizeof(Rep) == sizeof(float)) {
+                            r = FLT_MAX;
+                            return -r;
+                        }
+                        if (sizeof(Rep) == sizeof(double)) {
+                            r = DBL_MAX;
+                            return -r;
+                        }
+                        if (sizeof(Rep) == sizeof(long double)) {
+                            r = LDBL_MAX
+                            return -r;
+                        }
+                    }
+                    return std::numeric_limits<Rep>::min();
+                #endif
+            } // _numeric_limits_lowest
 
             template <class Rep>
             struct duration_values {
                 static const Rep zero() { return Rep(0); }
                 static const Rep min() {
-                    Rep r = 0.1;
-                    if ((int)r == 0) {
-                        return std::numeric_limits<Rep>::min();
-                    } else {
-                        if (sizeof(Rep) == sizeof(float)) {
-                            return -FLT_MAX;
-                        }
-                        if (sizeof(Rep) == sizeof(double)) {
-                            return -DBL_MAX;
-                        }
-                        if (sizeof(Rep) == sizeof(long double)) {
-                            return -LDBL_MAX;
-                        }
-                    }
-                    return 0;
+                    return _numeric_limits_lowest<Rep>();
                 }
                 static const Rep max() {
                     return std::numeric_limits<Rep>::max();
@@ -127,9 +136,13 @@
             class duration;
 
             struct auto_duration {
-                typedef double              rep;
-                typedef auto_ratio          period;
-                typedef auto_duration       type;
+                #ifdef _WIN32
+                    typedef DWORDLONG           rep;
+                #else
+                    typedef unsigned long long  rep;
+                #endif
+                typedef auto_ratio              period;
+                typedef auto_duration           type;
 
                 rep             m_rep;
                 period          m_period;
@@ -235,6 +248,10 @@
                 duration(const duration<Rep2, Period2>& d) :
                     m_rep((d.m_rep * Period2::num) / Period2::den) { }
 
+                duration(const auto_duration& ad) {
+                    m_rep = rep((ad.m_rep * ad.m_period.num) * ad.m_period.den);
+                }
+
                 rep count() const { return m_rep; }
                 static const type zero() {
                     return type(duration_values<rep>::zero());
@@ -324,6 +341,11 @@
                 auto_duration ret;
                 ret.m_rep = d.m_rep % r;
                 ret.m_period = d.m_period;
+                return ret;
+            }
+            inline auto_duration operator%(const auto_duration& lhs, const auto_duration& rhs) {
+                auto_duration ret;
+                // FIXME
                 return ret;
             }
 
