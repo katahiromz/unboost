@@ -131,11 +131,14 @@ namespace unboost {
     #define unboost_auto_ratio auto
 #elif defined(UNBOOST_USE_UNBOOST_RATIO)
     namespace unboost {
-        template <_ratio_intmax_t Num, _ratio_intmax_t Den = 1>
+        template <_ratio_intmax_t N, _ratio_intmax_t D = 1>
         class ratio {
         public:
-            typedef ratio<Num, Den> type;
-            enum { num = Num, den = Den };
+            typedef ratio<N, D> type;
+            enum {
+                num = _SIGN<N>::value * _SIGN<D>::value * _ABS<N>::value / _GCD<N, D>::value,
+                den = _ABS<D>::value / _GCD<N, D>::value
+            };
         };
 
         template <class R1, class R2>
