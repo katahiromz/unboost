@@ -265,7 +265,7 @@
             };
             template <typename T>
             struct add_rvalue_reference<T&> {
-                typedef UNBOOST_RVALREF_TYPE(T) type;
+                typedef T& type;
             };
             template <typename T>
             struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
