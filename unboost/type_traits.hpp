@@ -499,8 +499,13 @@
         struct is_unsigned<unsigned int> : true_type { };
         template <>
         struct is_unsigned<unsigned long> : true_type { };
-        template <>
-        struct is_unsigned<unsigned long long> : true_type { };
+        #ifdef _WIN32
+            template <>
+            struct is_unsigned<unsigned __int64> : true_type { };
+        #else
+            template <>
+            struct is_unsigned<unsigned long long> : true_type { };
+        #endif
 
         // FIXME: operations, alignment_of
 
@@ -661,9 +666,15 @@
                 is_same<_type1, float>::value && is_same<_type2, float>::value,
                 float, double>::type _floating;
 
-            typedef typename conditional<
-                sizeof(_type1) < sizeof(long long) && sizeof(_type2) < sizeof(long long),
-                unsigned int, unsigned long long>::type _unsigned;
+            #ifdef _WIN32
+                typedef typename conditional<
+                    sizeof(_type1) < sizeof(__int64) && sizeof(_type2) < sizeof(__int64),
+                    unsigned int, unsigned __int64>::type _unsigned;
+            #else
+                typedef typename conditional<
+                    sizeof(_type1) < sizeof(long long) && sizeof(_type2) < sizeof(long long),
+                    unsigned int, unsigned long long>::type _unsigned;
+            #endif
 
             typedef typename conditional<
                 sizeof(_type1) >= sizeof(int) && sizeof(_type2) >= sizeof(int) &&
@@ -671,7 +682,7 @@
                 _unsigned, int>::type _integral;
 
             typedef typename conditional<
-                (is_floating_point<_type1>::value || is_floating_point<_type2>::value),
+                ((int)is_floating_point<_type1>::value || (int)is_floating_point<_type2>::value),
                 _floating, _integral>::type type;
         }; // common_type<T1, T2>
 
