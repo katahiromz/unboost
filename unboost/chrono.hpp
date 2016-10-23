@@ -135,25 +135,27 @@
             template <class Rep, class Period>
             class duration;
 
-            struct auto_duration {
-                #ifdef _WIN32
-                    typedef DWORDLONG           rep;
-                #else
-                    typedef unsigned long long  rep;
-                #endif
+            struct auto_duration;
+
+            template <typename Rep1, typename Period1, typename Rep2, typename Period2>
+            auto_duration
+            duration_common(const duration<Rep1, Period1>& d1,
+                            const duration<Rep2, Period2>& d2);
+
+            class auto_duration {
+            public:
+                typedef double                  rep;
                 typedef auto_ratio              period;
                 typedef auto_duration           type;
-
-                rep             m_rep;
-                period          m_period;
 
                 auto_duration() : m_rep(), m_period(unboost::ratio<1>()) { }
 
                 explicit auto_duration(const rep& r) :
-                    m_rep(r), m_period(unboost::ratio<1>()) { }
+                    m_rep(r), m_period(unboost::ratio<1>()),
+                    m_is_floating(false) { }
 
                 auto_duration(const rep& r, const auto_ratio& ar) :
-                    m_rep(r), m_period(ar) { }
+                    m_rep(r), m_period(ar), m_is_floating(false) { }
 
                 auto_duration(const auto_duration& ad) :
                     m_rep(ad.m_rep), m_period(ad.m_period) { }
@@ -228,6 +230,10 @@
                     m_rep %= rhs.count();
                     return *this;
                 }
+            protected:
+                rep             m_rep;
+                period          m_period;
+                bool            m_is_floating;
             };
 
             template <class Rep, class Period = unboost::ratio<1> >
@@ -301,6 +307,25 @@
                     return *this;
                 }
             }; // class duration
+
+            template <typename Rep1, typename Period1, typename Rep2, typename Period2>
+            inline auto_duration
+            duration_common(const duration<Rep1, Period1>& d1,
+                            const duration<Rep2, Period2>& d2)
+            {
+                auto_duration ret;
+                if (treat_as_floating_point<Rep1>::value ||
+                    treat_as_floating_point<Rep2>::value)
+                {
+                    ret.m_is_floating = true;
+                    ...
+                    ret.m_rep = d1.m_rep;
+                }
+                else
+                {
+
+                }
+            }
 
             inline auto_duration operator+(const auto_duration& ad) {
                 return ad;
