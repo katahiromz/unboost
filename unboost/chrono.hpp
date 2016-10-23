@@ -137,10 +137,23 @@
 
             struct auto_duration;
 
+            template <typename CT, typename Period1, typename Period2>
+            struct _duration_common_type_internal {
+            private:
+                typedef _GCD<Period1::num, Period2::num> _gcd_num;
+                typedef _GCD<Period1::den, Period2::den> _gcd_den;
+                typedef typename CT::type _cr;
+                typedef ratio<_gcd_num::value,
+                    (Period1::den / _gcd_den::value) * Period2::den> _r;
+            public:
+                typedef duration<_cr, _r> type;
+            };
+
             template <typename Rep1, typename Period1, typename Rep2, typename Period2>
-            auto_duration
-            duration_common(const duration<Rep1, Period1>& d1,
-                            const duration<Rep2, Period2>& d2);
+            struct common_type<duration<Rep1, Period1>, duration<Rep2, Period2> > {
+                typedef _duration_common_type_internal<
+                    common_type<Rep1, Rep2>::type, Period1, Period2>::type _type;
+            };
 
             class auto_duration {
             public:
@@ -148,30 +161,30 @@
                 typedef auto_ratio              period;
                 typedef auto_duration           type;
 
-                auto_duration() : m_rep(), m_period(unboost::ratio<1>()) { }
+                auto_duration() : rep_(), m_period(unboost::ratio<1>()) { }
 
                 explicit auto_duration(const rep& r) :
-                    m_rep(r), m_period(unboost::ratio<1>()),
+                    rep_(r), m_period(unboost::ratio<1>()),
                     m_is_floating(false) { }
 
                 auto_duration(const rep& r, const auto_ratio& ar) :
-                    m_rep(r), m_period(ar), m_is_floating(false) { }
+                    rep_(r), m_period(ar), m_is_floating(false) { }
 
                 auto_duration(const auto_duration& ad) :
-                    m_rep(ad.m_rep), m_period(ad.m_period) { }
+                    rep_(ad.rep_), m_period(ad.m_period) { }
 
                 template <class Rep, class Period>
                 auto_duration(const duration<Rep, Period>& d) :
-                    m_rep(d.m_rep), m_period(Period()) { }
+                    rep_(d.rep_), m_period(Period()) { }
 
                 template <class Rep, class Period>
                 auto_duration& operator=(const duration<Rep, Period>& d) {
-                    m_rep = d.m_rep;
+                    rep_ = d.rep_;
                     m_period = Period();
                     return *this;
                 }
 
-                rep count() const { return m_rep; }
+                rep count() const { return rep_; }
                 static const type zero() {
                     return type(duration_values<rep>::zero());
                 }
@@ -183,55 +196,55 @@
                 }
 
                 type& operator++() {
-                    ++m_rep;
+                    ++rep_;
                     return *this;
                 }
                 type& operator--() {
-                    --m_rep;
+                    --rep_;
                     return *this;
                 }
                 type operator++(int) {
-                    return type(m_rep++, m_period);
+                    return type(rep_++, m_period);
                 }
                 type operator--(int) {
-                    return type(m_rep--, m_period);
+                    return type(rep_--, m_period);
                 }
                 type& operator+=(const type& d) {
                     if (d.m_period.num == m_period.num && d.m_period.den == m_period.den) {
-                        m_rep += d.count();
+                        rep_ += d.count();
                     } else {
-                        m_rep += d.count() * d.m_period.num / m_period.num
+                        rep_ += d.count() * d.m_period.num / m_period.num
                                            * d.m_period.den / m_period.den;
                     }
                     return *this;
                 }
                 type& operator-=(const type& d) {
                     if (d.m_period.num == m_period.num && d.m_period.den == m_period.den) {
-                        m_rep -= d.count();
+                        rep_ -= d.count();
                     } else {
-                        m_rep -= d.count() * d.m_period.num / m_period.num
+                        rep_ -= d.count() * d.m_period.num / m_period.num
                                            * d.m_period.den / m_period.den;
                     }
                     return *this;
                 }
                 type& operator*=(const rep& rhs) {
-                    m_rep *= rhs;
+                    rep_ *= rhs;
                     return *this;
                 }
                 type& operator/=(const rep& rhs) {
-                    m_rep /= rhs;
+                    rep_ /= rhs;
                     return *this;
                 }
                 type& operator%=(const rep& rhs) {
-                    m_rep %= rhs;
+                    rep_ %= rhs;
                     return *this;
                 }
                 type& operator%=(const type& rhs) {
-                    m_rep %= rhs.count();
+                    rep_ %= rhs.count();
                     return *this;
                 }
             protected:
-                rep             m_rep;
+                rep             rep_;
                 period          m_period;
                 bool            m_is_floating;
             };
@@ -243,22 +256,21 @@
                 typedef Period period;
                 typedef duration<Rep, Period> type;
 
-                rep m_rep;
-
                 duration() { }
 
                 template <class Rep2>
-                explicit duration(const Rep2& r) : m_rep(r) { }
+                explicit duration(const Rep2& r) : rep_(r) { }
 
                 template <class Rep2, class Period2>
-                duration(const duration<Rep2, Period2>& d) :
-                    m_rep((d.m_rep * Period2::num) / Period2::den) { }
-
-                duration(const auto_duration& ad) {
-                    m_rep = rep((ad.m_rep * ad.m_period.num) * ad.m_period.den);
+                duration(const duration<Rep2, Period2>& d) {
+                    rep_ = duration_cast<type>(d).count();
                 }
 
-                rep count() const { return m_rep; }
+                duration(const auto_duration& ad) {
+                    rep_ = duration_cast<type>(d).count();
+                }
+
+                rep count() const { return rep_; }
                 static const type zero() {
                     return type(duration_values<rep>::zero());
                 }
@@ -268,70 +280,75 @@
                 static const type max() {
                     return type(duration_values<rep>::max());
                 }
+
+                type operator+() const {
+                    return *this;
+                }
+                type operator-() const {
+                    return type(-rep_);
+                }
+
                 type& operator++() {
-                    ++m_rep;
+                    ++rep_;
                     return *this;
                 }
                 type& operator--() {
-                    --m_rep;
+                    --rep_;
                     return *this;
                 }
                 type operator++(int) {
-                    return type(m_rep++);
+                    return type(rep_++);
                 }
                 type operator--(int) {
-                    return type(m_rep--);
+                    return type(rep_--);
                 }
+
                 type& operator+=(const type& d) {
-                    m_rep += d.count();
+                    rep_ += d.count();
                     return *this;
                 }
                 type& operator-=(const type& d) {
-                    m_rep -= d.count();
+                    rep_ -= d.count();
                     return *this;
                 }
+                type& operator+=(const auto_duration& d) {
+                    rep_ += duration_cast<type>(d).count();
+                    return *this;
+                }
+                type& operator-=(const auto_duration& d) {
+                    rep_ -= duration_cast<type>(d).count();
+                    return *this;
+                }
+
                 type& operator*=(const rep& rhs) {
-                    m_rep *= rhs;
+                    rep_ *= rhs;
                     return *this;
                 }
                 type& operator/=(const rep& rhs) {
-                    m_rep /= rhs;
+                    rep_ /= rhs;
                     return *this;
                 }
                 type& operator%=(const rep& rhs) {
-                    m_rep %= rhs;
+                    rep_ %= rhs;
                     return *this;
                 }
                 type& operator%=(const type& rhs) {
-                    m_rep %= rhs.count();
+                    rep_ %= rhs.count();
                     return *this;
                 }
+                type& operator%=(const auto_duration& rhs) {
+                    rep_ %= duration_cast<type>(rhs).count();
+                    return *this;
+                }
+            protected:
+                rep rep_;
             }; // class duration
-
-            template <typename Rep1, typename Period1, typename Rep2, typename Period2>
-            inline auto_duration
-            duration_common(const duration<Rep1, Period1>& d1,
-                            const duration<Rep2, Period2>& d2)
-            {
-                auto_duration ret;
-                if (treat_as_floating_point<Rep1>::value ||
-                    treat_as_floating_point<Rep2>::value)
-                {
-                    ret.m_is_floating = true;
-                    ...
-                    ret.m_rep = d1.m_rep;
-                }
-                else
-                {
-
-                }
-            }
 
             inline auto_duration operator+(const auto_duration& ad) {
                 return ad;
             }
             inline auto_duration operator-(const auto_duration& ad) {
-                return auto_duration(-(intmax_t)ad.m_rep, ad.m_period);
+                return auto_duration(-(intmax_t)ad.rep_, ad.m_period);
             }
 
             inline auto_duration operator+(const auto_duration& lhs, const auto_duration& rhs) {
@@ -346,25 +363,25 @@
             }
             inline auto_duration operator*(const auto_duration& d, uintmax_t r) {
                 auto_duration ret;
-                ret.m_rep = d.m_rep * r;
+                ret.rep_ = d.rep_ * r;
                 ret.m_period = d.m_period;
                 return ret;
             }
             inline auto_duration operator*(uintmax_t r, const auto_duration& d) {
                 auto_duration ret;
-                ret.m_rep = d.m_rep * r;
+                ret.rep_ = d.rep_ * r;
                 ret.m_period = d.m_period;
                 return ret;
             }
             inline auto_duration operator/(const auto_duration& d, uintmax_t r) {
                 auto_duration ret;
-                ret.m_rep = d.m_rep / r;
+                ret.rep_ = d.rep_ / r;
                 ret.m_period = d.m_period;
                 return ret;
             }
             inline auto_duration operator%(const auto_duration& d, uintmax_t r) {
                 auto_duration ret;
-                ret.m_rep = d.m_rep % r;
+                ret.rep_ = d.rep_ % r;
                 ret.m_period = d.m_period;
                 return ret;
             }
@@ -381,7 +398,7 @@
             typedef duration<uintmax_t, ratio<3600> >       hours;
 
             inline auto_duration _duration_cast_inner(const auto_ratio& r, const auto_duration& d) {
-                auto_duration ad(d.m_rep * r.den * d.m_period.num
+                auto_duration ad(d.rep_ * r.den * d.m_period.num
                                  / d.m_period.den / r.num, r);
                 return ad;
             }
@@ -397,7 +414,7 @@
             inline auto_duration duration_cast(const duration<Rep2, Period2>& d) {
                 typedef typename D::period Period1;
                 Period1 p;
-                auto_duration ad(d.m_rep * Period1::den * Period2::num
+                auto_duration ad(d.rep_ * Period1::den * Period2::num
                                  / Period2::den / Period1::num, p);
                 return ad;
             }
