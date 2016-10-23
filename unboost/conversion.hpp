@@ -33,10 +33,22 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_CONVERSION
+    #include <exception>    // for std::exception
     namespace unboost {
-        class bad_lexical_cast {
+        class exception {
+        public:
+            exception() { }
+            exception(const exception& other) { }
+            virtual ~exception() { }
+            exception& operator=(const exception& other) {
+                return *this;
+            }
+            virtual const char *what() const { return "exception"; }
+        };
+        class bad_lexical_cast : public exception {
         public:
             bad_lexical_cast() { }
+            virtual ~bad_lexical_cast() { }
             virtual const char *what() const { return "lexical_cast"; }
         };
         template <typename T, typename U>
@@ -207,9 +219,20 @@
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
     namespace unboost {
-        class bad_lexical_cast {
+        class exception {
+        public:
+            exception() { }
+            exception(const exception& other) { }
+            virtual ~exception() { }
+            exception& operator=(const exception& other) {
+                return *this;
+            }
+            virtual const char *what() const { return "exception"; }
+        };
+        class bad_lexical_cast : public exception {
         public:
             bad_lexical_cast() { }
+            virtual ~bad_lexical_cast() { }
             virtual const char *what() const { return "lexical_cast"; }
         };
         template <typename T, typename U>
