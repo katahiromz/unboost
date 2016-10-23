@@ -33,12 +33,11 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_CONVERSION
-    #include <typeinfo> // for std::bad_cast
     namespace unboost {
-        using std::bad_cast;
-        class bad_lexical_cast : public bad_cast {
+        class bad_lexical_cast {
         public:
             bad_lexical_cast() { }
+            virtual const char *what() const { return "lexical_cast"; }
         };
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
@@ -208,10 +207,10 @@
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
     namespace unboost {
-        using std::bad_cast;
-        class bad_lexical_cast : public bad_cast {
+        class bad_lexical_cast {
         public:
             bad_lexical_cast() { }
+            virtual const char *what() const { return "lexical_cast"; }
         };
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
