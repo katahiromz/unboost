@@ -17,6 +17,17 @@
     #endif
 #endif
 
+#ifdef UNBOOST_OLD_BORLAND
+    // there is no const or volatile info
+    #ifndef UNBOOST_NO_CV_INFO
+        #define UNBOOST_NO_CV_INFO
+    #endif
+    // there is no empty array
+    #ifndef UNBOOST_NO_EMPTY_ARRAY
+        #define UNBOOST_NO_EMPTY_ARRAY
+    #endif
+#endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
     #include <utility>          // for std::move, std::forward
@@ -334,13 +345,20 @@
         typedef integral_constant<bool, true> true_type;
         typedef integral_constant<bool, false> false_type;
 
-        template <typename T, typename U>
-        struct is_same : false_type { };
-
+        template <typename T1, typename T2>
+        struct is_same {
+            enum {
+                value = 0
+            };
+        };
         template <typename T>
-        struct is_same<T, T> : true_type { };
+        struct is_same<T, T> {
+            enum {
+                value = 1
+            };
+        };
 
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
         template <typename T>
         struct remove_const          { typedef T type; };
         template <typename T>
@@ -365,7 +383,7 @@
 
         template <typename T>
         struct is_integral : public false_type { };
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
         template <typename T>
         struct is_integral<const T> : public is_integral<T> { };
         template <typename T>
@@ -407,25 +425,26 @@
 
         template <typename T>
         struct is_floating_point {
-            typedef bool value_type;
-#ifdef UNBOOST_OLD_BORLAND
-            typedef T _cv_removed;
-#else
-            typedef typename remove_cv<T>::type _cv_removed;
-#endif
-            enum {
-                value = (is_same<float, _cv_removed>::value ||
-                         is_same<double, _cv_removed>::value ||
-                         is_same<long double, _cv_removed>::value)
-            };
-            operator value_type() const { return (value_type)value; }
+            enum { value = 0 };
+        };
+        template <>
+        struct is_floating_point<float> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_floating_point<double> {
+            enum { value = 1 };
+        };
+        template <>
+        struct is_floating_point<long double> {
+            enum { value = 1 };
         };
 
         template <typename>
         struct is_array : public false_type { };
         template <typename T, size_t N>
         struct is_array<T[N]> : public true_type { };
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_EMPTY_ARRAY
         template <typename T>
         struct is_array<T[]> : public true_type { };
 #endif
@@ -471,7 +490,7 @@
 
         // FIXME: is_member_pointer
 
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
         template <typename T>
         struct is_const : false_type { };
         template <typename T>
@@ -512,29 +531,20 @@
         template <typename T>
         struct rank {
             // integral_constant<std::size_t, 0>
-            typedef size_t value_type;
-            typedef rank<T> type;
             enum { value = 0 };
-            operator value_type() const { return (value_type)value; }
         };
         template <typename T, size_t N>
         struct rank<T[N]> {
             // integral_constant<std::size_t, rank<T>::value + 1>
-            typedef size_t value_type;
-            typedef rank<T[]> type;
             typedef rank<T> _refered_type;
             enum { value = _refered_type::value + 1 };
-            operator value_type() const { return (value_type)value; }
         };
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_EMPTY_ARRAY
         template <typename T>
         struct rank<T[]> {
             // integral_constant<std::size_t, rank<T>::value + 1>
-            typedef size_t value_type;
-            typedef rank<T[]> type;
             typedef rank<T> _refered_type;
             enum { value = _refered_type::value + 1 };
-            operator value_type() const { return (value_type)value; }
         };
 #endif
 
@@ -634,9 +644,22 @@
         struct remove_extent { typedef T type; };
         template <typename T, size_t N>
         struct remove_extent<T[N]> { typedef T type; };
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_EMPTY_ARRAY
         template <typename T>
         struct remove_extent<T[]> { typedef T type; };
+#endif
+
+        template <typename T>
+        struct remove_all_extents { typedef T type; };
+        template <typename T, size_t N>
+        struct remove_all_extents<T[N]> {
+            typedef typename remove_all_extents<T>::type type;
+        };
+#ifndef UNBOOST_NO_EMPTY_ARRAY
+        template <typename T>
+        struct remove_all_extents<T[]> {
+            typedef typename remove_all_extents<T>::type type;
+        };
 #endif
 
         // FIXME: transformations
@@ -653,45 +676,7 @@
         template <typename T, typename F>
         struct conditional<false, T, F> { typedef F type; };
 
-        template <typename T1, typename T2 = T1>
-        struct common_type {
-#ifdef UNBOOST_OLD_BORLAND
-            typedef T1 _type1;
-            typedef T2 _type2;
-#else
-            typedef typename remove_cv<T1>::type _type1;
-            typedef typename remove_cv<T2>::type _type2;
-#endif
-            typedef typename conditional<
-                is_same<_type1, float>::value && is_same<_type2, float>::value,
-                float, double>::type _floating;
-
-            #ifdef _WIN32
-                typedef typename conditional<
-                    sizeof(_type1) < sizeof(__int64) && sizeof(_type2) < sizeof(__int64),
-                    unsigned int, unsigned __int64>::type _unsigned;
-            #else
-                typedef typename conditional<
-                    sizeof(_type1) < sizeof(long long) && sizeof(_type2) < sizeof(long long),
-                    unsigned int, unsigned long long>::type _unsigned;
-            #endif
-
-            typedef typename conditional<
-                sizeof(_type1) >= sizeof(int) && sizeof(_type2) >= sizeof(int) &&
-                is_unsigned<_type1>::value && is_unsigned<_type2>::value,
-                _unsigned, int>::type _integral;
-
-            typedef typename conditional<
-                ((int)is_floating_point<_type1>::value || (int)is_floating_point<_type2>::value),
-                _floating, _integral>::type type;
-        }; // common_type<T1, T2>
-
-        template <typename T>
-        struct common_type<T, T> {
-            typedef T type;
-        };
-
-        // FIXME: underlying_type, result_of
+        // FIXME: common_type, underlying_type, result_of
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
