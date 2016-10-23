@@ -95,42 +95,35 @@
     #ifndef UNBOOST_USE_CHRONO
         #define UNBOOST_USE_CHRONO
     #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_MUTEX
-        #ifndef UNBOOST_USE_CXX11_CHRONO
-            #define UNBOOST_USE_CXX11_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_BOOST_MUTEX)
-        #ifndef UNBOOST_USE_BOOST_CHRONO
-            #define UNBOOST_USE_BOOST_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_WIN32_MUTEX)
-        #ifndef UNBOOST_USE_WIN32_CHRONO
-            #define UNBOOST_USE_WIN32_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_POSIX_MUTEX)
-        #ifndef UNBOOST_USE_POSIX_CHRONO
-            #define UNBOOST_USE_POSIX_CHRONO
-        #endif
-    #endif
-
     #ifndef UNBOOST_USE_THREAD
         #define UNBOOST_USE_THREAD
     #endif
     //
     #ifdef UNBOOST_USE_CXX11_MUTEX
+        #ifndef UNBOOST_USE_CXX11_CHRONO
+            #define UNBOOST_USE_CXX11_CHRONO
+        #endif
         #ifndef UNBOOST_USE_CXX11_THREAD
             #define UNBOOST_USE_CXX11_THREAD
         #endif
     #elif defined(UNBOOST_USE_BOOST_MUTEX)
+        #ifndef UNBOOST_USE_BOOST_CHRONO
+            #define UNBOOST_USE_BOOST_CHRONO
+        #endif
         #ifndef UNBOOST_USE_BOOST_THREAD
             #define UNBOOST_USE_BOOST_THREAD
         #endif
     #elif defined(UNBOOST_USE_WIN32_MUTEX)
+        #ifndef UNBOOST_USE_WIN32_CHRONO
+            #define UNBOOST_USE_WIN32_CHRONO
+        #endif
         #ifndef UNBOOST_USE_WIN32_THREAD
             #define UNBOOST_USE_WIN32_THREAD
         #endif
     #elif defined(UNBOOST_USE_POSIX_MUTEX)
+        #ifndef UNBOOST_USE_POSIX_CHRONO
+            #define UNBOOST_USE_POSIX_CHRONO
+        #endif
         #ifndef UNBOOST_USE_POSIX_THREAD
             #define UNBOOST_USE_POSIX_THREAD
         #endif
@@ -162,21 +155,33 @@
     #endif
 #endif
 
-// chrono depends on ratio
+// chrono depends on type_traits and ratio
 #ifdef UNBOOST_USE_CHRONO
+    #ifndef UNBOOST_USE_TYPE_TRAITS
+        #define UNBOOST_USE_TYPE_TRAITS
+    #endif
     #ifndef UNBOOST_USE_RATIO
         #define UNBOOST_USE_RATIO
     #endif
     //
     #ifdef UNBOOST_USE_CXX11_CHRONO
+        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
+            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+        #endif
         #ifndef UNBOOST_USE_CXX11_RATIO
             #define UNBOOST_USE_CXX11_RATIO
         #endif
     #elif defined(UNBOOST_USE_BOOST_CHRONO)
+        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
+            #define UNBOOST_USE_BOOST_TYPE_TRAITS
+        #endif
         #ifndef UNBOOST_USE_BOOST_RATIO
             #define UNBOOST_USE_BOOST_RATIO
         #endif
     #else
+        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #endif
         #ifndef UNBOOST_USE_UNBOOST_RATIO
             #define UNBOOST_USE_UNBOOST_RATIO
         #endif
