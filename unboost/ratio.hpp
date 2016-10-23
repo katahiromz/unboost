@@ -136,7 +136,8 @@ namespace unboost {
         public:
             typedef ratio<N, D> type;
             enum {
-                num = _SIGN<N>::value * _SIGN<D>::value * _ABS<N>::value / _GCD<N, D>::value,
+                num = _SIGN<N>::value * _SIGN<D>::value *
+                      _ABS<N>::value / _GCD<N, D>::value,
                 den = _ABS<D>::value / _GCD<N, D>::value
             };
         };
