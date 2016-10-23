@@ -138,22 +138,10 @@
             struct auto_duration;
 
             template <typename CT, typename Period1, typename Period2>
-            struct _duration_common_type_internal {
-            private:
-                typedef _GCD<Period1::num, Period2::num> _gcd_num;
-                typedef _GCD<Period1::den, Period2::den> _gcd_den;
-                typedef typename CT::type _cr;
-                typedef ratio<_gcd_num::value,
-                    (Period1::den / _gcd_den::value) * Period2::den> _r;
-            public:
-                typedef duration<_cr, _r> type;
-            };
+            struct _duration_common_type_internal;
 
             template <typename Rep1, typename Period1, typename Rep2, typename Period2>
-            struct common_type<duration<Rep1, Period1>, duration<Rep2, Period2> > {
-                typedef _duration_common_type_internal<
-                    common_type<Rep1, Rep2>::type, Period1, Period2>::type _type;
-            };
+            struct common_type<duration<Rep1, Period1>, duration<Rep2, Period2> >;
 
             class auto_duration {
             public:
@@ -343,6 +331,24 @@
             protected:
                 rep rep_;
             }; // class duration
+
+            template <typename CT, typename Period1, typename Period2>
+            struct _duration_common_type_internal {
+            private:
+                typedef _GCD<Period1::num, Period2::num> _gcd_num;
+                typedef _GCD<Period1::den, Period2::den> _gcd_den;
+                typedef typename CT::type _cr;
+                typedef ratio<_gcd_num::value,
+                    (Period1::den / _gcd_den::value) * Period2::den> _r;
+            public:
+                typedef duration<_cr, _r> type;
+            };
+
+            template <typename Rep1, typename Period1, typename Rep2, typename Period2>
+            struct common_type<duration<Rep1, Period1>, duration<Rep2, Period2> > {
+                typedef _duration_common_type_internal<
+                    common_type<Rep1, Rep2>::type, Period1, Period2>::type _type;
+            };
 
             inline auto_duration operator+(const auto_duration& ad) {
                 return ad;
