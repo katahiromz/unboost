@@ -88,14 +88,7 @@
                               timeout_duration)
             {
                 using namespace unboost::chrono;
-                auto_duration ms = duration_cast<milliseconds>(timeout_duration);
-                return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
-            }
-            bool try_lock_for(const unboost::chrono::auto_duration&
-                              timeout_duration)
-            {
-                using namespace unboost::chrono;
-                auto_duration ms = duration_cast<milliseconds>(timeout_duration);
+                milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
             }
             //template <class Clock, class Duration>

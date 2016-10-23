@@ -81,7 +81,7 @@ int main(void) {
     assert(checked);
 
     std::cout << "sleep 4 seconds" << std::endl;
-    unboost_auto_duration s = unboost::chrono::seconds(2) * 2;
+    unboost::chrono::seconds s = unboost::chrono::seconds(2) * 2;
     unboost::this_thread::sleep_for(s);
     std::cout << "OK" << std::endl;
 

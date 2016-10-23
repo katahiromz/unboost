@@ -237,12 +237,7 @@
             template <class Rep, class Period>
             inline void sleep_for(const unboost::chrono::duration<Rep,Period>& sleep_duration) {
                 using namespace unboost::chrono;
-                unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
-                ::Sleep(ms.count());
-            }
-            inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
-                using namespace unboost::chrono;
-                unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                milliseconds ms = duration_cast<milliseconds>(sleep_duration);
                 ::Sleep(ms.count());
             }
             //template <class Clock, class Duration>
