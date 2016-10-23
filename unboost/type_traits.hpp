@@ -405,28 +405,21 @@
         template <>
         struct is_integral<__int64> : public true_type { };
 
+        template <typename T>
+        struct is_floating_point {
+            typedef bool value_type;
 #ifdef UNBOOST_OLD_BORLAND
-        template <typename T>
-        struct is_floating_point {
-            typedef bool value_type;
-            enum {
-                value = (is_same<float, T>::value || is_same<double, T>::value ||
-                         is_same<long double, T>::value)
-            };
-            operator value_type() const { return (value_type)value; }
-        };
+            typedef T _cv_removed;
 #else
-        template <typename T>
-        struct is_floating_point {
-            typedef bool value_type;
+            typedef typename remove_cv<T>::type _cv_removed;
+#endif
             enum {
-                value = (is_same<float, typename remove_cv<T>::type>::value ||
-                         is_same<double, typename remove_cv<T>::type>::value ||
-                         is_same<long double, typename remove_cv<T>::type>::value)
+                value = (is_same<float, _cv_removed>::value ||
+                         is_same<double, _cv_removed>::value ||
+                         is_same<long double, _cv_removed>::value)
             };
             operator value_type() const { return (value_type)value; }
         };
-#endif
 
         template <typename>
         struct is_array : public false_type { };
