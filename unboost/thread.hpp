@@ -6,6 +6,7 @@
 
 #include "unboost.hpp"
 #include "chrono.hpp"
+#include "exception.hpp"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) + defined(UNBOOST_USE_POSIX_THREAD) == 0)
@@ -55,6 +56,9 @@
 #elif defined(UNBOOST_USE_WIN32_THREAD)
     #include <stdexcept>
     #include <process.h>
+    #ifndef _INC_WINDOWS
+        #include <windows.h>
+    #endif
     namespace unboost {
         class thread {
         public:
@@ -142,7 +146,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1>
@@ -154,7 +158,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2>
@@ -166,7 +170,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -180,7 +184,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(::GetLastError());
                 }
             }
 
@@ -351,7 +355,7 @@
                                thread_function_arg0<FUNC>, data);
                 if (m_id == 0) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1>
@@ -363,7 +367,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2>
@@ -375,7 +379,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -388,7 +392,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw std::runtime_error("unboost::thread");
+                    throw unboost::system_error(-1);
                 }
             }
 

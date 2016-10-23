@@ -8,6 +8,7 @@
 #include <string>       // for std::string, std::wstring
 #include <sstream>      // for std::stringstream
 #include "unboost.hpp"
+#include "exception.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION)) == 0)
@@ -35,22 +36,6 @@
 #ifdef UNBOOST_USE_CXX11_CONVERSION
     #include <exception>    // for std::exception
     namespace unboost {
-        class exception {
-        public:
-            exception() { }
-            exception(const exception& other) { }
-            virtual ~exception() { }
-            exception& operator=(const exception& other) {
-                return *this;
-            }
-            virtual const char *what() const { return "exception"; }
-        };
-        class bad_lexical_cast : public exception {
-        public:
-            bad_lexical_cast() { }
-            virtual ~bad_lexical_cast() { }
-            virtual const char *what() const { return "lexical_cast"; }
-        };
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
             std::stringstream stream;
@@ -94,7 +79,7 @@
             ret = std::strtol(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stol");
+                throw invalid_argument("stol");
             }
             return ret;
         }
@@ -108,14 +93,14 @@
             ret = std::strtoul(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stoul");
+                throw invalid_argument("stoul");
             }
             return ret;
         }
         inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
             long n = unboost::stol(str, pos, base);
             if (n > INT_MAX || n < INT_MIN) {
-                throw std::out_of_range("stoi");
+                throw out_of_range("stoi");
             }
             return static_cast<int>(n);
         }
@@ -131,7 +116,7 @@
                 ret = std::strtoll(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw std::invalid_argument("stoll");
+                    throw invalid_argument("stoll");
                 }
                 return ret;
             }
@@ -146,7 +131,7 @@
                 ret = std::strtoull(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw std::invalid_argument("stoull");
+                    throw invalid_argument("stoull");
                 }
                 return ret;
             }
@@ -158,7 +143,7 @@
                 _int64_t result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw std::invalid_argument("stoll");
+                    throw invalid_argument("stoll");
                 }
                 return result;
             }
@@ -169,7 +154,7 @@
                 _uint64_t result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw std::invalid_argument("stoull");
+                    throw invalid_argument("stoull");
                 }
                 return result;
             }
@@ -184,10 +169,10 @@
             d = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stof");
+                throw invalid_argument("stof");
             }
             if (d > FLT_MAX || d < -FLT_MAX) {
-                throw std::out_of_range("stof");
+                throw out_of_range("stof");
             }
             float ret = static_cast<float>(d);
             return ret;
@@ -202,7 +187,7 @@
             ret = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stod");
+                throw invalid_argument("stod");
             }
             return ret;
         }
@@ -259,7 +244,7 @@
             ret = std::strtol(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stol");
+                throw invalid_argument("stol");
             }
             return ret;
         }
@@ -273,14 +258,14 @@
             ret = std::strtoul(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stoul");
+                throw invalid_argument("stoul");
             }
             return ret;
         }
         inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
             long n = unboost::stol(str, pos, base);
             if (n > INT_MAX || n < INT_MIN) {
-                throw std::out_of_range("stoi");
+                throw out_of_range("stoi");
             }
             return static_cast<int>(n);
         }
@@ -296,7 +281,7 @@
                 ret = std::strtoll(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw std::invalid_argument("stoll");
+                    throw invalid_argument("stoll");
                 }
                 return ret;
             }
@@ -311,7 +296,7 @@
                 ret = std::strtoull(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw std::invalid_argument("stoull");
+                    throw invalid_argument("stoull");
                 }
                 return ret;
             }
@@ -323,7 +308,7 @@
                 __int64 result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw std::invalid_argument("stoll");
+                    throw invalid_argument("stoll");
                 }
                 return result;
             }
@@ -334,7 +319,7 @@
                 unsigned __int64 result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw std::invalid_argument("stoull");
+                    throw invalid_argument("stoull");
                 }
                 return result;
             }
@@ -368,7 +353,7 @@
             ret = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw std::invalid_argument("stod");
+                throw invalid_argument("stod");
             }
             return ret;
         }

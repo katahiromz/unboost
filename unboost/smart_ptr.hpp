@@ -5,6 +5,7 @@
 #define UNBOOST_SMART_PTR_HPP_
 
 #include "unboost.hpp"
+#include "exception.hpp"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR) + defined(UNBOOST_USE_UNBOOST_SMART_PTR)) == 0)
@@ -136,16 +137,8 @@
         struct _dynamic_tag { };
 
         #if (__cplusplus >= 201103L)    // C++11
-            using std::bad_weak_ptr;
             using std::default_delete;
         #else   // not C++11
-            class bad_weak_ptr : std::exception {
-            public:
-                bad_weak_ptr() { }
-                virtual ~bad_weak_ptr() { }
-                virtual const char *what() const { return "unboost::bad_weak_ptr"; }
-            };
-
             template <typename T>
             struct default_delete {
                 typedef default_delete<T> self_type;

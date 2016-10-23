@@ -268,11 +268,14 @@ namespace unboost {
 //////////////////////////////////////////////////////////////////////////////
 // 64-bit integer
 
+#ifdef _WIN32
+    #ifndef _INC_WINDOWS
+        #include <windows.h>
+    #endif
+#endif
+
 namespace unboost {
     #ifdef _WIN32
-        #ifndef _INC_WINDOWS
-            #include <windows.h>
-        #endif
         typedef LONGLONG            _int64_t;
         typedef DWORDLONG           _uint64_t;
     #else

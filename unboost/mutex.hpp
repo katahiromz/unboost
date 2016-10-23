@@ -7,6 +7,7 @@
 #include "unboost.hpp"
 #include "chrono.hpp"
 #include "thread.hpp"
+#include "exception.hpp"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_MUTEX) + defined(UNBOOST_USE_BOOST_MUTEX) + defined(UNBOOST_USE_WIN32_MUTEX) + defined(UNBOOST_USE_POSIX_MUTEX) == 0)
@@ -59,7 +60,7 @@
             typedef HANDLE native_handle_type;
             mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)) {
                 if (m_hMutex == NULL)
-                    throw std::runtime_error("unboost::mutex");
+                    throw system_error(::GetLastError());
             }
             virtual ~mutex() { ::CloseHandle(m_hMutex); }
             native_handle_type native_handle() { return m_hMutex; }
@@ -221,18 +222,18 @@
 
             void lock() {
                 if (m_pmutex == NULL || m_locked)
-                    throw std::runtime_error("unboost::unique_lock");
+                    throw system_error(-1);
                 m_pmutex->lock();
                 m_locked = true;
             }
             bool try_lock() {
                 if (m_pmutex == NULL || m_locked)
-                    throw std::runtime_error("unboost::unique_lock");
+                    throw system_error(-1);
                 return mutex()->try_lock();
             }
             void unlock() {
                 if (m_pmutex == NULL || !m_locked)
-                    throw std::runtime_error("unboost::unique_lock");
+                    throw system_error(-1);
                 mutex()->unlock();
                 m_locked = false;
             }
