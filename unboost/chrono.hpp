@@ -127,9 +127,9 @@
             class duration;
 
             struct auto_duration {
-                typedef uintmax_t       rep;
-                typedef auto_ratio      period;
-                typedef auto_duration   type;
+                typedef double              rep;
+                typedef auto_ratio          period;
+                typedef auto_duration       type;
 
                 rep             m_rep;
                 period          m_period;
