@@ -21,26 +21,37 @@ namespace unboost {
     };
 
     template <_ratio_intmax_t A, _ratio_intmax_t B>
-    struct _GCD {
-        enum { value = _GCD<B, A % B>::value };
+    struct _GCD0 {
+        enum { value = _GCD0<B, A % B>::value };
     };
     template <_ratio_intmax_t A>
-    struct _GCD<A, 0> {
+    struct _GCD0<A, 0> {
         enum { value = A };
     };
     template <_ratio_intmax_t B>
-    struct _GCD<0, B> {
+    struct _GCD0<0, B> {
         enum { value = B };
     };
+    template <_ratio_intmax_t A, _ratio_intmax_t B>
+    struct _GCD {
+        enum { value = _ABS<_GCD0<A, B>::value>::value };
+    };
 
-    inline _ratio_intmax_t _gcd(_ratio_intmax_t x, _ratio_intmax_t y) {
-        if (x == 0 && y == 0)
-            return 1;
+    inline _ratio_intmax_t _sign(_ratio_intmax_t x) {
+        return (x < 0 ? -1 : 1);
+    }
+    inline _ratio_intmax_t _abs(_ratio_intmax_t x) {
+        return (x < 0 ? -x : x);
+    }
+    inline _ratio_intmax_t _gcd0(_ratio_intmax_t x, _ratio_intmax_t y) {
         if (x == 0)
             return y;
         if (y == 0)
             return x;
-        return _gcd(y, x % y);
+        return _gcd0(y, x % y);
+    }
+    inline _ratio_intmax_t _gcd(_ratio_intmax_t x, _ratio_intmax_t y) {
+        return _abs(_gcd0(x, y));
     }
 } // namespace unboost
 
@@ -282,8 +293,11 @@ namespace unboost {
             _ratio_intmax_t num;
             _ratio_intmax_t den;
 
-            auto_ratio() : num(1), den(1) { }
-            auto_ratio(_ratio_intmax_t n, _ratio_intmax_t d) : num(n), den(d) { }
+            auto_ratio() : num(0), den(1) { }
+            auto_ratio(_ratio_intmax_t N, _ratio_intmax_t D) {
+                num = _sign(N) * _sign(D) * _abs(N) / _gcd(N, D);
+                den = _abs(D) / _gcd(N, D);
+            }
             auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
 
             template <_ratio_intmax_t Num, _ratio_intmax_t Den>
