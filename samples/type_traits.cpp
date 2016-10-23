@@ -161,7 +161,6 @@ int main(void) {
         assert((is_same<remove_pointer<int*>::type, int>::value));
         assert((is_same<add_pointer<int>::type, int*>::value));
     }
-#if 0
     {
         typedef common_type<int, int>::type int_ct;
         typedef common_type<int, char>::type ic_ct;
@@ -172,17 +171,18 @@ int main(void) {
         typedef common_type<double, char>::type di_ct2;
         typedef common_type<int, double>::type di_ct3;
         typedef common_type<char, double>::type di_ct4;
+        typedef common_type<char *, const long *>::type pcp_ct;
         assert((is_same<int_ct, int>::value));
         assert((is_same<ic_ct, int>::value));
         assert((is_same<is_ct, int>::value));
         assert((is_same<uu_ct, unsigned int>::value));
-        assert((is_same<su_ct, int>::value));
+        assert((is_same<su_ct, unsigned int>::value));
         assert((is_same<di_ct1, double>::value));
         assert((is_same<di_ct2, double>::value));
         assert((is_same<di_ct3, double>::value));
         assert((is_same<di_ct4, double>::value));
+        assert((is_same<pcp_ct, const void *>::value));
     }
-#endif
 
     std::cout << "success" << std::endl;
     return 0;

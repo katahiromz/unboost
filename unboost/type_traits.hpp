@@ -745,12 +745,57 @@
         UNBOOST_DEFINE_COMMON_TYPE(int, _int64_t, _int64_t);
         UNBOOST_DEFINE_COMMON_TYPE(int, _uint64_t, _uint64_t);
 
+        UNBOOST_DEFINE_COMMON_TYPE(float, char, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, short, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, int, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, long, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, _int64_t, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, unsigned char, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, unsigned short, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, unsigned int, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, unsigned long, float);
+        UNBOOST_DEFINE_COMMON_TYPE(float, _uint64_t, float);
+
+        UNBOOST_DEFINE_COMMON_TYPE(double, char, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, short, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, int, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, long, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, _int64_t, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, unsigned char, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, unsigned short, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, unsigned int, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, unsigned long, double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, _uint64_t, double);
+
+        UNBOOST_DEFINE_COMMON_TYPE(long double, char, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, short, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, int, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, long, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, _int64_t, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, unsigned char, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, unsigned short, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, unsigned int, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, unsigned long, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(long double, _uint64_t, long double);
+
+        UNBOOST_DEFINE_COMMON_TYPE(float, double, double);
+        UNBOOST_DEFINE_COMMON_TYPE(float, long double, long double);
+        UNBOOST_DEFINE_COMMON_TYPE(double, long double, long double);
+
         template <typename T1, typename T2>
         struct common_type<T1*, T2*> {
             typedef void *type;
         };
         template <typename T1, typename T2>
         struct common_type<const T1*, const T2*> {
+            typedef const void *type;
+        };
+        template <typename T1, typename T2>
+        struct common_type<T1*, const T2*> {
+            typedef const void *type;
+        };
+        template <typename T1, typename T2>
+        struct common_type<const T1*, T2*> {
             typedef const void *type;
         };
 
