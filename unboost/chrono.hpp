@@ -188,7 +188,7 @@
                 }
 
                 template <class Rep2, class Period2>
-                auto_duration(const duration<Rep2, Period2>& d) {
+                explicit auto_duration(const duration<Rep2, Period2>& d) {
                     rep_ = auto_duration_cast(*this, d).count();
                     period_ = Period2();
                     is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
