@@ -673,7 +673,7 @@
             typedef typename conditional<
                 (is_floating_point<_type1>::value || is_floating_point<_type2>::value),
                 _floating, _integral>::type type;
-        };
+        }; // common_type<T1, T2>
 
         template <typename T>
         struct common_type<T, T> {
