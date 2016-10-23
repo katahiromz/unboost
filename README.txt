@@ -11,7 +11,7 @@ This Unboost (just 269 KB) enables you to avoid that expensive booster
 if possible on your C++ compiler (C++11, std::tr1, substitute tiny
 implementations).
 
-See source for more details.
+See samples and sources for more details.
 
 If you found bug, please send me e-mail.
 
