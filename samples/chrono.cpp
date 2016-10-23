@@ -45,7 +45,7 @@ int main(void) {
         assert(m.count() == 22);
     }
     {
-        unboost_auto_duration s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
+        seconds s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
         assert(s.count() == 4807);
 
@@ -58,7 +58,7 @@ int main(void) {
         assert(seconds(61) > minutes(1));
     }
     {
-        typedef duration<int, std::ratio<1, 100000000> >        shakes;
+        typedef duration<int, unboost::ratio<1, 100000000> >    shakes;
         typedef duration<int, unboost::centi>                   jiffies;
         typedef duration<float, unboost::ratio<12096,10000> >   microfortnights;
         typedef duration<float, unboost::ratio<3155,1000> >     nanocenturies;
@@ -68,7 +68,7 @@ int main(void) {
         assert(duration_cast<jiffies>(sec).count() == 100);
         double f1 = duration_cast<microfortnights>(sec).count();
         assert(0.8267 <= f1 && f1 <= 0.8268);
-        double f2 = duration_cast<nanocenturies>(sec).count():
+        double f2 = duration_cast<nanocenturies>(sec).count();
         assert(0.31695 <= f2 && f2 <= 0.31696);
     }
     {

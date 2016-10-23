@@ -267,26 +267,26 @@ namespace unboost {
             operator value_type() const { return value; }
         };
 
-        //static const ratio<1, 1000000000000000000000000LL> yocto;
-        //static const ratio<1, 1000000000000000000000LL> zepto;
-        //static const ratio<1, 1000000000000000000LL> atto;
-        //static const ratio<1, 1000000000000000LL> femto;
-        //static const ratio<1, 1000000000000LL> pico;
-        static const ratio<1, 1000000000> nano;
-        static const ratio<1, 1000000> micro;
-        static const ratio<1, 1000> milli;
-        static const ratio<1, 100> centi;
-        static const ratio<1, 10> deci;
-        static const ratio<10, 1> deca;
-        static const ratio<100, 1> hecto;
-        static const ratio<1000, 1> kilo;
-        static const ratio<1000000, 1> mega;
-        static const ratio<1000000000, 1> giga;
-        //static const ratio<1000000000000LL, 1> tera;
-        //static const ratio<1000000000000000LL, 1> peta;
-        //static const ratio<1000000000000000000LL, 1> exa;
-        //static const ratio<1000000000000000000000LL, 1> zetta;
-        //static const ratio<1000000000000000000000000LL, 1> yotta;
+        //typedef ratio<1, 1000000000000000000000000LL> yocto;
+        //typedef ratio<1, 1000000000000000000000LL> zepto;
+        //typedef ratio<1, 1000000000000000000LL> atto;
+        //typedef ratio<1, 1000000000000000LL> femto;
+        //typedef ratio<1, 1000000000000LL> pico;
+        typedef ratio<1, 1000000000> nano;
+        typedef ratio<1, 1000000> micro;
+        typedef ratio<1, 1000> milli;
+        typedef ratio<1, 100> centi;
+        typedef ratio<1, 10> deci;
+        typedef ratio<10, 1> deca;
+        typedef ratio<100, 1> hecto;
+        typedef ratio<1000, 1> kilo;
+        typedef ratio<1000000, 1> mega;
+        typedef ratio<1000000000, 1> giga;
+        //typedef ratio<1000000000000LL, 1> tera;
+        //typedef ratio<1000000000000000LL, 1> peta;
+        //typedef ratio<1000000000000000000LL, 1> exa;
+        //typedef ratio<1000000000000000000000LL, 1> zetta;
+        //typedef ratio<1000000000000000000000000LL, 1> yotta;
 
         struct auto_ratio {
             typedef auto_ratio type;

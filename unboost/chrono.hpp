@@ -7,6 +7,7 @@
 #include "unboost.hpp"
 #include "type_traits.hpp"
 #include "ratio.hpp"
+#include <cmath>
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
@@ -157,7 +158,7 @@
                                         duration<Rep2, Period2> >
             {
                 typedef typename _duration_common_type_internal<
-                    typename common_type<Rep1, Rep2>::type, Period1, Period2>::type _type;
+                    common_type<Rep1, Rep2>, Period1, Period2>::type type;
             };
 
             auto_duration
@@ -260,14 +261,12 @@
                     fix_floating();
                     return *this;
                 }
-                type& operator%=(rep rhs) {
-                    rep_ %= rhs;
-                    fix_floating();
+                type& operator%=(const rep& rhs) {
+                    rep_ = fmod(rep_, rhs);
                     return *this;
                 }
                 type& operator%=(const type& rhs) {
-                    rep_ %= auto_duration_cast(*this, rhs).count();
-                    fix_floating();
+                    rep_ = fmod(rep_, auto_duration_cast(*this, rhs).count());
                     return *this;
                 }
 
@@ -355,14 +354,6 @@
                     rep_ -= d.count();
                     return *this;
                 }
-                type& operator+=(const auto_duration& d) {
-                    rep_ += duration_cast<type>(d).count();
-                    return *this;
-                }
-                type& operator-=(const auto_duration& d) {
-                    rep_ -= duration_cast<type>(d).count();
-                    return *this;
-                }
 
                 type& operator*=(const rep& rhs) {
                     rep_ *= rhs;
@@ -372,7 +363,7 @@
                     rep_ /= rhs;
                     return *this;
                 }
-                type& operator%=(const rep& rhs) {
+                type& operator%=(rep rhs) {
                     rep_ %= rhs;
                     return *this;
                 }
@@ -380,10 +371,7 @@
                     rep_ %= rhs.count();
                     return *this;
                 }
-                type& operator%=(const auto_duration& rhs) {
-                    rep_ %= duration_cast<type>(rhs).count();
-                    return *this;
-                }
+
             protected:
                 rep rep_;
             }; // class duration
@@ -450,8 +438,8 @@
             }
 
             template <class Rep1, class Period1, class Rep2, class Period2>
-            inline typename common_type<duration<Rep1, Period1>,
-                                        duration<Rep2, Period2> >::type
+            inline typename duration_common_type<duration<Rep1, Period1>,
+                                                 duration<Rep2, Period2> >::type
             operator%(const duration<Rep1,Period1>& lhs,
                       const duration<Rep2,Period2>& rhs)
             {
@@ -459,6 +447,51 @@
                     duration<Rep1, Period1>,
                     duration<Rep2, Period2> >::type CD;
                 return CD(CD(lhs).count() % CD(rhs).count());
+            }
+
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator==(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                typedef typename duration_common_type<duration<Rep1, Period1>,
+                                                      duration<Rep2, Period2>>::type CT;
+                return CT(lhs).count() == CT(rhs).count();
+            }
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator!=(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                return !(lhs == rhs);
+            }
+
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator<(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                typedef typename duration_common_type<duration<Rep1, Period1>,
+                                                      duration<Rep2, Period2>>::type CT;
+                return CT(lhs).count() < CT(rhs).count();
+            }
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator>=(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                return !(lhs < rhs);
+            }
+
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator>(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                typedef typename duration_common_type<duration<Rep1, Period1>,
+                                                      duration<Rep2, Period2>>::type CT;
+                return CT(lhs).count() > CT(rhs).count();
+            }
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            inline bool operator<=(const duration<Rep1, Period1>& lhs,
+                                   const duration<Rep2, Period2>& rhs)
+            {
+                return !(lhs > rhs);
             }
 
             typedef duration<_uint64_t, ratio<1, 1000000> > microseconds;
