@@ -493,7 +493,22 @@
         // FIXME: is_trivial, is_trivially_copyable
         // FIXME: is_standard_layout, is_pod, is_literal_type
         // FIXME: is_empty, is_polymorphic, is_abstract
-        // FIXME: is_signed, is_unsigned
+        // FIXME: is_signed
+
+        template <typename T>
+        struct is_unsigned : false_type { };
+
+        template <>
+        struct is_unsigned<unsigned char> : true_type { };
+        template <>
+        struct is_unsigned<unsigned short> : true_type { };
+        template <>
+        struct is_unsigned<unsigned int> : true_type { };
+        template <>
+        struct is_unsigned<unsigned long> : true_type { };
+        template <>
+        struct is_unsigned<unsigned long long> : true_type { };
+
         // FIXME: operations, alignment_of
 
         template <typename T>
@@ -640,7 +655,39 @@
         template <typename T, typename F>
         struct conditional<false, T, F> { typedef F type; };
 
-        // FIXME: common_type, underlying_type, result_of
+        template <typename T1, typename T2 = T1>
+        struct common_type {
+#ifdef UNBOOST_OLD_BORLAND
+            typedef T1 _type1;
+            typedef T2 _type2;
+#else
+            typedef typename remove_cv<T1>::type _type1;
+            typedef typename remove_cv<T2>::type _type2;
+#endif
+            typedef typename conditional<
+                is_same<_type1, float>::value && is_same<_type2, float>::value,
+                float, double>::type _floating;
+
+            typedef typename conditional<
+                sizeof(_type1) < sizeof(long long) && sizeof(_type2) < sizeof(long long),
+                unsigned int, unsigned long long>::type _unsigned;
+
+            typedef typename conditional<
+                sizeof(_type1) >= sizeof(int) && sizeof(_type2) >= sizeof(int) &&
+                is_unsigned<_type1>::value && is_unsigned<_type2>::value,
+                _unsigned, int>::type _integral;
+
+            typedef typename conditional<
+                (is_floating_point<_type1>::value || is_floating_point<_type2>::value),
+                _floating, _integral>::type type;
+        };
+
+        template <typename T>
+        struct common_type<T, T> {
+            typedef T type;
+        };
+
+        // FIXME: underlying_type, result_of
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
