@@ -207,10 +207,18 @@
                 }
 
                 auto_duration(const auto_duration& ad) {
-                    rep_ = auto_duration_cast(*this, ad).count();
+                    rep_ = ad.rep_;
                     period_ = ad.period_;
                     is_floating_ = ad.is_floating_;
                     fix_floating();
+                }
+
+                auto_duration& operator=(const auto_duration& ad) {
+                    rep_ = ad.rep_;
+                    period_ = ad.period_;
+                    is_floating_ = ad.is_floating_;
+                    fix_floating();
+                    return *this;
                 }
 
                 rep count() const { return rep_; }
