@@ -175,7 +175,7 @@
             {
                 typedef typename _common_duration_type_helper<
                     typename common_type<Rep1, Rep2>::type,
-                        Period1, Period2>::type type;
+                        Period1, Period2>::type     type;
             };
 
             auto_duration
@@ -469,12 +469,6 @@
                 typedef typename common_duration_type<
                     duration<Rep1, Period1>,
                     duration<Rep2, Period2> >::type CD;
-                std::cout << "num1: " << Period1::num << std::endl;
-                std::cout << "den1: " << Period1::den << std::endl;
-                std::cout << "num2: " << Period2::num << std::endl;
-                std::cout << "den2: " << Period2::den << std::endl;
-                std::cout << "num3: " << CD::period::num << std::endl;
-                std::cout << "den3: " << CD::period::den << std::endl;
                 return CD(CD(lhs).count() + CD(rhs).count());
             }
 
@@ -657,6 +651,9 @@
             typedef duration<_int64_t, ratio<60> >         minutes;
             typedef duration<_int64_t, ratio<3600> >       hours;
 
+            //
+            // duration_cast
+            //
             template <typename ToDur, typename CF, typename CR>
             struct _duration_cast_impl {
                 template <typename Rep, typename Period>
@@ -668,19 +665,17 @@
                             / static_cast<CR>(CF::den)));
                 }
             };
-
             template <typename ToDur, class Rep, class Period>
             inline ToDur duration_cast(const duration<Rep, Period>& d) {
                 typedef typename ToDur::rep     to_rep;
                 typedef typename ToDur::period  to_period;
-                //UNBOOST_STATIC_ASSERT_MSG(to_period::num != 0, "division by 0");
+                UNBOOST_STATIC_ASSERT_MSG(to_period::num != 0, "division by 0");
                 typedef ratio_divide<Period, to_period> cf;
                 typedef typename common_type<to_rep, Rep>::type cr0;
                 typedef typename common_type<cr0, _int64_t>::type cr;
                 typedef _duration_cast_impl<ToDur, cf, cr> dc;
                 return dc::_d_cast_internal(d);
             }
-
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
                 typedef typename ToDur::rep     to_rep;
