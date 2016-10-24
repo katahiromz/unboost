@@ -362,6 +362,51 @@ namespace unboost {
                 return *this;
             }
         }; // struct auto_ratio
+
+        inline auto_ratio
+        operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
+            _ratio_intmax_t _Num = ar1.num * ar2.den + ar2.num * ar1.den;
+            _ratio_intmax_t _Den = ar1.den * ar2.den;
+            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) *
+                                  _abs(_Num) / _gcd(_Num, _Den);
+            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            return auto_ratio(num, den);
+        }
+        inline auto_ratio
+        operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
+            _ratio_intmax_t _Num = ar1.num * ar2.den - ar2.num * ar1.den;
+            _ratio_intmax_t _Den = ar1.den * ar2.den;
+            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) *
+                                  _abs(_Num) / _gcd(_Num, _Den);
+            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            return auto_ratio(num, den);
+        }
+        inline auto_ratio
+        operator*(const auto_ratio& ar1, const auto_ratio& ar2) {
+            _ratio_intmax_t _Num = ar1.num * ar2.num;
+            _ratio_intmax_t _Den = ar1.den * ar2.den;
+            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+                                  _gcd(_Num, _Den);
+            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            return auto_ratio(num, den);
+        }
+        inline auto_ratio
+        operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
+            _ratio_intmax_t _Num = ar1.num * ar2.den;
+            _ratio_intmax_t _Den = ar1.den * ar2.num;
+            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+                                  _gcd(_Num, _Den);
+            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            return auto_ratio(num, den);
+        }
+        inline bool
+        operator==(const auto_ratio& ar1, const auto_ratio& ar2) {
+            return ar1.num == ar2.num && ar1.den == ar2.den;
+        }
+        inline bool
+        operator!=(const auto_ratio& ar1, const auto_ratio& ar2) {
+            return ar1.num == ar2.num && ar1.den == ar2.den;
+        }
     } // namespace unboost
     #define unboost_auto_ratio unboost::auto_ratio
 #else

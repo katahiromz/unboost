@@ -17,6 +17,15 @@ int main(void) {
         assert(duration_cast<seconds>(sec).count() == 1);
     }
     {
+        unboost_auto_duration sec = seconds(1);
+        std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
+        std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
+        std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
+        assert(duration_cast<microseconds>(sec).count() == 1000000);
+        assert(duration_cast<milliseconds>(sec).count() == 1000);
+        assert(duration_cast<seconds>(sec).count() == 1);
+    }
+    {
         milliseconds ms(3);
         microseconds us = 2 * ms;
         duration<double, unboost::ratio<1, 30> > hz30(3.5);

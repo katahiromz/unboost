@@ -188,7 +188,7 @@
                 }
 
                 template <class Rep2, class Period2>
-                explicit auto_duration(const duration<Rep2, Period2>& d) {
+                auto_duration(const duration<Rep2, Period2>& d) {
                     rep_ = auto_duration_cast(*this, d).count();
                     period_ = Period2();
                     is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
@@ -284,22 +284,31 @@
                         rep_ = rep(int(rep_));
                 }
 
+                friend inline auto_duration
+                auto_duration_cast(const auto_duration& ad1,
+                                   const auto_duration& ad2)
+                {
+                    typedef rep to_rep;
+                    auto_ratio to_period = ad1.period_;
+                    auto_ratio cf = ad2.period_ / to_period;
+                    return auto_duration(
+                        static_cast<to_rep>(ad2.count() * cf.num / cf.den),
+                        to_period, ad1.is_floating_);
+                }
+
+                auto_ratio get_period() const { return period_; }
+                bool is_floating() const { return is_floating_; }
+
             protected:
                 rep         rep_;
                 auto_ratio  period_;
                 bool        is_floating_;
             }; // class auto_duration
 
-            inline auto_duration
-            auto_duration_cast(const auto_duration& ad1,
-                               const auto_duration& ad2)
-            {
-                // FIXME
-                return auto_duration();
-            }
-
             template <typename ToDur, class Rep, class Period>
             ToDur duration_cast(const duration<Rep, Period>& d);
+            template <typename ToDur>
+            ToDur duration_cast(const auto_duration& ad);
 
             template <class Rep, class Period = unboost::ratio<1> >
             class duration {
@@ -318,7 +327,7 @@
                     rep_ = duration_cast<type>(d).count();
                 }
 
-                duration(const auto_duration& ad) {
+                explicit duration(const auto_duration& ad) {
                     rep_ = duration_cast<type>(ad).count();
                 }
 
@@ -530,6 +539,18 @@
                 typedef typename common_type<cr0, _int64_t>::type cr;
                 typedef _duration_cast_impl<ToDur, cf, cr> dc;
                 return dc::_cast(d);
+            }
+
+            template <typename ToDur>
+            inline ToDur duration_cast(const auto_duration& ad) {
+                typedef typename ToDur::rep     to_rep;
+                typedef typename ToDur::period  to_period;
+                auto_ratio cf = ad.get_period() / to_period();
+                typedef double cr;
+                return ToDur(static_cast<to_rep>(
+                    static_cast<cr>(ad.count())
+                        * static_cast<cr>(cf.num)
+                        / static_cast<cr>(cf.den)));
             }
 
             // FIXME: define time_point
