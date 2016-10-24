@@ -197,8 +197,7 @@ namespace unboost {
         class ratio_divide {
         public:
             typedef ratio_divide<R1, R2> type;
-            //UNBOOST_STATIC_ASSERT_MSG(R2::num != 0, "division by 0");
-
+            UNBOOST_STATIC_ASSERT_MSG(R2::num != 0, "division by 0");
             enum {
                 _Num = R1::num * R2::den,
                 _Den = R1::den * R2::num,
