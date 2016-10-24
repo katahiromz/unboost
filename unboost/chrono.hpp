@@ -8,6 +8,8 @@
 #include "type_traits.hpp"
 #include "ratio.hpp"
 #include <cmath>
+#undef min
+#undef max
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
@@ -136,7 +138,7 @@
             template <class Rep, class Period>
             class duration;
 
-            struct auto_duration;
+            class auto_duration;
 
             template <typename CT, typename Period1, typename Period2>
             struct _duration_common_type_helper {
@@ -189,7 +191,7 @@
 
                 template <class Rep2, class Period2>
                 auto_duration(const duration<Rep2, Period2>& d) {
-                    rep_ = auto_duration_cast(*this, d).count();
+                    rep_ = static_cast<rep>(d.count());
                     period_ = Period2();
                     is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
                     fix_floating();
@@ -197,7 +199,7 @@
 
                 template <class Rep2, class Period2>
                 auto_duration& operator=(const duration<Rep2, Period2>& d) {
-                    rep_ = auto_duration_cast(*this, d).count();
+                    rep_ = static_cast<rep>(d.count());
                     period_ = Period2();
                     is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
                     fix_floating();

@@ -11,3 +11,10 @@ cmake_install.cmake
 *.vcxproj
 *.sln
 *.filters
+*.user
+*.ncb
+*.suo
+*.dir
+Debug
+Release
+x64
