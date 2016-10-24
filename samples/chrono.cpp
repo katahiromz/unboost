@@ -34,8 +34,21 @@ int main(void) {
         assert(hz30.count() == 3.5);
     }
     {
+        milliseconds ms(3);
+        unboost_auto_duration us = 2 * ms;
+        duration<double, unboost::ratio<1, 30> > hz30(3.5);
+        assert(ms.count() == 3);
+        assert(us.count() == 6000);
+        assert(hz30.count() == 3.5);
+    }
+    {
         seconds s1(10);
         seconds s2 = -s1;
+        assert(s2.count() == -10);
+    }
+    {
+        seconds s1(10);
+        unboost_auto_duration s2 = -s1;
         assert(s2.count() == -10);
     }
     {
@@ -45,7 +58,22 @@ int main(void) {
         assert(m.count() == 119);
     }
     {
+        hours h(1);
+        unboost_auto_duration m = ++h;
+        m--;
+        assert(m.count() == 119);
+    }
+    {
         minutes m(11);
+        m *= 2;
+        m += hours(10);
+        assert(m.count() == 622);
+        assert(duration_cast<hours>(m).count() == 10);
+        m %= hours(1);
+        assert(m.count() == 22);
+    }
+    {
+        unboost_auto_duration m = minutes(11);
         m *= 2;
         m += hours(10);
         assert(m.count() == 622);
@@ -63,8 +91,23 @@ int main(void) {
         assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
     }
     {
+        unboost_auto_duration s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
+        std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
+        assert(s.count() == 4807);
+
+        assert(duration_cast<hours>(s).count() == 1);
+        assert(duration_cast<minutes>(s % hours(1)).count() == 20);
+        assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
+    }
+    {
         assert(seconds(2) == milliseconds(2000));
         assert(seconds(61) > minutes(1));
+    }
+    {
+        unboost_auto_duration sec2 = seconds(2);
+        unboost_auto_duration sec61 = seconds(61);
+        assert(sec2 == milliseconds(2000));
+        assert(sec61 > minutes(1));
     }
     {
         typedef duration<int, unboost::ratio<1, 100000000> >    shakes;

@@ -143,13 +143,15 @@
             template <typename CT, typename Period1, typename Period2>
             struct _duration_common_type_helper {
             private:
-                typedef _GCD<Period1::num, Period2::num> _gcd_num;
-                typedef _GCD<Period1::den, Period2::den> _gcd_den;
-                typedef typename CT::type _cr;
-                typedef ratio<_gcd_num::value,
-                    (Period1::den / _gcd_den::value) * Period2::den> _r;
+                enum {
+                    _gcd_num = _GCD<Period1::num, Period2::num>::value,
+                    _gcd_den = _GCD<Period1::den, Period2::den>::value,
+                    p1_den = Period1::den,
+                    p2_den = Period2::den
+                };
+                typedef ratio<_gcd_num, (p1_den / _gcd_den) * p2_den> _r;
             public:
-                typedef duration<_cr, _r> type;
+                typedef duration<CT::type, _r> type;
             };
 
             template <typename T1, typename T2>
@@ -482,7 +484,7 @@
                                    const duration<Rep2, Period2>& rhs)
             {
                 typedef typename duration_common_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2>>::type CT;
+                                                      duration<Rep2, Period2> >::type CT;
                 return CT(lhs).count() == CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
@@ -497,7 +499,7 @@
                                    const duration<Rep2, Period2>& rhs)
             {
                 typedef typename duration_common_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2>>::type CT;
+                                                      duration<Rep2, Period2> >::type CT;
                 return CT(lhs).count() < CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
@@ -509,10 +511,10 @@
 
             template <class Rep1, class Period1, class Rep2, class Period2>
             inline bool operator>(const duration<Rep1, Period1>& lhs,
-                                   const duration<Rep2, Period2>& rhs)
+                                  const duration<Rep2, Period2>& rhs)
             {
                 typedef typename duration_common_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2>>::type CT;
+                                                      duration<Rep2, Period2> >::type CT;
                 return CT(lhs).count() > CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
