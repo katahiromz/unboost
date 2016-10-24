@@ -1,8 +1,8 @@
-// for_each.hpp --- Unboost for each
+// foreach.hpp --- Unboost for each
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef UNBOOST_FOR_EACH_HPP_
-#define UNBOOST_FOR_EACH_HPP_
+#ifndef UNBOOST_FOREACH_HPP_
+#define UNBOOST_FOREACH_HPP_
 
 #include "unboost.hpp"
 
@@ -31,4 +31,4 @@
     #error Your compiler is not supported yet. You lose.
 #endif
 
-#endif  // ndef UNBOOST_FOR_EACH_HPP_
+#endif  // ndef UNBOOST_FOREACH_HPP_
