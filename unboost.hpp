@@ -88,7 +88,7 @@
 #endif
 
 #ifdef UNBOOST_USE_STRING_ALGORITHM
-    #include "unboost/string_algorithm.hpp"
+    #include "unboost/algorithm/string.hpp"
 #endif
 
 #ifdef UNBOOST_USE_FILESYSTEM
