@@ -33,4 +33,10 @@
         typedef char UNBOOST_STATIC_ASSERTION##__LINE__[(x) ? 1 : -1]
 #endif
 
+#if 0
+    #undef UNBOOST_STATIC_ASSERT_MSG
+    #define UNBOOST_STATIC_ASSERT_MSG(x,y) \
+        typedef char UNBOOST_STATIC_ASSERTION##__LINE__[1]
+#endif
+
 #endif  // ndef UNBOOST_STATIC_ASSERT_HPP_
