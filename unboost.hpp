@@ -63,10 +63,6 @@
     #include "unboost/thread.hpp"
 #endif
 
-#ifdef UNBOOST_USE_MUTEX
-    #include "unboost/mutex.hpp"
-#endif
-
 #ifdef UNBOOST_USE_UNORDERED_SET
     #include "unboost/unordered_set.hpp"
 #endif

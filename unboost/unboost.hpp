@@ -46,9 +46,6 @@
     #ifndef UNBOOST_USE_FOREACH
         #define UNBOOST_USE_FOREACH
     #endif
-    #ifndef UNBOOST_USE_MUTEX
-        #define UNBOOST_USE_MUTEX
-    #endif
     #ifndef UNBOOST_USE_RANDOM
         #define UNBOOST_USE_RANDOM
     #endif
@@ -89,46 +86,6 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // dependency
-
-// mutex depends on chrono and thread
-#ifdef UNBOOST_USE_MUTEX
-    #ifndef UNBOOST_USE_CHRONO
-        #define UNBOOST_USE_CHRONO
-    #endif
-    #ifndef UNBOOST_USE_THREAD
-        #define UNBOOST_USE_THREAD
-    #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_MUTEX
-        #ifndef UNBOOST_USE_CXX11_CHRONO
-            #define UNBOOST_USE_CXX11_CHRONO
-        #endif
-        #ifndef UNBOOST_USE_CXX11_THREAD
-            #define UNBOOST_USE_CXX11_THREAD
-        #endif
-    #elif defined(UNBOOST_USE_BOOST_MUTEX)
-        #ifndef UNBOOST_USE_BOOST_CHRONO
-            #define UNBOOST_USE_BOOST_CHRONO
-        #endif
-        #ifndef UNBOOST_USE_BOOST_THREAD
-            #define UNBOOST_USE_BOOST_THREAD
-        #endif
-    #elif defined(UNBOOST_USE_WIN32_MUTEX)
-        #ifndef UNBOOST_USE_WIN32_CHRONO
-            #define UNBOOST_USE_WIN32_CHRONO
-        #endif
-        #ifndef UNBOOST_USE_WIN32_THREAD
-            #define UNBOOST_USE_WIN32_THREAD
-        #endif
-    #elif defined(UNBOOST_USE_POSIX_MUTEX)
-        #ifndef UNBOOST_USE_POSIX_CHRONO
-            #define UNBOOST_USE_POSIX_CHRONO
-        #endif
-        #ifndef UNBOOST_USE_POSIX_THREAD
-            #define UNBOOST_USE_POSIX_THREAD
-        #endif
-    #endif
-#endif
 
 // thread depends on chrono
 #ifdef UNBOOST_USE_THREAD
