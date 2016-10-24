@@ -503,17 +503,33 @@
                 return !(lhs > rhs);
             }
 
-            typedef duration<_uint64_t, ratio<1, 1000000> > microseconds;
-            typedef duration<_uint64_t, ratio<1, 1000> >    milliseconds;
-            typedef duration<_uint64_t>                     seconds;
-            typedef duration<_uint64_t, ratio<60> >         minutes;
-            typedef duration<_uint64_t, ratio<3600> >       hours;
+            typedef duration<_int64_t, ratio<1, 1000000> > microseconds;
+            typedef duration<_int64_t, ratio<1, 1000> >    milliseconds;
+            typedef duration<_int64_t>                     seconds;
+            typedef duration<_int64_t, ratio<60> >         minutes;
+            typedef duration<_int64_t, ratio<3600> >       hours;
+
+            template <typename ToDur, typename CF, typename CR>
+            struct _duration_cast_impl {
+                template <typename Rep, typename Period>
+                static ToDur _cast(const duration<Rep, Period>& d) {
+                    typedef typename ToDur::rep  to_rep;
+                    return ToDur(static_cast<to_rep>(
+                        static_cast<CR>(d.count())
+                            * static_cast<CR>(CF::num)
+                            / static_cast<CR>(CF::den)));
+                }
+            };
 
             template <typename ToDur, class Rep, class Period>
             inline ToDur duration_cast(const duration<Rep, Period>& d) {
-                typedef typename ToDur::rep rep;
-                ///...
-                return ToDur();
+                typedef typename ToDur::rep     to_rep;
+                typedef typename ToDur::period  to_period;
+                typedef ratio_divide<Period, to_period> cf;
+                typedef typename common_type<to_rep, Rep>::type cr0;
+                typedef typename common_type<cr0, _int64_t>::type cr;
+                typedef _duration_cast_impl<ToDur, cf, cr> dc;
+                return dc::_cast(d);
             }
 
             // FIXME: define time_point
