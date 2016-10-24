@@ -5,6 +5,7 @@
 #define UNBOOST_RATIO_HPP_
 
 #include "unboost.hpp"
+#include "static_assert.hpp"
 
 namespace unboost {
     typedef int _ratio_intmax_t;
@@ -12,12 +13,12 @@ namespace unboost {
 
     template <_ratio_intmax_t N>
     struct _SIGN {
-        enum { value = (N < 0 ? -1 : 1) };
+        enum { value = ((N < 0) ? -1 : 1) };
     };
 
     template <_ratio_intmax_t N>
     struct _ABS {
-        enum { value = (N < 0 ? -N : N) };
+        enum { value = ((N < 0) ? -N : N) };
     };
 
     template <_ratio_intmax_t A, _ratio_intmax_t B>
@@ -196,11 +197,12 @@ namespace unboost {
         class ratio_divide {
         public:
             typedef ratio_divide<R1, R2> type;
+            //UNBOOST_STATIC_ASSERT_MSG(R2::num != 0, "division by 0");
+
             enum {
                 _Num = R1::num * R2::den,
                 _Den = R1::den * R2::num,
-                num = _SIGN<_Num>::value * _SIGN<_Den>::value *
-                      _ABS<_Num>::value / _GCD<_Num, _Den>::value,
+                num = _SIGN<_Num>::value * _SIGN<_Den>::value * _ABS<_Num>::value / _GCD<_Num, _Den>::value,
                 den = _ABS<_Den>::value / _GCD<_Num, _Den>::value
             };
         };

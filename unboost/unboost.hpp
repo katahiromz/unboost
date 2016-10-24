@@ -22,6 +22,19 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// Is Unboost on C++11? (UNBOOST_CXX11)
+
+#ifndef UNBOOST_CXX11
+    #if (__cplusplus >= 201103L)    // C++11
+        #define UNBOOST_CXX11
+    #endif
+#endif
+
+#ifdef UNBOOST_NO_CXX11
+    #undef UNBOOST_CXX11
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 // Use all?
 
 #ifdef UNBOOST_USE_ALL
@@ -186,17 +199,27 @@
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// Is Unboost on C++11? (UNBOOST_CXX11)
-
-#ifndef UNBOOST_CXX11
-    #if (__cplusplus >= 201103L)    // C++11
-        #define UNBOOST_CXX11
+// ratio depends on static_assert
+#ifdef UNBOOST_USE_RATIO
+    #ifndef UNBOOST_USE_STATIC_ASSERT
+        #define UNBOOST_USE_STATIC_ASSERT
     #endif
-#endif
-
-#ifdef UNBOOST_NO_CXX11
-    #undef UNBOOST_CXX11
+    //
+    #ifdef UNBOOST_USE_CXX11_RATIO
+        #ifndef UNBOOST_USE_CXX11_STATIC_ASSERT
+            #define UNBOOST_USE_CXX11_STATIC_ASSERT
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_BOOST_RATIO
+        #ifndef UNBOOST_USE_BOOST_STATIC_ASSERT
+            #define UNBOOST_USE_BOOST_STATIC_ASSERT
+        #endif
+    #endif
+    #ifdef UNBOOST_USE_UNBOOST_RATIO
+        #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
+            #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
+        #endif
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
