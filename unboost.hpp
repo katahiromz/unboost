@@ -44,7 +44,7 @@
 #endif
 
 #ifdef UNBOOST_USE_COMPLEX_FUNCTIONS
-    #include "unboost/complex_functions.hpp"
+    #include "unboost/math/complex.hpp"
 #endif
 
 #ifdef UNBOOST_USE_RANDOM
