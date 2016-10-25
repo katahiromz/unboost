@@ -137,7 +137,7 @@
             a1.swap(a2);
         }
         template <typename T, size_t N>
-        inline int compare_array(array<T, N>& a1, array<T, N>& a2) {
+        inline int _compare_array(array<T, N>& a1, array<T, N>& a2) {
             for (typename array<T, N>::size_type i = 0; i < N; ++i) {
                 if (a1.data()[i] < a2.data()[i])
                     return -1;
@@ -148,27 +148,27 @@
         }
         template <typename T, size_t N>
         inline bool operator==(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) == 0;
+            return _compare_array(a1, a2) == 0;
         }
         template <typename T, size_t N>
         inline bool operator!=(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) != 0;
+            return _compare_array(a1, a2) != 0;
         }
         template <typename T, size_t N>
         inline bool operator<(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) < 0;
+            return _compare_array(a1, a2) < 0;
         }
         template <typename T, size_t N>
         inline bool operator<=(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) <= 0;
+            return _compare_array(a1, a2) <= 0;
         }
         template <typename T, size_t N>
         inline bool operator>(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) > 0;
+            return _compare_array(a1, a2) > 0;
         }
         template <typename T, size_t N>
         inline bool operator>=(array<T, N>& a1, array<T, N>& a2) {
-            return compare_array(a1, a2) >= 0;
+            return _compare_array(a1, a2) >= 0;
         }
         template <size_t I, typename T, size_t N>
         inline T& get(array<T, N>& a) {
