@@ -6,6 +6,11 @@
 
 #include "unboost.hpp"
 
+// unboost::emplace(obj, ...)
+// unboost::emplace_at(obj, pos, ...)
+// unboost::emplace_front(obj, ...)
+// unboost::emplace_back(obj, ...)
+
 #ifndef UNBOOST_EMPLACE
     namespace unboost {
         #ifdef UNBOOST_CXX11    // C++11
