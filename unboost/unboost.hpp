@@ -145,14 +145,16 @@
         #ifndef UNBOOST_USE_CXX11_RATIO
             #define UNBOOST_USE_CXX11_RATIO
         #endif
-    #elif defined(UNBOOST_USE_BOOST_CHRONO)
+    #endif
+    #ifdef UNBOOST_USE_BOOST_CHRONO
         #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
             #define UNBOOST_USE_BOOST_TYPE_TRAITS
         #endif
         #ifndef UNBOOST_USE_BOOST_RATIO
             #define UNBOOST_USE_BOOST_RATIO
         #endif
-    #else
+    #endif
+    #ifdef UNBOOST_USE_UNBOOST_CHRONO
         #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
             #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
         #endif
