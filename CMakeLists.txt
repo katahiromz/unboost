@@ -1,7 +1,7 @@
 # CMakeLists.txt --- CMake project settings
 
 cmake_minimum_required(VERSION 2.8)
-project(unboost)
+project(unboost CXX)
 
 #
 # options
