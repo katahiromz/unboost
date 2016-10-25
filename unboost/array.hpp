@@ -83,11 +83,11 @@
             typedef ptrdiff_t difference_type;
             typedef value_type& reference;
             typedef const value_type& const_reference;
-            // FIXME: iterator, const_iterator,
-            //typedef std::reverse_iterator<iterator> reverse_iterator;
-            //typedef std::reverse_iterator<const_iterator>
-            //          const_reverse_iterator;
-            value_type m_data[N];
+            typedef value_type *iterator;
+            typedef const value_type *const_iterator;
+            typedef value_type *reverse_iterator;
+            typedef const value_type *const_reverse_iterator;
+
             reference at(size_type pos) {
                 if (!(pos < size()))
                     std::out_of_range("unboost::array");
@@ -114,6 +114,21 @@
             bool empty() const { return N == 0; }
             size_type size() const { return N; }
             size_t max_size() const { return  std::numeric_limits<size_type>::max(); }
+
+                  iterator begin()          { return &m_data[0]; }
+            const_iterator begin() const    { return &m_data[0]; }
+            const_iterator cbegin() const   { return &m_data[0]; }
+                  iterator end()            { return &m_data[N]; }
+            const_iterator end() const      { return &m_data[N]; }
+            const_iterator cend() const     { return &m_data[N]; }
+
+                  reverse_iterator rbegin()         { return &m_data[N - 1]; }
+            const_reverse_iterator rbegin() const   { return &m_data[N - 1]; }
+            const_reverse_iterator crbegin() const  { return &m_data[N - 1]; }
+                  reverse_iterator rend()           { return &m_data[-1]; }
+            const_reverse_iterator rend() const     { return &m_data[-1]; }
+            const_reverse_iterator crend() const    { return &m_data[-1]; }
+
             void fill(const T& value) {
                 if (sizeof(T) == 1) {
                     memset(m_data, value, N * sizeof(T));
@@ -131,11 +146,15 @@
             friend void swap(array<T, N>& a1, array<T, N>& a2) {
                 a1.swap(a2);
             }
+        protected:
+            value_type m_data[N];
         }; // array<T, N>
+
         template <typename T, size_t N>
         inline void swap(array<T, N>& a1, array<T, N>& a2) {
             a1.swap(a2);
         }
+
         template <typename T, size_t N>
         inline int _compare_array(array<T, N>& a1, array<T, N>& a2) {
             for (typename array<T, N>::size_type i = 0; i < N; ++i) {
@@ -146,6 +165,7 @@
             }
             return 0;
         }
+
         template <typename T, size_t N>
         inline bool operator==(array<T, N>& a1, array<T, N>& a2) {
             return _compare_array(a1, a2) == 0;
@@ -170,6 +190,7 @@
         inline bool operator>=(array<T, N>& a1, array<T, N>& a2) {
             return _compare_array(a1, a2) >= 0;
         }
+
         template <size_t I, typename T, size_t N>
         inline T& get(array<T, N>& a) {
             return a.data()[I];
@@ -178,6 +199,13 @@
         inline const T& get(const array<T, N>& a) {
             return a.data()[I];
         }
+        #ifdef UNBOOST_RVALREF
+            template <size_t I, typename T, size_t N>
+            inline UNBOOST_RVALREF_TYPE(T)
+            get(UNBOOST_RVALREF_TYPE(array<T, N>) a) {
+                return unboost::move(UNBOOST_RVALREF(a).data()[I]);
+            }
+        #endif
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
