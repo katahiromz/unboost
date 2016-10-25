@@ -17,7 +17,7 @@
     #endif
 #endif
 
-#ifdef UNBOOST_OLD_BORLAND
+#ifdef UNBOOST_OLD_COMPILER
     // there is no const or volatile info
     #ifndef UNBOOST_NO_CV_INFO
         #define UNBOOST_NO_CV_INFO
@@ -28,8 +28,8 @@
     #endif
 #endif
 
-#if (1500 <= _MSC_VER)// && (_MSC_VER <= 1600)
-    // Visual C++ 2008 SP1 and 2010
+#if (1500 <= _MSC_VER)
+    // Visual C++ 2008
     #ifndef UNBOOST_NO_CV_INFO
         #define UNBOOST_NO_CV_INFO
     #endif
@@ -218,7 +218,7 @@
                 rvalue_ref(T& ref) : m_ref(ref) { }
             };
 
-            #ifdef UNBOOST_OLD_BORLAND
+            #ifdef UNBOOST_OLD_COMPILER
                 #define UNBOOST_RVALREF_TYPE(type) \
                     unboost::rvalue_ref<type > /**/
             #else
@@ -308,7 +308,7 @@
             rvalue_ref(T& ref) : m_ref(ref) { }
         };
 
-        #ifdef UNBOOST_OLD_BORLAND
+        #ifdef UNBOOST_OLD_COMPILER
             #define UNBOOST_RVALREF_TYPE(type) \
                 unboost::rvalue_ref<type > /**/
         #else
@@ -589,7 +589,7 @@
         };
 #endif
 
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_OLD_COMPILER
         template <typename T, size_t N = 0>
         struct extent {
             // integral_constant<std::size_t, 0>
@@ -610,6 +610,7 @@
         struct extent<T[I], N> : extent<T, N - 1> {
             // integral_constant<std::size_t, std::extent<T, N-1>::value>
         };
+#ifndef UNBOOST_NO_EMPTY_ARRAY
         template <typename T>
         struct extent<T[], 0> {
             // std::integral_constant<std::size_t, 0>
@@ -623,6 +624,7 @@
             // integral_constant<std::size_t, std::extent<T, N-1>::value>
         };
 #endif
+#endif  // ndef UNBOOST_OLD_COMPILER
 
         // FIXME: is_base_of, is_convertible
 

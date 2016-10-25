@@ -15,7 +15,7 @@
         #define UNBOOST_EMPLACE_BACK(type, obj, ...) \
             (obj).emplace_back(__VA_ARGS__)
     #else
-        #ifdef UNBOOST_OLD_BORLAND
+        #ifdef UNBOOST_OLD_COMPILER
             // __VA_ARGS__ is not available
         #else
             #define UNBOOST_EMPLACE(type, obj, ...) \

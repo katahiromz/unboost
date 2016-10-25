@@ -5,6 +5,8 @@
 #define UNBOOST_ARRAY_HPP_
 
 #include "unboost.hpp"
+#undef max
+#undef min
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_ARRAY) + defined(UNBOOST_USE_TR1_ARRAY) + defined(UNBOOST_USE_BOOST_ARRAY) + defined(UNBOOST_USE_UNBOOST_ARRAY) == 0)

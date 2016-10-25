@@ -111,6 +111,8 @@ int main(void) {
         assert(!is_volatile<int>::value);
         assert(is_volatile<volatile int>::value);
     }
+#endif
+#ifndef UNBOOST_OLD_COMPILER
     {
         std::cout << "extent<int[3]>::value: " << extent<int[3]>::value << std::endl;
         std::cout << "extent<int[3][4]>::value: " << extent<int[3][4]>::value << std::endl;
@@ -120,7 +122,9 @@ int main(void) {
         assert(extent<int[3][4]>::value == 3);
         assert((extent<int[3][4], 1>::value == 4));
         assert((extent<int[3][4], 2>::value == 0));
+#ifdef UNBOOST_NO_EMPTY_ARRAY
         assert(extent<int[]>::value == 0);
+#endif
     }
 #endif
     {
