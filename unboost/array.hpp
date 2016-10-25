@@ -20,7 +20,11 @@
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1600)
                 // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_ARRAY
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_ARRAY
+                #else
+                    #define UNBOOST_USE_UNBOOST_ARRAY
+                #endif
             #elif (1500 <= _MSC_VER) && (_MSC_VER < 1600)
                 // Visual C++ 2008
                 #ifndef UNBOOST_NO_TR1

@@ -20,7 +20,11 @@
         #elif defined(_WIN32)
             #if (_MSC_VER >= 1800)
                 // Visual C++ 2013 and later
-                #define UNBOOST_USE_CXX11_THREAD
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_THREAD
+                #else
+                    #define UNBOOST_USE_WIN32_THREAD
+                #endif
             #else
                 #define UNBOOST_USE_WIN32_THREAD
             #endif

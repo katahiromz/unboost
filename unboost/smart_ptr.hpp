@@ -29,7 +29,11 @@
                 // NOTE: On MSVC 2008, you needs SP1.
             #elif (_MSC_VER >= 1700)
                 // Visual C++ 2012 and later
-                #define UNBOOST_USE_CXX11_SMART_PTR
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_SMART_PTR
+                #else
+                    #define UNBOOST_USE_UNBOOST_SMART_PTR
+                #endif
             #else
                 #define UNBOOST_USE_UNBOOST_SMART_PTR
             #endif
@@ -559,27 +563,27 @@
         }
 
         template <typename T1, typename T2>
-        inline operator==(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator==(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() == rhs.get();
         }
         template <typename T1, typename T2>
-        inline operator!=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator!=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() != rhs.get();
         }
         template <typename T1, typename T2>
-        inline operator<(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator<(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() < rhs.get();
         }
         template <typename T1, typename T2>
-        inline operator<=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator<=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() <= rhs.get();
         }
         template <typename T1, typename T2>
-        inline operator>(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator>(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() > rhs.get();
         }
         template <typename T1, typename T2>
-        inline operator>=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
+        inline bool operator>=(const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs) {
             return lhs.get() >= rhs.get();
         }
 

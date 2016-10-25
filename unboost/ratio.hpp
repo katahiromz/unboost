@@ -68,7 +68,11 @@ namespace unboost {
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1700)
                 // Visual C++ 2012 and later
-                #define UNBOOST_USE_CXX11_RATIO
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_RATIO
+                #else
+                    #define UNBOOST_USE_UNBOOST_RATIO
+                #endif
             #else
                 #define UNBOOST_USE_UNBOOST_RATIO
             #endif

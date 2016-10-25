@@ -18,7 +18,11 @@
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1600)
                 // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_REGEX
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_REGEX
+                #else
+                    #define UNBOOST_USE_BOOST_REGEX
+                #endif
             #else
                 #define UNBOOST_USE_BOOST_REGEX
             #endif

@@ -23,7 +23,15 @@
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1700)
                 // Visual C++ 2012 and later
-                #define UNBOOST_USE_CXX11_CHRONO
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_CHRONO
+                #else
+                    #ifdef _WIN32
+                        #define UNBOOST_USE_WIN32_CHRONO
+                    #else
+                        #define UNBOOST_USE_POSIX_CHRONO
+                    #endif
+                #endif
             #else
                 #ifdef _WIN32
                     #define UNBOOST_USE_WIN32_CHRONO

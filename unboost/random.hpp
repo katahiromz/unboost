@@ -18,7 +18,11 @@
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1600)
                 // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_RANDOM
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_RANDOM
+                #else
+                    #define UNBOOST_USE_BOOST_RANDOM
+                #endif
             #else
                 #define UNBOOST_USE_BOOST_RANDOM
             #endif

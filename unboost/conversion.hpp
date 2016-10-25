@@ -11,18 +11,22 @@
 #include "exception.hpp"
 
 // If not choosed, choose one
-#if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION)) == 0)
+#if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION) + defined(UNBOOST_USE_UNBOOST_CONVERSION)) == 0)
     #ifdef UNBOOST_USE_CXX11
         #define UNBOOST_USE_CXX11_CONVERSION
     #elif defined(UNBOOST_USE_BOOST)
         #define UNBOOST_USE_BOOST_CONVERSION
     #else
         #ifdef UNBOOST_CXX11    // C++11
-            #define UNBOOST_USE_CXX11_CONVERSION
+            #define UNBOOST_USE_UNBOOST_CONVERSION
         #elif defined(_MSC_VER)
             #if (_MSC_VER >= 1600)
                 // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_CONVERSION
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_CONVERSION
+                #else
+                    #define UNBOOST_USE_UNBOOST_CONVERSION
+                #endif
             #else
                 #define UNBOOST_USE_UNBOOST_CONVERSION
             #endif

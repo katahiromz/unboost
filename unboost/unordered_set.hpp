@@ -16,7 +16,15 @@
         #if defined(_MSC_VER)
             #if (_MSC_VER >= 1600)
                 // Visual C++ 2010 and later
-                #define UNBOOST_USE_CXX11_UNORDERED_SET
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_UNORDERED_SET
+                #else
+                    #ifndef UNBOOST_NO_TR1
+                        #define UNBOOST_USE_TR1_UNORDERED_SET
+                    #else
+                        #define UNBOOST_USE_BOOST_UNORDERED_SET
+                    #endif
+                #endif
             #elif (_MSC_VER >= 1500)
                 // Visual C++ 2008
                 #ifndef UNBOOST_NO_TR1
