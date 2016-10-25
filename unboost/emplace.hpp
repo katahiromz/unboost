@@ -8,7 +8,7 @@
 
 #ifndef UNBOOST_EMPLACE
     namespace unboost {
-        #ifdef UNBOOST_CXX11
+        #ifdef UNBOOST_CXX11    // C++11
             //
             // emplace(obj, ...)
             //
