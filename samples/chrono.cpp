@@ -128,17 +128,119 @@ int main(void) {
     //    double f2 = duration_cast<nanocenturies>(sec).count();
     //    assert(0.31695 <= f2 && f2 <= 0.31696);
     //}
+
+    //const unsigned threshold = 1200;
     //{
-    //    //unboost::chrono::time_point<unboost::chrono::steady_clock> t1, t2;
-    //    //for (unsigned __int64 size = 1; size < 10000000; size *= 10) {
-    //    //    t1 = unboost::chrono::steady_clock::now();
-    //    //    std::vector<int> v(size, 42);
-    //    //    t2 = unboost::chrono::steady_clock::now();
-    //    //    std::cout << t1.time_since_epoch().count() << std::endl;
-    //    //    std::cout << t2.time_since_epoch().count() << std::endl;
-    //    //    std::cout << size << ": " << (t1 - t2).count() << std::endl;
-    //    //}
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        high_resolution_clock::time_point start = high_resolution_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        high_resolution_clock::time_point end = high_resolution_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
     //}
+    //{
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        unboost_auto_time_point start = high_resolution_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        unboost_auto_time_point end = high_resolution_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
+    //}
+    //// steady_clock
+    //{
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        steady_clock::time_point start = steady_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        steady_clock::time_point end = steady_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
+    //}
+    //{
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        unboost_auto_time_point start = steady_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        unboost_auto_time_point end = steady_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
+    //}
+    //// system_clock
+    //{
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        system_clock::time_point start = system_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        system_clock::time_point end = system_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
+    //}
+    //{
+    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
+    //        unboost_auto_time_point start = system_clock::now();
+    //        milliseconds dura(ms);
+    //        unboost::this_thread::sleep_for(dura);
+    //        unboost_auto_time_point end = system_clock::now();
+    //
+    //        unboost_auto_duration elapsed = end - start;
+    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
+    //    }
+    //}
+    //{
+    //    time_point<system_clock> p1, p2, p3;
+    //    typedef duration<_int64_t, ratio<3600 * 24> >  days;
+    //    typedef duration<_int64_t, ratio<3600 * 24 * 31> > months;
+    //    typedef duration<_int64_t, ratio<3600 * 24 * 356> >  years;
+    //
+    //    p2 = system_clock::now();
+    //    p3 = p2 - hours(24);
+    //
+    //    std::time_t epoch_time = system_clock::to_time_t(p1);
+    //    std::cout << "epoch: " << std::ctime(&epoch_time);
+    //
+    //    std::time_t today_time = system_clock::to_time_t(p2);
+    //    std::cout << "today: " << std::ctime(&today_time);
+    //
+    //    std::cout << "years since epoch: "
+    //              << duration_cast<years>(p2.time_since_epoch()).count()
+    //              << '\n';
+    //    std::cout << "yesterday, years since epoch: "
+    //              << duration_cast<years>(p3.time_since_epoch()).count()
+    //              << '\n';
+    //}
+    //{
+    //    time_point<system_clock> now = system_clock::now();
+    //    std::vector<time_point<system_clock>> times;
+    //    times.push_back(now - hours(24));
+    //    times.push_back(now - hours(48));
+    //    times.push_back(now + hours(24));
+    //
+    //    time_point<system_clock> earliest = time_point<system_clock>::max();
+    //
+    //    std::cout << "all times:\n";
+    //    for (const auto &time : times) {
+    //        std::time_t t = system_clock::to_time_t(time);
+    //        std::cout << std::ctime(&t);
+    //
+    //        if (time < earliest) earliest = time;
+    //    }
+    //
+    //    std::time_t t = system_clock::to_time_t(earliest);
+    //    std::cout << "earliest:\n" << std::ctime(&t);
+    //}
+
     std::cout << "success" << std::endl;
 
     return 0;
