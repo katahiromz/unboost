@@ -135,7 +135,7 @@
                 ARG1        m_arg1;
                 ARG2        m_arg2;
                 ARG3        m_arg3;
-                THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG2 arg3) :
+                THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3) :
                     m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3) { }
             };
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -143,6 +143,43 @@
                 THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
                 data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *)ptr;
                 data->m_func(data->m_arg1, data->m_arg2, data->m_arg3);
+                delete data;
+                return 0;
+            }
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+            struct THREAD_DATA_ARG4 {
+                FUNC        m_func;
+                ARG1        m_arg1;
+                ARG2        m_arg2;
+                ARG3        m_arg3;
+                ARG4        m_arg4;
+                THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg4, ARG4 arg4) :
+                    m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3), m_arg4(arg4) { }
+            };
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+            static unsigned __stdcall thread_function_arg4(void *ptr) {
+                THREAD_DATA_ARG4<FUNC, ARG1, ARG2, ARG3, ARG4> *data;
+                data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3, ARG4> *)ptr;
+                data->m_func(data->m_arg1, data->m_arg2, data->m_arg3, data->m_arg4);
+                delete data;
+                return 0;
+            }
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+            struct THREAD_DATA_ARG5 {
+                FUNC        m_func;
+                ARG1        m_arg1;
+                ARG2        m_arg2;
+                ARG3        m_arg3;
+                ARG4        m_arg4;
+                ARG4        m_arg5;
+                THREAD_DATA_ARG3(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg4, ARG4 arg4, ARG5 arg5) :
+                    m_func(func), m_arg1(arg1), m_arg2(arg2), m_arg3(arg3), m_arg4(arg4), m_arg5(arg5) { }
+            };
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+            static unsigned __stdcall thread_function_arg5(void *ptr) {
+                THREAD_DATA_ARG4<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5> *data;
+                data = (THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5> *)ptr;
+                data->m_func(data->m_arg1, data->m_arg2, data->m_arg3, data->m_arg4, data->m_arg5);
                 delete data;
                 return 0;
             }
@@ -200,6 +237,34 @@
                 data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3>(func, arg1, arg2, arg3);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg3<FUNC, ARG1, ARG2, ARG3>,
+                                   data, 0, (unsigned *)&m_id));
+                if (m_hThread == NULL) {
+                    delete data;
+                    throw unboost::system_error(::GetLastError());
+                }
+            }
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+            thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) :
+                m_hThread(NULL), m_id()
+            {
+                THREAD_DATA_ARG4<FUNC, ARG1, ARG2, ARG3, ARG4> *data;
+                data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3, ARG4>(func, arg1, arg2, arg3, arg4);
+                m_hThread = reinterpret_cast<HANDLE>(
+                    _beginthreadex(NULL, 0, thread_function_arg4<FUNC, ARG1, ARG2, ARG3, ARG4>,
+                                   data, 0, (unsigned *)&m_id));
+                if (m_hThread == NULL) {
+                    delete data;
+                    throw unboost::system_error(::GetLastError());
+                }
+            }
+            template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+            thread(FUNC func, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) :
+                m_hThread(NULL), m_id()
+            {
+                THREAD_DATA_ARG4<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5> *data;
+                data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5>(func, arg1, arg2, arg3, arg4, arg5);
+                m_hThread = reinterpret_cast<HANDLE>(
+                    _beginthreadex(NULL, 0, thread_function_arg4<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5>,
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
