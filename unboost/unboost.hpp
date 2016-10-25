@@ -7,6 +7,10 @@
 #define UNBOOST_VERSION             24
 #define UNBOOST_VERSION_STRING      "Unboost 24 by Katayama Hirofumi MZ"
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <cassert>      // for the assert macro
 #include <string>       // for std::string and std::wstring, ...
 #include <vector>       // for std::vector

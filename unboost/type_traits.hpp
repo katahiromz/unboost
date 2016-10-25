@@ -28,6 +28,13 @@
     #endif
 #endif
 
+#if (1500 <= _MSC_VER)// && (_MSC_VER <= 1600)
+    // Visual C++ 2008 SP1 and 2010
+    #ifndef UNBOOST_NO_CV_INFO
+        #define UNBOOST_NO_CV_INFO
+    #endif
+#endif
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
     #include <utility>          // for std::move, std::forward
@@ -455,7 +462,7 @@
         struct _is_pointer_helper     : false_type { };
         template <typename T>
         struct _is_pointer_helper<T*> : true_type { };
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
         template <typename T>
         struct is_pointer : _is_pointer_helper<typename remove_cv<T>::type> { };
 #else

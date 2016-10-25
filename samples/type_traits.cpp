@@ -71,6 +71,8 @@ int main(void) {
     {
         assert(!is_pointer<A>::value);
         assert(is_pointer<A*>::value);
+        assert(is_pointer<const A*>::value);
+        assert(is_pointer<volatile A*>::value);
         assert(!is_pointer<float>::value);
         assert(!is_pointer<int>::value);
         assert(is_pointer<int*>::value);
@@ -100,7 +102,7 @@ int main(void) {
         assert(is_reference<int&>::value);
         assert(is_reference<UNBOOST_RVALREF_TYPE(int) >::value);
     }
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
     {
         assert(!is_const<int>::value);
         assert(is_const<const int>::value);
@@ -123,7 +125,7 @@ int main(void) {
 #endif
     {
         assert(rank<int[1][2][3]>::value == 3);
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_EMPTY_ARRAY
         assert(rank<int[][2][3][4]>::value == 4);
 #endif
         assert(rank<int>::value == 0);
@@ -132,7 +134,7 @@ int main(void) {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));
     }
-#ifndef UNBOOST_OLD_BORLAND
+#ifndef UNBOOST_NO_CV_INFO
     {
         typedef remove_cv<const int>::type type1;
         typedef remove_cv<volatile int>::type type2;

@@ -253,7 +253,7 @@
             inline void sleep_for(const unboost::chrono::duration<Rep,Period>& sleep_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                ::Sleep(ms.count());
+                ::Sleep(DWORD(ms.count()));
             }
             //template <class Clock, class Duration>
             //inline void sleep_until(const chrono::time_point<Clock, Duration>&
