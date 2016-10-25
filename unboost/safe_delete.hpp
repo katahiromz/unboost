@@ -25,7 +25,7 @@ namespace unboost {
         pobj = NULL;
     }
 
-    #ifdef UNBOOST_USE_SMART_PTR
+    #ifdef UNBOOST_SMART_PTR_HPP_
         template <typename TYPE>
         inline void safe_delete(shared_ptr<TYPE>& ptr) {
             ptr.reset();
@@ -58,7 +58,7 @@ namespace unboost {
             ptr->Release();
             ptr.reset();
         }
-    #endif
+    #endif  // def UNBOOST_SMART_PTR_HPP_
 } // namespace unboost
 
 #endif  // ndef UNBOOST_SAFE_DELETE_HPP_
