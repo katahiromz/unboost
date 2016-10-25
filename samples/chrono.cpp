@@ -84,7 +84,8 @@ int main(void) {
         // FIXME
         {
             std::cout << "MMMM" << std::endl;
-            seconds s = hours(1) + minutes(1);
+            //seconds s = hours(1) + minutes(1);
+            hours(1) + minutes(1);
         }
         //{
         //    seconds s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
