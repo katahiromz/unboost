@@ -561,46 +561,6 @@
     #endif
 #endif
 
-#if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_IN_STD)
-    namespace std {
-        using unboost::int8_t;
-        using unboost::int16_t;
-        using unboost::int32_t;
-
-        using unboost::int_fast8_t;
-        using unboost::int_fast16_t;
-        using unboost::int_fast32_t;
-
-        using unboost::int_least8_t;
-        using unboost::int_least16_t;
-        using unboost::int_least32_t;
-
-        using unboost::uint8_t;
-        using unboost::uint16_t;
-        using unboost::uint32_t;
-
-        using unboost::uint_fast8_t;
-        using unboost::uint_fast16_t;
-        using unboost::uint_fast32_t;
-
-        using unboost::uint_least8_t;
-        using unboost::uint_least16_t;
-        using unboost::uint_least32_t;
-
-        using ::intmax_t;
-        using ::uintmax_t;
-
-        #ifdef UINT64_MAX
-            using unboost::int64_t;
-            using unboost::int_fast64_t;
-            using unboost::int_least64_t;
-            using unboost::uint64_t;
-            using unboost::uint_fast64_t;
-            using unboost::uint_least64_t;
-        #endif  /* not 16-bit */
-    } /* namespace std */
-#endif  // defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_IN_STD)
-
 #ifdef __cplusplus
 namespace unboost {
 #endif
