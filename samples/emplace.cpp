@@ -12,7 +12,6 @@
 int main(void) {
     std::cout << "emplace" << std::endl;
 
-    using namespace unboost;
     std::vector<int> v;
     unboost::emplace_back(v, 1);
     unboost::emplace_back(v, 2);
@@ -21,14 +20,14 @@ int main(void) {
     assert(v[1] == 2);
 
     std::list<int> lis;
-    emplace_back(lis, 1);
-    emplace_back(lis, 2);
+    unboost::emplace_back(lis, 1);
+    unboost::emplace_back(lis, 2);
     std::list<int>::iterator it = lis.begin();
     assert(*it == 1);
     ++it;
     assert(*it == 2);
 
-    emplace_at(lis, lis.end(), 3);
+    unboost::emplace_at(lis, lis.end(), 3);
     it = lis.begin();
     assert(*it == 1);
     ++it;
@@ -37,9 +36,9 @@ int main(void) {
     assert(*it == 3);
 
     std::map<int, std::string> m;
-    emplace(m, 1, "one");
-    emplace(m, 2, "two");
-    emplace(m, 3, "three");
+    unboost::emplace(m, 1, "one");
+    unboost::emplace(m, 2, "two");
+    unboost::emplace(m, 3, "three");
     assert(m[1] == "one");
     assert(m[2] == "two");
     assert(m[3] == "three");
