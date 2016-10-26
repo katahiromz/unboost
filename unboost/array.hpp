@@ -72,7 +72,7 @@
     }
 #elif defined(UNBOOST_USE_UNBOOST_ARRAY)
     #include <stdexcept>
-    #include <iterator>
+    #include <iterator>     // for std::reverse_iterator
     #include <limits>
     namespace unboost {
         template <typename T, size_t N>
@@ -85,8 +85,10 @@
             typedef const value_type& const_reference;
             typedef value_type *iterator;
             typedef const value_type *const_iterator;
-            typedef value_type *reverse_iterator;
-            typedef const value_type *const_reverse_iterator;
+            typedef std::reverse_iterator<iterator>         reverse_iterator;
+            typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
+            typedef value_type *pointer;
+            typedef const value_type *const_pointer;
 
             reference at(size_type pos) {
                 if (!(pos < size()))
@@ -122,12 +124,12 @@
             const_iterator end() const      { return &m_data[N]; }
             const_iterator cend() const     { return &m_data[N]; }
 
-                  reverse_iterator rbegin()         { return &m_data[N - 1]; }
-            const_reverse_iterator rbegin() const   { return &m_data[N - 1]; }
-            const_reverse_iterator crbegin() const  { return &m_data[N - 1]; }
-                  reverse_iterator rend()           { return &m_data[-1]; }
-            const_reverse_iterator rend() const     { return &m_data[-1]; }
-            const_reverse_iterator crend() const    { return &m_data[-1]; }
+                  reverse_iterator rbegin()         { return reverse_iterator(end()); }
+            const_reverse_iterator rbegin() const   { return const_reverse_iterator(end()); }
+            const_reverse_iterator crbegin() const  { return const_reverse_iterator(end()); }
+                  reverse_iterator rend()           { return reverse_iterator(begin()); }
+            const_reverse_iterator rend() const     { return const_reverse_iterator(begin()); }
+            const_reverse_iterator crend() const    { return const_reverse_iterator(begin()); }
 
             void fill(const T& value) {
                 if (sizeof(T) == 1) {
