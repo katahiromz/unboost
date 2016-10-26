@@ -1,8 +1,8 @@
                  ----- Unboost -----
       ----- Time to say good-bye to Boost -----
 
-This is the Unboost C++ Library, that is a compatibility library for 
-C++11, Boost and C++03.
+This is Unboost, that is a compatibility library for C++11, Boost 
+and C++03.
 
 The Boost C++ Libraries (http://www.boost.org) are famous and very 
 sophisticated but too large and expensive for daily use.
