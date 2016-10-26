@@ -1,4 +1,4 @@
-/* pstdint.h --- portable stdint.h */
+/* pstdint.h --- Unboost portable stdint.h */
 /* Written by katahiromz <katayama.hirofumi.mz@gmail.com>. */
 /* You can use this as replacement of <stdint.h> and <cstdint>. */
 /* This file is public domain software (PDS). */
