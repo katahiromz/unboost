@@ -33,7 +33,7 @@ typedef unboost::shared_ptr<int> IntPtr;
  
 void output(const std::string& msg, int* pInt)
 {
-    std::cout << msg << *pInt << "\n";
+    std::cout << msg.c_str() << *pInt << "\n";
     assert(*pInt == 42);
 }
 

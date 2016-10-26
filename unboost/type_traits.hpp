@@ -447,7 +447,7 @@
             enum { value = 1 };
         };
 
-        template <typename>
+        template <typename T>
         struct is_array : public false_type { };
         template <typename T, size_t N>
         struct is_array<T[N]> : public true_type { };
@@ -470,12 +470,12 @@
         struct is_pointer : _is_pointer_helper<T> { };
 #endif
 
-        template <typename>
+        template <typename T>
         struct is_lvalue_reference : public false_type { };
         template <typename T>
         struct is_lvalue_reference<T&> : public true_type { };
 
-        template <typename>
+        template <typename T>
         struct is_rvalue_reference : public false_type { };
         template <typename T>
         struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };

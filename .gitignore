@@ -24,3 +24,5 @@ _UpgradeReport_Files
 *.opensdf
 *.old
 ipch
+*.map
+*.err

@@ -1,6 +1,9 @@
 #ifndef UNBOOST_EXCEPTION_HPP_
 #define UNBOOST_EXCEPTION_HPP_
 
+#include "unboost.hpp"
+#include <cstdio>
+
 namespace unboost {
     class exception {
     public:
@@ -44,14 +47,14 @@ namespace unboost {
         const error_code code() const { return m_code; }
         virtual const char *what() const {
             static char buf[32];
-            sprintf(buf, "%d", code());
+            std::sprintf(buf, "%d", code());
             return buf;
         }
     protected:
         int m_code;
     };
 
-    class bad_weak_ptr : exception {
+    class bad_weak_ptr : public exception {
     public:
         bad_weak_ptr() { }
         virtual ~bad_weak_ptr() { }

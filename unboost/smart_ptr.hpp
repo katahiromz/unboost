@@ -587,6 +587,7 @@
             return lhs.get() >= rhs.get();
         }
 
+#ifndef __WATCOMC__
         template <typename T_CHAR, typename T_TRAITS, typename T>
         inline std::basic_ostream<T_CHAR, T_TRAITS>& operator<<(
             std::basic_ostream<T_CHAR, T_TRAITS>& os, const shared_ptr<T>& data)
@@ -594,6 +595,7 @@
             os << data.get();
             return os;
         }
+#endif
 
         template <typename T>
         inline void swap(shared_ptr<T>& lhs, shared_ptr<T>& rhs) {

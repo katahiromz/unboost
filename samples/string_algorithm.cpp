@@ -25,6 +25,7 @@ int main(void) {
     str = unboost::replace_all_copy(str, "<>", "===");
     assert(str == "TEST1===TEST2===TEST3");
 
+#ifndef __WATCOMC__
     // wide
     std::wstring wstr = L"  TEST1-TEST2_TEST3\u3000";
     wstr = unboost::trim_copy(wstr);
@@ -42,6 +43,7 @@ int main(void) {
 
     wstr = unboost::replace_all_copy(wstr, L"<>", L"===");
     assert(wstr == L"TEST1===TEST2===TEST3");
+#endif  // ndef __WATCOMC__
 
     std::cout << "success" << std::endl;
     return 0;

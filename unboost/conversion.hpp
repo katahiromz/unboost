@@ -207,17 +207,22 @@
     #include <climits>      // for INT_MAX, INT_MIN, ...
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
+    #include <iostream>
+    #include <strstream>    // for std::strstream
+    namespace unboost {
+        typedef std::strstream stringstream;
+    }
     namespace unboost {
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
-            std::stringstream stream;
-            stream << value;
-            if (stream.fail()) {
+            stringstream ss;
+            ss << value;
+            if (ss.fail()) {
                 throw bad_lexical_cast();
             }
             T result;
-            stream >> result;
-            if (stream.fail()) {
+            ss >> result;
+            if (ss.fail()) {
                 throw bad_lexical_cast();
             }
             return result;
@@ -289,28 +294,30 @@
                 return ret;
             }
         #else   // ndef UNBOOST_CXX11
-            inline __int64 stoll(const std::string& str) {
-                // TODO: support pos and base
-                std::stringstream stream;
-                stream << str;
-                __int64 result;
-                stream >> result;
-                if (stream.fail()) {
-                    throw invalid_argument("stoll");
+            #ifndef __WATCOMC__
+                inline __int64 stoll(const std::string& str) {
+                    // TODO: support pos and base
+                    stringstream ss;
+                    ss << str;
+                    __int64 result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw invalid_argument("stoll");
+                    }
+                    return result;
                 }
-                return result;
-            }
-            inline unsigned __int64 stoull(const std::string& str) {
-                // TODO: support pos and base
-                std::stringstream stream;
-                stream << str;
-                unsigned __int64 result;
-                stream >> result;
-                if (stream.fail()) {
-                    throw invalid_argument("stoull");
+                inline unsigned __int64 stoull(const std::string& str) {
+                    // TODO: support pos and base
+                    stringstream ss;
+                    ss << str;
+                    unsigned __int64 result;
+                    ss >> result;
+                    if (ss.fail()) {
+                        throw invalid_argument("stoull");
+                    }
+                    return result;
                 }
-                return result;
-            }
+            #endif  // ndef __WATCOMC__
         #endif  // ndef UNBOOST_CXX11
         inline float stof(const std::string& str, size_t *pos = NULL) {
             using namespace std;
@@ -347,15 +354,15 @@
         }
         template <typename T>
         inline std::string to_string(const T& value) {
-            std::stringstream stream;
-            stream << value;
-            return stream.str();
+            stringstream ss;
+            ss << value;
+            return ss.str();
         }
         template <typename T>
         inline std::wstring to_wstring(const T& value) {
-            std::wstringstream stream;
-            stream << value;
-            return stream.str();
+            std::wstringstream ss;
+            ss << value;
+            return ss.str();
         }
     } // namespace unboost
 #else

@@ -98,6 +98,7 @@
     #include <limits>   // for std::numeric_limits
     #include <cfloat>   // for FLT_MAX
     #include <ctime>    // for time_t
+    #include <cmath>    // for std::fmod
     #ifdef _WIN32
         #ifndef _INC_WINDOWS
             #ifndef NOMINMAX
@@ -263,13 +264,16 @@
                 rep count() const { return rep_; }
 
                 static const type zero() {
-                    return type(duration_values<rep>::zero());
+                    rep z = duration_values<rep>::zero();
+                    return type(z);
                 }
                 static const type min() {
-                    return type(duration_values<rep>::min());
+                    rep m = duration_values<rep>::min();
+                    return type(m);
                 }
                 static const type max() {
-                    return type(duration_values<rep>::max());
+                    rep m = duration_values<rep>::max();
+                    return type(m);
                 }
 
                 type operator+() const {
@@ -320,11 +324,11 @@
                     return *this;
                 }
                 type& operator%=(const rep& rhs) {
-                    rep_ = fmod(rep_, rhs);
+                    rep_ = std::fmod(rep_, rhs);
                     return *this;
                 }
                 type& operator%=(const type& rhs) {
-                    rep_ = fmod(rep_, auto_duration_cast(*this, rhs).count());
+                    rep_ = std::fmod(rep_, auto_duration_cast(*this, rhs).count());
                     return *this;
                 }
 
@@ -625,7 +629,7 @@
             inline auto_duration 
             operator%(const auto_duration& lhs, const auto_duration& rhs) {
                 auto_duration CD = make_common_duration(lhs, rhs);
-                return CD(fmod(CD(lhs).count(), CD(rhs).count()));
+                return CD(std::fmod(CD(lhs).count(), CD(rhs).count()));
             }
 
             inline bool
