@@ -208,14 +208,11 @@
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
     #include <iostream>
-    #include <strstream>    // for std::strstream
-    namespace unboost {
-        typedef std::strstream stringstream;
-    }
+    #include <sstream>    // for std::strstream
     namespace unboost {
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
-            stringstream ss;
+            std::stringstream ss;
             ss << value;
             if (ss.fail()) {
                 throw bad_lexical_cast();
@@ -297,7 +294,7 @@
             #ifndef __WATCOMC__
                 inline __int64 stoll(const std::string& str) {
                     // TODO: support pos and base
-                    stringstream ss;
+                    std::stringstream ss;
                     ss << str;
                     __int64 result;
                     ss >> result;
@@ -308,7 +305,7 @@
                 }
                 inline unsigned __int64 stoull(const std::string& str) {
                     // TODO: support pos and base
-                    stringstream ss;
+                    std::stringstream ss;
                     ss << str;
                     unsigned __int64 result;
                     ss >> result;
@@ -354,7 +351,7 @@
         }
         template <typename T>
         inline std::string to_string(const T& value) {
-            stringstream ss;
+            std::stringstream ss;
             ss << value;
             return ss.str();
         }
