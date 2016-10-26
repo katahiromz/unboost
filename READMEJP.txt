@@ -3,7 +3,7 @@
                  ----- Unboost -----
          ----- Boostにさよならを言う時 -----
 
-これはC++11、Boost、C++03のための互換性ライブラリ「Unboost」
+これはC++11、BoostおよびC++03のための互換性ライブラリ「Unboost」
 （アンブースト）です。
 
 Boostライブラリ (http://www.boost.org) は、有名であり、
