@@ -27,7 +27,7 @@
         #include <stdint.h>
     #endif
 
-    #ifdef __cplusplus
+    #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         namespace unboost {
             using std::int8_t;
             using std::int16_t;
@@ -66,7 +66,7 @@
             using std::intmax_t;
             using std::uintmax_t;
         } // namespace unboost
-    #endif
+    #endif  /* defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE) */
 #else
     #if defined(_WIN32)
         /* 32-bit or 64-bit Windows C/C++ compiler */
@@ -82,7 +82,7 @@
             #include <limits.h>
         #endif
 
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         namespace unboost {
         #endif
             typedef signed char             int8_t;
@@ -119,7 +119,7 @@
 
             typedef LONGLONG                intmax_t;
             typedef ULONGLONG               uintmax_t;
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         } // namespace unboost
         #endif
 
@@ -215,7 +215,7 @@
             #include <limits.h>
         #endif
 
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         namespace unboost {
         #endif
             typedef signed char             int8_t;
@@ -252,7 +252,7 @@
 
             typedef long                    intmax_t;
             typedef unsigned long           uintmax_t;
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         } // namespace unboost
         #endif
 
@@ -330,7 +330,7 @@
             #include <limits.h>
         #endif
 
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         namespace unboost {
         #endif
             typedef signed char             int8_t;
@@ -359,7 +359,7 @@
 
             typedef long                    intmax_t;
             typedef unsigned long           uintmax_t;
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         } // namespace unboost
         #endif
 
@@ -423,7 +423,7 @@
             #include <limits.h>
         #endif
 
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         namespace unboost {
         #endif
             typedef signed char             int8_t;
@@ -468,7 +468,7 @@
             typedef long long               intmax_t;
             __extension__
             typedef unsigned long long      uintmax_t;
-        #if defined(__cplusplus)
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
         } // namespace unboost
         #endif
 
