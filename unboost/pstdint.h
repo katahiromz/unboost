@@ -416,7 +416,7 @@
         #define UINTPTR_MIN             UINT32_MIN
         #define UINTPTR_MAX             UINT32_MAX
     #elif defined(__GNUC__) || defined(__clang__)
-        /* 32-bit GNU/clang C/C++ compiler */
+        /* GNU/clang C/C++ compiler */
         #ifdef __cplusplus
             #include <climits>
         #else
