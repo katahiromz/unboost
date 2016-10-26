@@ -16,7 +16,7 @@
         #define UNBOOST_HAVE_STDINT
     #endif
 #elif defined(_MSC_VER) && (_MSC_VER >= 1800)
-    // Visual Studio 2013 and later
+    /* Visual Studio 2013 and later */
     #ifndef UNBOOST_HAVE_STDINT
         #define UNBOOST_HAVE_STDINT
     #endif
@@ -76,7 +76,7 @@
             #ifndef NOMINMAX
                 #define NOMINMAX
             #endif
-            #include <windows.h>    // for Windows API
+            #include <windows.h>    /* for Windows API */
         #endif
         #ifdef __cplusplus
             #include <climits>
