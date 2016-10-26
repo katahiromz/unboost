@@ -9,6 +9,9 @@
 // include directory interface
 #ifdef _WIN32
     #ifndef _INC_WINDOWS
+        #ifndef NOMINMAX
+            #define NOMINMAX
+        #endif
         #include <windows.h>    // for Windows API
     #endif
 #else

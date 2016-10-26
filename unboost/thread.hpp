@@ -74,6 +74,9 @@
     #include <stdexcept>
     #include <process.h>
     #ifndef _INC_WINDOWS
+        #ifndef NOMINMAX
+            #define NOMINMAX
+        #endif
         #include <windows.h>
     #endif
     #define UNBOOST_DEFINE_LOCK_EXTRA
@@ -396,6 +399,9 @@
     #include <cerrno>
     #ifdef _WIN32
         #ifndef _INC_WINDOWS
+            #ifndef NOMINMAX
+                #define NOMINMAX
+            #endif
             #include <windows.h>    // for Sleep
         #endif
     #else

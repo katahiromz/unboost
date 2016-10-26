@@ -100,6 +100,9 @@
     #include <ctime>    // for time_t
     #ifdef _WIN32
         #ifndef _INC_WINDOWS
+            #ifndef NOMINMAX
+                #define NOMINMAX
+            #endif
             #include <windows.h>
         #endif
     #endif
