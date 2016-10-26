@@ -87,15 +87,15 @@
         #endif
             typedef signed char             int8_t;
             typedef SHORT                   int16_t;
-            typedef INT                     int32_t;
+            typedef LONG                    int32_t;
 
             typedef INT                     int_fast8_t;
             typedef INT                     int_fast16_t;
-            typedef INT                     int_fast32_t;
+            typedef LONG                    int_fast32_t;
 
             typedef signed char             int_least8_t;
             typedef SHORT                   int_least16_t;
-            typedef INT                     int_least32_t;
+            typedef LONG                    int_least32_t;
 
             typedef BYTE                    uint8_t;
             typedef WORD                    uint16_t;
@@ -103,7 +103,7 @@
 
             typedef UINT                    uint_fast8_t;
             typedef UINT                    uint_fast16_t;
-            typedef UINT                    uint_fast32_t;
+            typedef ULONG                   uint_fast32_t;
 
             typedef BYTE                    uint_least8_t;
             typedef WORD                    uint_least16_t;
