@@ -7,6 +7,7 @@
 #define UNBOOST_PSTDINT_H    4   /* Version 4 */
 
 #if (defined(__cplusplus) && __cplusplus >= 201103L)
+    // C++11 and later
     #ifndef UNBOOST_HAVE_STDINT
         #define UNBOOST_HAVE_STDINT
     #endif
@@ -15,6 +16,7 @@
         #define UNBOOST_HAVE_STDINT
     #endif
 #elif defined(_MSC_VER) && (_MSC_VER >= 1800)
+    // Visual Studio 2013 and later
     #ifndef UNBOOST_HAVE_STDINT
         #define UNBOOST_HAVE_STDINT
     #endif
