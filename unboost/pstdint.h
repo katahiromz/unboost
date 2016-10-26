@@ -4,7 +4,7 @@
 /* This file is public domain software (PDS). */
 
 #ifndef UNBOOST_PSTDINT_H
-#define UNBOOST_PSTDINT_H    3   /* Version 3 */
+#define UNBOOST_PSTDINT_H    4   /* Version 4 */
 
 #if (defined(__cplusplus) && __cplusplus >= 201103L)
     #ifndef UNBOOST_HAVE_STDINT
