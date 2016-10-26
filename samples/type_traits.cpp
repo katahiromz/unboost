@@ -61,6 +61,7 @@ int main(void) {
         assert(is_floating_point<float>::value);
         assert(!is_floating_point<int>::value);
     }
+#ifndef __WATCOMC__
     {
         assert(!is_array<A>::value);
         assert(is_array<A[3]>::value);
@@ -68,6 +69,7 @@ int main(void) {
         assert(!is_array<int>::value);
         assert(is_array<int[3]>::value);
     }
+#endif
     {
         assert(!is_pointer<A>::value);
         assert(is_pointer<A*>::value);
@@ -112,6 +114,7 @@ int main(void) {
         assert(is_volatile<volatile int>::value);
     }
 #endif
+#ifndef __WATCOMC__
 #ifndef UNBOOST_OLD_COMPILER
     {
         std::cout << "extent<int[3]>::value: " << extent<int[3]>::value << std::endl;
@@ -134,6 +137,7 @@ int main(void) {
 #endif
         assert(rank<int>::value == 0);
     }
+#endif  // ndef __WATCOMC__
     {
         assert((is_same<int, int>::value));
         assert(!(is_same<int, float>::value));

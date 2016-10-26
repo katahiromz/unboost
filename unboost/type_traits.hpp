@@ -17,7 +17,7 @@
     #endif
 #endif
 
-#ifdef UNBOOST_OLD_COMPILER
+#if defined(UNBOOST_OLD_BORLAND) || defined(__WATCOMC__)
     // there is no const or volatile info
     #ifndef UNBOOST_NO_CV_INFO
         #define UNBOOST_NO_CV_INFO
@@ -218,7 +218,7 @@
                 rvalue_ref(T& ref) : m_ref(ref) { }
             };
 
-            #ifdef UNBOOST_OLD_COMPILER
+            #ifdef UNBOOST_OLD_BORLAND
                 #define UNBOOST_RVALREF_TYPE(type) \
                     unboost::rvalue_ref<type > /**/
             #else
@@ -308,7 +308,7 @@
             rvalue_ref(T& ref) : m_ref(ref) { }
         };
 
-        #ifdef UNBOOST_OLD_COMPILER
+        #ifdef UNBOOST_OLD_BORLAND
             #define UNBOOST_RVALREF_TYPE(type) \
                 unboost::rvalue_ref<type > /**/
         #else
@@ -447,6 +447,7 @@
             enum { value = 1 };
         };
 
+#ifndef __WATCOMC__
         template <typename T>
         struct is_array : public false_type { };
         template <typename T, size_t N>
@@ -454,6 +455,7 @@
 #ifndef UNBOOST_NO_EMPTY_ARRAY
         template <typename T>
         struct is_array<T[]> : public true_type { };
+#endif
 #endif
 
         // FIXME: is_enum, is_union, is_class, is_function
@@ -569,6 +571,7 @@
 
         // FIXME: operations, alignment_of
 
+#ifndef __WATCOMC__
         template <typename T>
         struct rank {
             // integral_constant<std::size_t, 0>
@@ -588,8 +591,10 @@
             enum { value = _refered_type::value + 1 };
         };
 #endif
+#endif  // ndef __WATCOMC__
 
-#ifndef UNBOOST_OLD_COMPILER
+#ifndef __WATCOMC__
+#ifndef UNBOOST_OLD_BORLAND
         template <typename T, size_t N = 0>
         struct extent {
             // integral_constant<std::size_t, 0>
@@ -624,7 +629,8 @@
             // integral_constant<std::size_t, std::extent<T, N-1>::value>
         };
 #endif
-#endif  // ndef UNBOOST_OLD_COMPILER
+#endif  // ndef UNBOOST_OLD_BORLAND
+#endif  // ndef __WATCOMC__
 
         // FIXME: is_base_of, is_convertible
 

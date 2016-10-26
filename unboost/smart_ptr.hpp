@@ -472,7 +472,7 @@
                 self_type(UNBOOST_RVALREF(r)).swap(*this);
                 return *this;
             }
-            #ifdef UNBOOST_OLD_COMPILER
+            #ifdef UNBOOST_OLD_BORLAND
                 template <typename T2, typename DELETER>
                 self_type& operator=(rvalue_ref<unique_ptr<T2, DELETER> > r) {
                     self_type(move(UNBOOST_RVALREF(r))).swap(*this);
@@ -807,7 +807,7 @@ namespace unboost {
                 return *this;
             }
 
-            #ifdef UNBOOST_OLD_COMPILER
+            #ifdef UNBOOST_OLD_BORLAND
                 template <typename T2, typename D2>
                 unique_ptr(rvalue_ref<unique_ptr<T2, D2> > u) :
                     m_ptr(UNBOOST_RVALREF(u).m_ptr)

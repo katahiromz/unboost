@@ -20,8 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #if defined(__BORLANDC__) && (__BORLANDC__ <= 0x0551)
-    #ifndef UNBOOST_OLD_COMPILER
-        #define UNBOOST_OLD_COMPILER
+    #ifndef UNBOOST_OLD_BORLAND
+        #define UNBOOST_OLD_BORLAND
     #endif
 #endif
 
