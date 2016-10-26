@@ -63,6 +63,9 @@
     #ifndef UNBOOST_USE_FOREACH
         #define UNBOOST_USE_FOREACH
     #endif
+    #ifndef UNBOOST_USE_PSTDINT
+        #define UNBOOST_USE_PSTDINT
+    #endif
     #ifndef UNBOOST_USE_RANDOM
         #define UNBOOST_USE_RANDOM
     #endif

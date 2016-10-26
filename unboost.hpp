@@ -47,6 +47,10 @@
     #include "unboost/math/complex.hpp"
 #endif
 
+#ifdef UNBOOST_USE_PSTDINT
+    #include "unboost/pstdint.h"
+#endif
+
 #ifdef UNBOOST_USE_RANDOM
     #include "unboost/random.hpp"
 #endif
