@@ -1,6 +1,9 @@
 // string_algorithm.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef BOOST
     #include <boost/algorithm/string.hpp>
 #else   // Unboost

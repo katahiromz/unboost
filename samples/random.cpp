@@ -1,6 +1,9 @@
 // random.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <random>
 #elif defined(BOOST)

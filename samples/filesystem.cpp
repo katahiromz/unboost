@@ -1,6 +1,9 @@
 // filesystem.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef BOOST
     #include <boost/filesystem.hpp>
 #else   // Unboost

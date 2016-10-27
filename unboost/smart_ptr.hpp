@@ -128,7 +128,7 @@
         using boost::make_shared;
         using boost::static_pointer_cast;
         using boost::dynamic_pointer_cast;
-        using boost::interprocess::unique_ptr;
+        using boost::movelib::unique_ptr;
         using boost::weak_ptr;
         using boost::get_deleter;
     } // namespace unboost

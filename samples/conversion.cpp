@@ -1,6 +1,9 @@
 // conversion.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <string>
 #elif defined(BOOST)

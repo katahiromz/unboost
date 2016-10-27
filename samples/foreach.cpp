@@ -1,6 +1,9 @@
 // for_each.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #define UNBOOST_USE_FOREACH
 #include <unboost.hpp>
 

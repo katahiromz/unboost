@@ -1,6 +1,9 @@
 // type_traits.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <type_traits>
 #elif defined(BOOST)

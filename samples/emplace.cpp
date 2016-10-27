@@ -1,6 +1,9 @@
 // emplace.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     //
 #elif defined(CXX03)

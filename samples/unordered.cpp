@@ -1,6 +1,9 @@
 // unordered.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <unordered_set>
     #include <unordered_map>

@@ -1,6 +1,9 @@
 // thread.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <thread>
     #include <mutex>

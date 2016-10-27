@@ -1,6 +1,9 @@
 // smart_ptr.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <cassert>
+
 #ifdef CXX11
     #include <memory>
 #elif defined(BOOST)
@@ -50,6 +53,17 @@ void output(const std::string& msg, int* pInt)
     std::cout << msg.c_str() << *pInt << "\n";
     assert(*pInt == 42);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+#ifdef BOOST
+    template <typename T>
+    struct array_deleter {
+        void operator()(T *ptr) const {
+            delete[] ptr;
+        }
+    };
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -155,13 +169,13 @@ int main(void) {
     }
 #elif defined(BOOST)
     {
-        boost::unique_array<int> a(new int[32]);
+        boost::movelib::unique_ptr<int, array_deleter<int>> a(new int[32]);
         a[0] = 1;
         assert(a[0] == 1);
     }
 #else   // Unboost
     {
-        unboost::unique_array<int> a(new int[32]);
+        unboost::unique_array<int> a(new int[32], array_deleter());
         a[0] = 1;
         assert(a[0] == 1);
     }
