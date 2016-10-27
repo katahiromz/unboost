@@ -365,7 +365,7 @@
             }
             inline void copy_file(const path& from, const path& to) {
                 #ifdef _WIN32
-                    if (!::CopyFileW(from.c_str(), to.c_str(), FALSE)) {
+                    if (!::CopyFileW(from.c_str(), to.c_str(), TRUE)) {
                         throw std::runtime_error("unboost::filesystem::copy_file");
                     }
                 #else

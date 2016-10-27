@@ -28,9 +28,13 @@ int main(void) {
     #ifdef _WIN32
         std::wcout << current_path().c_str() << std::endl;
         create_directory(L"dir");
+        remove(L"dir/test2.dat");
         copy_file(L"test.dat", L"dir/test2.dat");
         assert(exists(L"dir/test2.dat"));
-        copy_directory_tree(L"dir", L"dir2");
+        remove_all(L"dir2");
+        copy_directory(L"dir", L"dir2");
+        remove(L"dir2/test2.dat");
+        copy_file(L"dir/test2.dat", L"dir2/test2.dat");
         assert(exists(L"dir2/test2.dat"));
         assert(file_size(L"test.dat") > 0);
         remove(L"test.dat");
@@ -49,9 +53,13 @@ int main(void) {
     #else
         std::cout << current_path().c_str() << std::endl;
         create_directory("dir");
+        remove("dir/test2.dat");
         copy_file("test.dat", "dir/test2.dat");
         assert(exists("dir/test2.dat"));
-        copy_directory_tree("dir", "dir2");
+        remove_all("dir2");
+        copy_directory("dir", "dir2");
+        remove("dir2/test2.dat");
+        copy_file("dir/test2.dat", "dir2/test2.dat");
         assert(exists("dir2/test2.dat"));
         std::cout << file_size("test.dat") << std::endl;
         remove("test.dat");
