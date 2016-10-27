@@ -7,7 +7,9 @@
 #ifdef CXX11
     #include <tuple>
 #elif defined(BOOST)
-    #include <boost/tuple.hpp>
+    #include <boost/tuple/tuple.hpp>
+    #include <boost/tuple/tuple_comparison.hpp>
+    #include <boost/tuple/tuple_io.hpp>
 #else   // Unboost
     #include <unboost/tuple.hpp>
 #endif
@@ -37,27 +39,7 @@
         printer.print(tup);
     }
 #elif defined(BOOST)
-    template <typename TUP, size_t N>
-    struct TuplePrinter {
-        static void print(const TUP& tup) {
-            TuplePrinter<TUP, N - 1>::print(tup);
-            std::cout << ", " << boost::get<N - 1>(tup);
-        }
-    };
-
-    template <typename TUP>
-    struct TuplePrinter<TUP,1> {
-        static void print(const TUP& tup) {
-            std::cout << boost::get<0>(tup);
-        }
-    };
-
-    template <typename TUP>
-    void print_taple(const TUP& tup) {
-        const size_t count = boost::tuple_size<TUP>::value;
-        TuplePrinter<TUP, count> printer;
-        printer.print(tup);
-    }
+    // NOTE: there is no tuple_size in Boost
 #else   // Unboost
     template <typename TUP, size_t N>
     struct TuplePrinter {
@@ -96,8 +78,8 @@ int main(void) {
 #elif defined(BOOST)
     boost::tuple<int, const char *, std::string> tup;
     tup = boost::make_tuple<int, const char *, std::string>(2, "This is", "a test");
-    print_taple(tup);
-    std::cout << std::endl;
+    //print_taple(tup);
+    //std::cout << std::endl;
     assert(boost::get<0>(tup) == 2);
     assert(strcmp(boost::get<1>(tup), "This is") == 0);
     assert(boost::get<2>(tup) == "a test");

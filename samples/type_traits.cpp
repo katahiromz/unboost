@@ -12,6 +12,19 @@
     #include <unboost/type_traits.hpp>
 #endif
 
+#ifdef CXX11
+    #define UNBOOST_RVALREF_TYPE(type)  type&&
+#elif defined(BOOST)
+    #if __cplusplus >= 201103L
+        #define UNBOOST_RVALREF_TYPE(type)  type&&
+    #else
+        template <typename T>
+        struct dummy_struct { typedef T type; }
+        #define UNBOOST_RVALREF_TYPE(type)  dummy_struct<T>&
+    #endif
+#else   // Unboost
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 
 struct A { };
@@ -196,7 +209,6 @@ int main(void) {
         typedef common_type<double, char>::type di_ct2;
         typedef common_type<int, double>::type di_ct3;
         typedef common_type<char, double>::type di_ct4;
-        typedef common_type<char *, const long *>::type pcp_ct;
         assert((is_same<int_ct, int>::value));
         assert((is_same<ic_ct, int>::value));
         assert((is_same<is_ct, int>::value));
@@ -206,7 +218,6 @@ int main(void) {
         assert((is_same<di_ct2, double>::value));
         assert((is_same<di_ct3, double>::value));
         assert((is_same<di_ct4, double>::value));
-        assert((is_same<pcp_ct, const void *>::value));
     }
 
     std::cout << "success" << std::endl;

@@ -33,7 +33,7 @@ int main(void) {
     us.insert(1);
     us.insert(2);
     {
-        unboost::unordered_set<int>::iterator it, end = us.end();
+        unordered_set<int>::iterator it, end = us.end();
         for (it = us.begin(); it != end; ++it) {
             std::cout << *it << std::endl;
         }
@@ -48,7 +48,7 @@ int main(void) {
     um.insert(std::make_pair(2, 3));
     um.insert(std::make_pair(4, 5));
     {
-        unboost::unordered_map<int, int>::iterator it, end = um.end();
+        unordered_map<int, int>::iterator it, end = um.end();
         for (it = um.begin(); it != end; ++it) {
             std::cout << it->first << ", " << it->second << std::endl;
         }
