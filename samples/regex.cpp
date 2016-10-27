@@ -1,8 +1,13 @@
 // regex.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_REGEX
-#include <unboost.hpp>
+#ifdef CXX11
+    #include <regex>
+#elif defined(BOOST)
+    #include <boost/regex.hpp>
+#else   // Unboost
+    #include <unboost/regex.hpp>
+#endif
 
 int main(void) {
     std::cout << "regex" << std::endl;
@@ -13,7 +18,17 @@ int main(void) {
     items.push_back("baz.dat");
     items.push_back("zoidberg");
 
+#ifdef CXX11
+    using std::regex;
+    using std::regex_match;
+#elif defined(BOOST)
+    using boost::regex;
+    using boost::regex_match;
+#else   // Unboost
     using unboost::regex;
+    using unboost::regex_match;
+#endif
+
     regex target_regex("[a-z]+\\.txt");
 
     assert(regex_match(items[0], target_regex));

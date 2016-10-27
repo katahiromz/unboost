@@ -30,8 +30,7 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_BOOST_FILESYSTEM
-    #include <boost/filesystem/path.hpp>
-    #include <boost/filesystem/operations.hpp>
+    #include <boost/filesystem.hpp>
     namespace unboost {
         namespace filesystem {
             using boost::filesystem::path;

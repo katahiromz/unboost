@@ -1,13 +1,42 @@
 // ratio.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_RATIO
-#include <unboost.hpp>
+#ifdef CXX11
+    #include <ratio>
+#elif defined(BOOST)
+    #include <boost/ratio.hpp>
+#else   // Unboost
+    #include <unboost/ratio.hpp>
+#endif
 
 int main(void) {
     std::cout << "ratio" << std::endl;
 
-    using namespace unboost;
+#ifdef CXX11
+    using std::ratio;
+    using std::ratio_add;
+    using std::ratio_subtract;
+    using std::ratio_multiply;
+    using std::ratio_divide;
+    using std::ratio_equal;
+    using std::ratio_less;
+#elif defined(BOOST)
+    using boost::ratio;
+    using boost::ratio_add;
+    using boost::ratio_subtract;
+    using boost::ratio_multiply;
+    using boost::ratio_divide;
+    using boost::ratio_equal;
+    using boost::ratio_less;
+#else   // Unboost
+    using unboost::ratio;
+    using unboost::ratio_add;
+    using unboost::ratio_subtract;
+    using unboost::ratio_multiply;
+    using unboost::ratio_divide;
+    using unboost::ratio_equal;
+    using unboost::ratio_less;
+#endif  // Unboost
 
     assert((ratio<7, -21>::num == -1));
     assert((ratio<7, -21>::den == 3));
@@ -42,4 +71,4 @@ int main(void) {
 
     std::cout << "success" << std::endl;
     return 0;
-}
+} // main

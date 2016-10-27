@@ -1,18 +1,25 @@
 // conversion.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_CONVERSION
-#include <unboost.hpp>
+#ifdef CXX11
+    #include <string>
+#elif defined(BOOST)
+    #include <boost/exception/to_string.hpp>
+#else
+    #include <unboost/exception/to_string.hpp>
+#endif
 
 int main(void) {
     std::cout << "conversion" << std::endl;
-    std::cout << unboost::to_string(unboost::stoi("2016")).c_str() << std::endl;
-    assert(unboost::to_string(unboost::stoi("2016")) == "2016");
-    assert(unboost::stod("999.99999999999999999999999") == 999.99999999999999999999999);
-#ifndef __WATCOMC__
-    assert(unboost::stoull("100000000000000") == 100000000000000);
+
+#ifdef CXX11
+    assert(std::to_string("2016") == "2016");
+#elif defined(BOOST)
+    assert(boost::to_string("2016") == "2016");
+#else
+    assert(unboost::to_string("2016") == "2016");
 #endif
-    assert(unboost::lexical_cast<int>(1.2) == 1);
+
     std::cout << "success" << std::endl;
     return 0;
 }
