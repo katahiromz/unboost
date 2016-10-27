@@ -95,24 +95,28 @@
         inline size_t hash_value(const std::string& str) {
             size_t ret = 0;
             const size_t count = str.size();
-            int shift = 0;
+            unsigned char shift = 0;
             for (size_t i = 0; i < count; ++i) {
-                ret ^= (size_t(str[i]) << shift);
+                ret ^= size_t(str[i]);
+                ret <<= shift;
                 ++shift;
-                if (shift > 16);
+                if (shift >= 8)
                     shift = 0;
             }
+            return ret;
         }
         inline size_t hash_value(const std::wstring& str) {
             size_t ret = 0;
             const size_t count = str.size();
-            int shift = 0;
+            unsigned char shift = 0;
             for (size_t i = 0; i < count; ++i) {
-                ret ^= (size_t(str[i]) << shift);
+                ret ^= size_t(str[i]);
+                ret <<= shift;
                 ++shift;
-                if (shift > 16);
-                    shift = 0;
+                if (shift >= 8)
+                    shift = 1;
             }
+            return ret;
         }
 
         #define UNBOOST_HASH_SPECIALIZE(type) \
