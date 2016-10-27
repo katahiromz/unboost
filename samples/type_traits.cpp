@@ -1,8 +1,13 @@
 // type_traits.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_TYPE_TRAITS
-#include <unboost.hpp>
+#ifdef CXX11
+    #include <type_traits>
+#elif defined(BOOST)
+    #include <boost/type_traits.hpp>
+#else   // Unboost
+    #include <unboost/type_traits.hpp>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +37,14 @@ void call_m() {
 int main(void) {
     std::cout << "type_traits" << std::endl;
 
+#ifdef CXX11
+    using namespace std;
+#elif defined(BOOST)
+    using namespace boost;
+#else   // Unboost
     using namespace unboost;
+#endif
+
     {
         typedef integral_constant<int, 2> two_t;
         typedef integral_constant<int, 4> four_t;
@@ -196,4 +208,4 @@ int main(void) {
 
     std::cout << "success" << std::endl;
     return 0;
-}
+} // main

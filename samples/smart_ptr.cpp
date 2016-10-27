@@ -1,8 +1,16 @@
 // smart_ptr.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_SMART_PTR
-#include "unboost.hpp"
+#ifdef CXX11
+    #include <memory>
+#elif defined(BOOST)
+    #include <boost/smart_ptr.hpp>
+    #include <boost/smart_ptr/make_shared.hpp>
+    #include <boost/move/unique_ptr.hpp>
+    #include <boost/pointer_cast.hpp>
+#else   // Unboost
+    #include <unboost/smart_ptr.hpp>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +37,13 @@ struct D {
 
 //////////////////////////////////////////////////////////////////////////////
 
-typedef unboost::shared_ptr<int> IntPtr;
+#ifdef CXX11
+    typedef std::shared_ptr<int> IntPtr;
+#elif defined(BOOST)
+    typedef boost::shared_ptr<int> IntPtr;
+#else   // Unboost
+    typedef unboost::shared_ptr<int> IntPtr;
+#endif
  
 void output(const std::string& msg, int* pInt)
 {
@@ -39,12 +53,28 @@ void output(const std::string& msg, int* pInt)
 
 //////////////////////////////////////////////////////////////////////////////
 
-void fun(unboost::shared_ptr<int> sp)
-{
-    std::cout << "fun: sp.use_count() == " << sp.use_count() << std::endl;
-    assert(sp.use_count() == 2);
-    assert(!sp.unique());
-}
+#ifdef CXX11
+    void fun(std::shared_ptr<int> sp)
+    {
+        std::cout << "fun: sp.use_count() == " << sp.use_count() << std::endl;
+        assert(sp.use_count() == 2);
+        assert(!sp.unique());
+    }
+#elif defined(BOOST)
+    void fun(boost::shared_ptr<int> sp)
+    {
+        std::cout << "fun: sp.use_count() == " << sp.use_count() << std::endl;
+        assert(sp.use_count() == 2);
+        assert(!sp.unique());
+    }
+#else   // Unboost
+    void fun(unboost::shared_ptr<int> sp)
+    {
+        std::cout << "fun: sp.use_count() == " << sp.use_count() << std::endl;
+        assert(sp.use_count() == 2);
+        assert(!sp.unique());
+    }
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -59,20 +89,31 @@ struct Foo2 {
 int main(void) {
     std::cout << "smart pointer" << std::endl;
 
+#ifdef CXX11
+    using std::shared_ptr;
+    using std::make_shared;
+#elif defined(BOOST)
+    using boost::shared_ptr;
+    using boost::make_shared;
+#else   // Unboost
+    using unboost::shared_ptr;
+    using unboost::make_shared;
+#endif
+
     {
         assert(count == 0);
-        unboost::shared_ptr<Foo> sh1;
+        shared_ptr<Foo> sh1;
         assert(sh1.use_count() == 0);
         {
-            unboost::shared_ptr<Foo> sh2(new Foo);
+            shared_ptr<Foo> sh2(new Foo);
             assert(count == 1);
             {
-                unboost::shared_ptr<Foo> sh3(sh2);
+                shared_ptr<Foo> sh3(sh2);
                 assert(sh2.use_count() == 2);
                 assert(sh3.use_count() == 2);
                 assert(count == 1);
                 {
-                    unboost::shared_ptr<Foo> sh4(new Foo, D());
+                    shared_ptr<Foo> sh4(new Foo, D());
                     assert(count == 2);
                     assert(sh4.use_count() == 1);
                 }
@@ -91,7 +132,7 @@ int main(void) {
         delete pInt;
     }
     {
-        unboost::shared_ptr<int> sp1 = unboost::make_shared<int>(5);
+        shared_ptr<int> sp1 = make_shared<int>(5);
         std::cout << "sp1.use_count() == " << sp1.use_count() << std::endl;
         assert(sp1.use_count() == 1);
         assert(sp1.unique());
@@ -105,14 +146,29 @@ int main(void) {
         ptr = IntPtr(new int(7));
         assert(ptr);
     }
+
+#ifdef CXX11
+    {
+        std::unique_ptr<int[]> a(new int[32]);
+        a[0] = 1;
+        assert(a[0] == 1);
+    }
+#elif defined(BOOST)
+    {
+        boost::unique_array<int> a(new int[32]);
+        a[0] = 1;
+        assert(a[0] == 1);
+    }
+#else   // Unboost
     {
         unboost::unique_array<int> a(new int[32]);
         a[0] = 1;
         assert(a[0] == 1);
     }
+#endif  // Unboost
 
     std::cout << "success" << std::endl;
     return 0;
-}
+} // main
 
 //////////////////////////////////////////////////////////////////////////////

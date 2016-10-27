@@ -107,11 +107,10 @@
         #define UNBOOST_NEED_UNBOOST_UNIQUE_PTR
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_SMART_PTR)
-    #include <boost/shared_ptr.hpp>
-    #include <boost/make_shared.hpp>
-    #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
-    #include <boost/checked_delete.hpp>
-    #include <boost/weak_ptr.hpp>
+    #include <boost/smart_ptr.hpp>
+    #include <boost/smart_ptr/make_shared.hpp>
+    #include <boost/move/unique_ptr.hpp>
+    #include <boost/pointer_cast.hpp>
     #ifdef UNBOOST_FIX_UNIQUE_PTR
         namespace boost {
             namespace interprocess {

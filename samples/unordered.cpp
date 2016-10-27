@@ -1,13 +1,32 @@
 // unordered.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#define UNBOOST_USE_UNORDERED_SET
-#define UNBOOST_USE_UNORDERED_MAP
-#include <unboost.hpp>
+#ifdef CXX11
+    #include <unordered_set>
+    #include <unordered_map>
+#elif defined(BOOST)
+    #include <boost/unordered_set.hpp>
+    #include <boost/unordered_map.hpp>
+#else   // Unboost
+    #include <unboost/unordered_set.hpp>
+    #include <unboost/unordered_map.hpp>
+#endif
 
 int main(void) {
     std::cout << "unorderd set" << std::endl;
-    unboost::unordered_set<int> us;
+
+#ifdef CXX11
+    using std::unordered_set;
+    using std::unordered_map;
+#elif defined(BOOST)
+    using boost::unordered_set;
+    using boost::unordered_map;
+#else   // Unboost
+    using unboost::unordered_set;
+    using unboost::unordered_map;
+#endif
+
+    unordered_set<int> us;
     us.insert(1);
     us.insert(2);
     {
@@ -21,7 +40,8 @@ int main(void) {
     assert(us.count(3) == 0);
 
     std::cout << "unorderd map" << std::endl;
-    unboost::unordered_map<int, int> um;
+
+    unordered_map<int, int> um;
     um.insert(std::make_pair(2, 3));
     um.insert(std::make_pair(4, 5));
     {
