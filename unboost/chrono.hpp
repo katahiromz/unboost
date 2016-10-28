@@ -388,6 +388,8 @@
                 return auto_duration(0, r);
             }
 
+            template <typename ToDur, typename Rep, typename Period>
+            ToDur duration_cast(const duration<Rep, Period>& d);
             template <typename ToDur>
             ToDur duration_cast(const auto_duration& ad);
 
@@ -618,6 +620,11 @@
             //
             // duration_cast
             //
+            template <typename ToDur, typename Rep, typename Period>
+            inline ToDur duration_cast(const duration<Rep, Period>& d) {
+                auto_duration ad = d;
+                return duration_cast<ToDur>(ad);
+            }
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
                 typedef typename ToDur::rep     to_rep;
