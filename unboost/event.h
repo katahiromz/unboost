@@ -4,6 +4,7 @@
 #ifndef UNBOOST_EVENT_H_
 #define UNBOOST_EVENT_H_
 
+// class event;
 // event_handle create_event(bool manual_reset  = false,
 //                           bool initial_state = false);
 // bool wait_for_event(event_handle eh, uint32_t milliseconds = -1);
@@ -11,7 +12,6 @@
 // bool set_event(event_handle eh);
 // bool reset_event(event_handle eh);
 // bool pulse_event(event_handle eh);
-// class event;
 
 #include "unboost.hpp"
 #include "pstdbool.h"   // for bool, true, false
