@@ -11,11 +11,15 @@
     #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <cassert>      // for the assert macro
-#include <string>       // for std::string and std::wstring, ...
-#include <vector>       // for std::vector
-#include <iostream>     // for std::cout, std::endl, ...
-#include <algorithm>    // for std::swap
+#ifdef __cplusplus
+    #include <cassert>      // for the assert macro
+    #include <string>       // for std::string and std::wstring, ...
+    #include <vector>       // for std::vector
+    #include <iostream>     // for std::cout, std::endl, ...
+    #include <algorithm>    // for std::swap
+#else
+    #include <assert.h>     // for the assert macro
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // old compiler supports
@@ -23,6 +27,9 @@
 #if defined(__BORLANDC__) && (__BORLANDC__ <= 0x0551)
     #ifndef UNBOOST_OLD_BORLAND
         #define UNBOOST_OLD_BORLAND
+    #endif
+    #ifndef inline
+        #define inline __inline
     #endif
 #endif
 
@@ -188,18 +195,20 @@
 //////////////////////////////////////////////////////////////////////////////
 // swapping
 
-namespace unboost {
-    using std::swap;
+#ifdef __cplusplus
+    namespace unboost {
+        using std::swap;
 
-    #ifndef UNBOOST_CXX11
-        #if !(__cplusplus >= 201103L)    // not C++11
-            template <typename T2, size_t N>
-            inline void swap(T2 (&a)[N], T2 (&b)[N]) {
-                std::swap_ranges(a, a + N, b);
-            }
+        #ifndef UNBOOST_CXX11
+            #if !(__cplusplus >= 201103L)    // not C++11
+                template <typename T2, size_t N>
+                inline void swap(T2 (&a)[N], T2 (&b)[N]) {
+                    std::swap_ranges(a, a + N, b);
+                }
+            #endif
         #endif
-    #endif
-} // namespace unboost
+    } // namespace unboost
+#endif  // def __cplusplus
 
 //////////////////////////////////////////////////////////////////////////////
 // 64-bit integer
@@ -213,7 +222,9 @@ namespace unboost {
     #endif
 #endif
 
+#ifdef __cplusplus
 namespace unboost {
+#endif
     #ifdef _WIN32
         typedef LONGLONG            _int64_t;
         typedef DWORDLONG           _uint64_t;
@@ -221,7 +232,9 @@ namespace unboost {
         typedef long long           _int64_t;
         typedef unsigned long long  _uint64_t;
     #endif
+#ifdef __cplusplus
 } // namespace unboost
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 

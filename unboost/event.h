@@ -26,7 +26,7 @@
     #endif
 #endif
 
-// define unboost_optional_
+// define unboost_optional_(opt) macro
 #ifndef unboost_optional_
     #ifdef __cplusplus
         #define unboost_optional_(opt) = opt
@@ -53,7 +53,7 @@
                      bool initial_state unboost_optional_(false))
         {
             event_handle eh;
-            eh = ::CreateEvent(NULL, manual_reset, initial_state, NULL);
+            eh = CreateEvent(NULL, manual_reset, initial_state, NULL);
             assert(eh != NULL);
             return eh;
         }
@@ -62,25 +62,25 @@
         wait_for_event(event_handle eh, uint32_t milliseconds unboost_optional_(-1))
         {
             assert(eh != NULL);
-            return (::WaitForSingleObject(eh, milliseconds) == WAIT_TIMEOUT);
+            return (WaitForSingleObject(eh, milliseconds) == WAIT_TIMEOUT);
         }
 
         inline bool close_event(event_handle eh) {
             assert(eh != NULL);
-            return ::CloseHandle(eh);
+            return (bool)CloseHandle(eh);
         }
 
         inline bool set_event(event_handle eh) {
             assert(eh != NULL);
-            return ::SetEvent(eh);
+            return (bool)SetEvent(eh);
         }
         inline bool reset_event(event_handle eh) {
             assert(eh != NULL);
-            return ::ResetEvent(eh);
+            return (bool)ResetEvent(eh);
         }
         inline bool pulse_event(event_handle eh) {
             assert(eh != NULL);
-            return ::PulseEvent(eh);
+            return (bool)PulseEvent(eh);
         }
     #ifdef __cplusplus
     } // namespace unboost
@@ -325,9 +325,9 @@ namespace unboost {
             return false;
         }
 
-        bool set()      { return !!unboost::set_event(m_handle); }
-        bool reset()    { return !!unboost::reset_event(m_handle); }
-        bool pulse()    { return !!unboost::pulse_event(m_handle); }
+        bool set()      { return unboost::set_event(m_handle); }
+        bool reset()    { return unboost::reset_event(m_handle); }
+        bool pulse()    { return unboost::pulse_event(m_handle); }
 
     protected:
         event_handle m_handle;
@@ -338,6 +338,6 @@ namespace unboost {
         event& operator=(const event&);
     };
 } // namespace unboost
-#endif
+#endif  // def __cplusplus
 
 #endif  // ndef UNBOOST_EVENT_H_
