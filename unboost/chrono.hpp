@@ -10,6 +10,8 @@
 #include <cmath>
 #undef min
 #undef max
+// NOTE: Use UNBOOST_MAKE_COMMON_DURATION instead of
+//       common_type<duration, duration>.
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
@@ -69,9 +71,12 @@
             using std::chrono::minutes;
             using std::chrono::hours;
             using std::chrono::time_point_cast;
+            using std::common_type;
         } // namespace chrono
     } // namespace unboost
     #define unboost_auto_duration auto
+    #define UNBOOST_MAKE_COMMON_DURATION(new_dur, dur1, dur2) \
+        typedef std::common_type<dur1, dur2> new_dur
 #elif defined(UNBOOST_USE_BOOST_CHRONO)
     #include <boost/chrono/include.hpp>
     namespace unboost {
@@ -94,6 +99,8 @@
         } // namespace chrono
     } // namespace unboost
     #define unboost_auto_duration auto
+    #define UNBOOST_MAKE_COMMON_DURATION(new_dur, dur1, dur2) \
+        typedef boost::common_type<dur1, dur2> new_dur
 #elif defined(UNBOOST_USE_WIN32_CHRONO) || defined(UNBOOST_USE_POSIX_CHRONO)
     #include <limits>   // for std::numeric_limits
     #include <cfloat>   // for FLT_MAX
@@ -161,9 +168,7 @@
 
             class auto_duration;
 
-            //
-            // common_duration_type
-            //
+#if 0
             template <typename CT, typename Period1, typename Period2>
             struct _common_duration_type_helper {
             protected:
@@ -189,13 +194,16 @@
                     typename common_type<Rep1, Rep2>::type,
                         Period1, Period2>::type     type;
             };
+#endif  // 0
 
             auto_duration
             auto_duration_cast(const auto_duration& ad1,
                                const auto_duration& ad2);
             auto_duration
-            make_common_duration(const auto_duration& ad1,
-                                 const auto_duration& ad2);
+            create_common_duration(const auto_duration& ad1,
+                                   const auto_duration& ad2);
+            #define UNBOOST_MAKE_COMMON_DURATION(new_dur,dur1,dur2) \
+                auto_duration new_dur = create_common_duration(dur1(), dur2())
 
             //
             // auto_duration
@@ -366,11 +374,11 @@
             }; // class auto_duration
 
             //
-            // make_common_duration
+            // create_common_duration
             //
             inline auto_duration
-            make_common_duration(const auto_duration& ad1,
-                                 const auto_duration& ad2)
+            create_common_duration(const auto_duration& ad1,
+                                    const auto_duration& ad2)
             {
                 auto_ratio period1 = ad1.get_period();
                 auto_ratio period2 = ad2.get_period();
@@ -380,8 +388,6 @@
                 return auto_duration(0, r);
             }
 
-            template <typename ToDur, class Rep, class Period>
-            ToDur duration_cast(const duration<Rep, Period>& d);
             template <typename ToDur>
             ToDur duration_cast(const auto_duration& ad);
 
@@ -405,8 +411,12 @@
                     rep_ = duration_cast<type>(d).count();
                 }
 
-                explicit duration(const auto_duration& ad) {
+                duration(const auto_duration& ad) {
                     rep_ = duration_cast<type>(ad).count();
+                }
+                duration& operator=(const auto_duration& ad) {
+                    rep_ = duration_cast<type>(ad).count();
+                    return *this;
                 }
 
                 rep count() const { return rep_; }
@@ -472,88 +482,13 @@
                 rep rep_;
             }; // class duration
 
-            //
-            // duration operators
-            //
-            template <class Rep1, class Period1, class Rep2, class Period2>
-            typename common_duration_type<duration<Rep1, Period1>,
-                                          duration<Rep2, Period2> >::type
-            inline operator+(const duration<Rep1, Period1>& lhs,
-                             const duration<Rep2, Period2>& rhs)
-            {
-                typedef typename common_duration_type<
-                    duration<Rep1, Period1>,
-                    duration<Rep2, Period2> >::type CD;
-                return CD(CD(lhs).count() + CD(rhs).count());
-            }
-
-            template <class Rep1, class Period1, class Rep2, class Period2>
-            inline typename common_type<duration<Rep1, Period1>,
-                                        duration<Rep2, Period2> >::type
-            operator-(const duration<Rep1, Period1>& lhs,
-                      const duration<Rep2, Period2>& rhs)
-            {
-                typedef typename common_duration_type<
-                    duration<Rep1, Period1>,
-                    duration<Rep2, Period2> >::type CD;
-                return CD(CD(lhs).count() - CD(rhs).count());
-            }
-
-            template <class Rep1, class Period, class Rep2>
-            inline duration<typename common_type<Rep1, Rep2>::type, Period>
-            operator*(const duration<Rep1, Period>& d, const Rep2& s) {
-                typedef duration<typename common_type<Rep1, Rep2>::type, Period> CD;
-                return CD(CD(d).count() * s);
-            }
-
-            template <class Rep1, class Period, class Rep2>
-            inline duration<typename common_type<Rep1, Rep2>::type, Period>
-            operator*(const Rep1& s, const duration<Rep2, Period>& d) {
-                typedef duration<typename common_type<Rep1, Rep2>::type, Period> CD;
-                return CD(CD(d).count() * s);
-            }
-
-            template <class Rep1, class Period, class Rep2>
-            inline duration<typename common_type<Rep1, Rep2>::type, Period>
-            operator/(const duration<Rep1, Period>& d, const Rep2& s ) {
-                typedef duration<typename common_type<Rep1,Rep2>::type, Period> CD;
-                return CD(CD(d).count() / s);
-            }
-
-            template <class Rep1, class Period1, class Rep2, class Period2>
-            inline typename common_type<Rep1, Rep2>::type
-            operator/(const duration<Rep1,Period1>& lhs,
-                      const duration<Rep2,Period2>& rhs)
-            {
-                typedef typename common_type<Rep1, Rep2>::type CD;
-                return CD(lhs).count() / CD(rhs).count();
-            }
-
-            template <class Rep1, class Period, class Rep2>
-            inline duration<typename common_type<Rep1,Rep2>::type, Period>
-            operator%(const duration<Rep1, Period>& d, const Rep2& s) {
-                typedef duration<typename common_type<Rep1,Rep2>::type, Period> CD;
-                return CD(CD(d).count() % s);
-            }
-
-            template <class Rep1, class Period1, class Rep2, class Period2>
-            inline typename common_duration_type<duration<Rep1, Period1>,
-                                                 duration<Rep2, Period2> >::type
-            operator%(const duration<Rep1,Period1>& lhs,
-                      const duration<Rep2,Period2>& rhs)
-            {
-                typedef typename common_duration_type<
-                    duration<Rep1, Period1>,
-                    duration<Rep2, Period2> >::type CD;
-                return CD(CD(lhs).count() % CD(rhs).count());
-            }
-
             template <class Rep1, class Period1, class Rep2, class Period2>
             inline bool operator==(const duration<Rep1, Period1>& lhs,
                                    const duration<Rep2, Period2>& rhs)
             {
-                typedef typename common_duration_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2> >::type CT;
+                typedef duration<Rep1, Period1> dur1;
+                typedef duration<Rep2, Period2> dur2;
+                UNBOOST_MAKE_COMMON_DURATION(CT, dur1, dur2);
                 return CT(lhs).count() == CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
@@ -567,8 +502,9 @@
             inline bool operator<(const duration<Rep1, Period1>& lhs,
                                    const duration<Rep2, Period2>& rhs)
             {
-                typedef typename common_duration_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2> >::type CT;
+                typedef duration<Rep1, Period1> dur1;
+                typedef duration<Rep2, Period2> dur2;
+                UNBOOST_MAKE_COMMON_DURATION(CT, dur1, dur2);
                 return CT(lhs).count() < CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
@@ -582,8 +518,9 @@
             inline bool operator>(const duration<Rep1, Period1>& lhs,
                                   const duration<Rep2, Period2>& rhs)
             {
-                typedef typename common_duration_type<duration<Rep1, Period1>,
-                                                      duration<Rep2, Period2> >::type CT;
+                typedef duration<Rep1, Period1> dur1;
+                typedef duration<Rep2, Period2> dur2;
+                UNBOOST_MAKE_COMMON_DURATION(CT, dur1, dur2);
                 return CT(lhs).count() > CT(rhs).count();
             }
             template <class Rep1, class Period1, class Rep2, class Period2>
@@ -598,21 +535,33 @@
             //
             inline auto_duration 
             operator+(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CD = make_common_duration(lhs, rhs);
+                auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(CD(lhs).count() + CD(rhs).count());
             }
             inline auto_duration 
             operator-(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CD = make_common_duration(lhs, rhs);
+                auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(CD(lhs).count() - CD(rhs).count());
             }
             inline auto_duration 
             operator*(double s, const auto_duration& d) {
                 return d(d.count() * s);
             }
+            template <typename Rep, typename Period>
+            inline auto_duration 
+            operator*(double s, const duration<Rep, Period>& d) {
+                auto_duration ad = d;
+                return ad(ad.count() * s);
+            }
             inline auto_duration 
             operator*(const auto_duration& d, double s) {
                 return d(d.count() * s);
+            }
+            template <typename Rep, typename Period>
+            inline auto_duration 
+            operator*(const duration<Rep, Period>& d, double s) {
+                auto_duration ad = d;
+                return ad(ad.count() * s);
             }
             inline auto_duration 
             operator/(const auto_duration& d, double s) {
@@ -628,13 +577,13 @@
             }
             inline auto_duration 
             operator%(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CD = make_common_duration(lhs, rhs);
+                auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(std::fmod(CD(lhs).count(), CD(rhs).count()));
             }
 
             inline bool
             operator==(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CT = make_common_duration(lhs, rhs);
+                auto_duration CT = create_common_duration(lhs, rhs);
                 return CT(lhs).count() == CT(rhs).count();
             }
             inline bool
@@ -643,7 +592,7 @@
             }
             inline bool
             operator<(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CT = make_common_duration(lhs, rhs);
+                auto_duration CT = create_common_duration(lhs, rhs);
                 return CT(lhs).count() < CT(rhs).count();
             }
             inline bool
@@ -652,7 +601,7 @@
             }
             inline bool
             operator>(const auto_duration& lhs, const auto_duration& rhs) {
-                auto_duration CT = make_common_duration(lhs, rhs);
+                auto_duration CT = create_common_duration(lhs, rhs);
                 return CT(lhs).count() > CT(rhs).count();
             }
             inline bool
@@ -669,28 +618,6 @@
             //
             // duration_cast
             //
-            template <typename ToDur, typename CF, typename CR>
-            struct _duration_cast_impl {
-                template <typename Rep, typename Period>
-                static ToDur _d_cast_internal(const duration<Rep, Period>& d) {
-                    typedef typename ToDur::rep  to_rep;
-                    return ToDur(static_cast<to_rep>(
-                        static_cast<CR>(d.count())
-                            * static_cast<CR>(CF::num)
-                            / static_cast<CR>(CF::den)));
-                }
-            };
-            template <typename ToDur, class Rep, class Period>
-            inline ToDur duration_cast(const duration<Rep, Period>& d) {
-                typedef typename ToDur::rep     to_rep;
-                typedef typename ToDur::period  to_period;
-                UNBOOST_STATIC_ASSERT_MSG(to_period::num != 0, "division by 0");
-                typedef ratio_divide<Period, to_period> cf;
-                typedef typename common_type<to_rep, Rep>::type cr0;
-                typedef typename common_type<cr0, _int64_t>::type cr;
-                typedef _duration_cast_impl<ToDur, cf, cr> dc;
-                return dc::_d_cast_internal(d);
-            }
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
                 typedef typename ToDur::rep     to_rep;
@@ -706,9 +633,9 @@
 
             // FIXME: define time_point
             #ifdef UNBOOST_USE_WIN32_CHRONO
-                ;
+                //
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                ;
+                //
             #else
                 #error You lose.
             #endif
