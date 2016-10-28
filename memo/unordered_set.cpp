@@ -14,10 +14,11 @@ public:
     typedef KeyEqual            key_equal;
     typedef value_type&         reference;
     typedef const value_type&   const_reference;
-    // FIXME: pointer, const_pointer
+    typedef value_type *        pointer;
+    typedef const value_type *  const_pointer;
+    // FIXME: bucket_type
     // FIXME: iterator, const_iterator
     // FIXME: local_iterator, const_local_iterator
-    // FIXME: bucket_type
     typedef unordered_set<Key, Hash, KeyEqual> self_type;
 
     unordered_set() {
