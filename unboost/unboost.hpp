@@ -40,73 +40,7 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// Use all?
-
-#ifdef UNBOOST_USE_ALL
-    #ifndef UNBOOST_USE_ARRAY
-        #define UNBOOST_USE_ARRAY
-    #endif
-    #ifndef UNBOOST_USE_ASSERT
-        #define UNBOOST_USE_ASSERT
-    #endif
-    #ifndef UNBOOST_USE_CHRONO
-        #define UNBOOST_USE_CHRONO
-    #endif
-    #ifndef UNBOOST_USE_COMPLEX_FUNCTIONS
-        #define UNBOOST_USE_COMPLEX_FUNCTIONS
-    #endif
-    #ifndef UNBOOST_USE_CONVERSION
-        #define UNBOOST_USE_CONVERSION
-    #endif
-    #ifndef UNBOOST_USE_EMPLACE
-        #define UNBOOST_USE_EMPLACE
-    #endif
-    #ifndef UNBOOST_USE_FOREACH
-        #define UNBOOST_USE_FOREACH
-    #endif
-    #ifndef UNBOOST_USE_PSTDINT
-        #define UNBOOST_USE_PSTDINT
-    #endif
-    #ifndef UNBOOST_USE_RANDOM
-        #define UNBOOST_USE_RANDOM
-    #endif
-    #ifndef UNBOOST_USE_RATIO
-        #define UNBOOST_USE_RATIO
-    #endif
-    #ifndef UNBOOST_USE_REGEX
-        #define UNBOOST_USE_REGEX
-    #endif
-    #ifndef UNBOOST_USE_SAFE_DELETE
-        #define UNBOOST_USE_SAFE_DELETE
-    #endif
-    #ifndef UNBOOST_USE_SMART_PTR
-        #define UNBOOST_USE_SMART_PTR
-    #endif
-    #ifndef UNBOOST_USE_STATIC_ASSERT
-        #define UNBOOST_USE_STATIC_ASSERT
-    #endif
-    #ifndef UNBOOST_USE_STRING_ALGORITHM
-        #define UNBOOST_USE_STRING_ALGORITHM
-    #endif
-    #ifndef UNBOOST_USE_THREAD
-        #define UNBOOST_USE_THREAD
-    #endif
-    #ifndef UNBOOST_USE_TUPLE
-        #define UNBOOST_USE_TUPLE
-    #endif
-    #ifndef UNBOOST_USE_TYPE_TRAITS
-        #define UNBOOST_USE_TYPE_TRAITS
-    #endif
-    #ifndef UNBOOST_USE_UNORDERED_MAP
-        #define UNBOOST_USE_UNORDERED_MAP
-    #endif
-    #ifndef UNBOOST_USE_UNORDERED_SET
-        #define UNBOOST_USE_UNORDERED_SET
-    #endif
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
-// dependency
+// dependencies
 
 // thread depends on chrono
 #ifdef UNBOOST_USE_THREAD
@@ -229,6 +163,18 @@
         #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
             #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
         #endif
+    #endif
+#endif
+
+#ifdef UNBOOST_USE_WIN32_THREAD
+    #ifndef UNBOOST_USE_WIN32_EVENT
+        #define UNBOOST_USE_WIN32_EVENT
+    #endif
+#endif
+
+#ifdef UNBOOST_USE_POSIX_THREAD
+    #ifndef UNBOOST_USE_POSIX_EVENT
+        #define UNBOOST_USE_POSIX_EVENT
     #endif
 #endif
 
