@@ -1,18 +1,19 @@
-#include <limits>
+#include <cstddef>  // for std::size_t, std::ptrdiff_t
+#include <limits>   // for std::numeric_limits
 
 template <typename Key,
           class Hash = hash<Key>,
           class KeyEqual = std::equal_to<Key> >
 class unordered_set {
 public:
-    typedef Key key_type;
-    typedef Key value_type;
-    typedef size_t size_type;
-    typedef ptrdiff_t difference_type;
-    typedef Hash hasher;
-    typedef KeyEqual key_equal;
-    typedef value_type& reference;
-    typedef const value_type& const_reference;
+    typedef Key                 key_type;
+    typedef Key                 value_type;
+    typedef size_t              size_type;
+    typedef ptrdiff_t           difference_type;
+    typedef Hash                hasher;
+    typedef KeyEqual            key_equal;
+    typedef value_type&         reference;
+    typedef const value_type&   const_reference;
     // FIXME: pointer, const_pointer
     // FIXME: iterator, const_iterator
     // FIXME: local_iterator, const_local_iterator
@@ -93,13 +94,21 @@ public:
         return *this;
     }
 
-          iterator  begin();
+    iterator begin() {
+        ...
+    }
     const_iterator  begin() const { return cbegin(); }
-    const_iterator cbegin() const;
+    const_iterator cbegin() const {
+        ...
+    }
 
-          iterator  end();
+    iterator end() {
+        ...
+    }
     const_iterator  end() const { return cend(); }
-    const_iterator cend() const;
+    const_iterator cend() const {
+        ...
+    }
 
     bool empty() const      { return size() == 0; }
     size_type size() const  { return m_item_count; }
@@ -114,8 +123,12 @@ public:
         ...
     }
 
-    std::pair<iterator, bool> insert(const value_type& value);
-    std::pair<iterator, bool> insert(value_type&& value);
+    std::pair<iterator, bool> insert(const value_type& value) {
+        ...
+    }
+    std::pair<iterator, bool> insert(value_type&& value) {
+        ...
+    }
     iterator insert(const_iterator hint, const value_type& value) {
         return insert(value).first;
     }
@@ -130,17 +143,29 @@ public:
         }
     }
 
-    std::pair<iterator, bool> emplace();
+    std::pair<iterator, bool> emplace() {
+        ...
+    }
     template <typename ARG1>
-    std::pair<iterator, bool> emplace(const ARG1& arg1);
+    std::pair<iterator, bool> emplace(const ARG1& arg1) {
+        ...
+    }
     template <typename ARG1, typename ARG2>
-    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2);
+    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2) {
+        ...
+    }
     template <typename ARG1, typename ARG2, typename ARG3>
-    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3);
+    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
+        ...
+    }
     template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4);
+    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
+        ...
+    }
     template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5);
+    std::pair<iterator, bool> emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
+        ...
+    }
 
     iterator emplace_hint(const_iterator hint) {
         emplace();
@@ -166,7 +191,9 @@ public:
         emplace(arg1, arg2, arg3, arg4, arg5);
     }
 
-    iterator erase(const_iterator pos);
+    iterator erase(const_iterator pos) {
+        ...
+    }
     iterator erase(const_iterator first, const_iterator last) {
         while (first != last) {
             erase(first);
@@ -202,8 +229,12 @@ public:
         }
         return number;
     }
-          iterator find(const Key& key);
-    const_iterator find(const Key& key) const;
+    iterator find(const Key& key) {
+        ...
+    }
+    const_iterator find(const Key& key) const {
+        ...
+    }
     std::pair<iterator, iterator> equal_range(const Key& key) {
         iterator it = find(key);
         return std::make_pair<iterator, iterator>(it, it);
@@ -213,13 +244,21 @@ public:
         return std::make_pair<const_iterator, const_iterator>(it, it);
     }
 
-          local_iterator  begin(size_type n);
+    local_iterator begin(size_type n) {
+        ...
+    }
     const_local_iterator  begin(size_type n) const { return cbegin(n); }
-    const_local_iterator cbegin(size_type n) const;
+    const_local_iterator cbegin(size_type n) const {
+        ...
+    }
 
-          local_iterator  end(size_type n);
+    local_iterator end(size_type n) {
+        ...
+    }
     const_local_iterator  end(size_type n) const { return cend(n); }
-    const_local_iterator cend(size_type n) const;
+    const_local_iterator cend(size_type n) const {
+        ...
+    }
 
     size_type bucket_count() const {
         return m_bucket_count;
@@ -248,7 +287,7 @@ public:
         ...
         assert(bucket_count() * max_load_factor() >= size() && bucket_count() >= n);
     }
-    void reserve(size_type count) {
+    void reserve(size_type n) {
         ...
         assert(bucket_count() * max_load_factor() > size() && bucket_count() >= ceil(n / max_load_factor()));
     }
@@ -275,7 +314,7 @@ operator==(const unordered_set<Key, Hash, KeyEqual>& lhs,
 
     unordered_set<Key, Hash, KeyEqual>::const_iterator it, end = lhs.end();
     for (it = lhs.begin(); it != end; ++it) {
-        if (!rhs.count(*it))
+        if (rhs.count(*it) == 0)
             return false;
     }
     return true;
