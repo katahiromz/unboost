@@ -4,13 +4,13 @@
 #ifndef UNBOOST_EVENT_H_
 #define UNBOOST_EVENT_H_
 
-// event_handle unboost::create_event(bool manual_reset  = false,
-//                                    bool initial_state = false);
-// bool unboost::wait_for_event(event_handle eh, uint32_t milliseconds = -1);
-// bool unboost::close_event(event_handle eh);
-// bool unboost::set_event(event_handle eh);
-// bool unboost::reset_event(event_handle eh);
-// bool unboost::pulse_event(event_handle eh);
+// event_handle create_event(bool manual_reset  = false,
+//                           bool initial_state = false);
+// bool wait_for_event(event_handle eh, uint32_t milliseconds = -1);
+// bool close_event(event_handle eh);
+// bool set_event(event_handle eh);
+// bool reset_event(event_handle eh);
+// bool pulse_event(event_handle eh);
 // class event;
 
 #include "unboost.hpp"
