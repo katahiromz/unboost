@@ -731,21 +731,17 @@
             // NOTE: epoch is 1970.01.01
             #ifdef UNBOOST_USE_WIN32_CHRONO
                 inline double _get_clock_time(void) {
-                    SYSTEMTIME st;
                     FILETIME ft;
-                    ULARGE_INTEGER uli;
-                    ::GetSystemTime(&st);
-                    ::SystemTimeToFileTime(&st, &ft);
-                    uli.LowPart = ft.dwLowDateTime;
-                    uli.HighPart = ft.dwHighDateTime;
-                    return (uli.QuadPart - 8596618904) / 10.0;
+                    ::GetSystemTimeAsFileTime(&ft);
+                    LONGLONG n = ((LONGLONG)ft.dwHighDateTime << 32) + ft.dwLowDateTime;
+                    return ((n - 116444736000000000) / 10000000.0);
                 }
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
                 inline double _get_clock_time(void) {
                     struct timeval tv;
                     struct timezone tz;
                     gettimeofday(&tv);
-                    return tv.tv_sec * 1000000 + tv.tv_usec;
+                    return tv.tv_sec + tv.tv_usec / 1000000.0;
                 }
             #else
                 #error You lose.
@@ -760,7 +756,7 @@
                 enum { is_steady = 0 };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time());
+                    time_point::duration d(_get_clock_time() * 1000000);
                     time_point tp(d);
                     return tp;
                 }
@@ -787,7 +783,7 @@
                 enum { is_steady = true };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time());
+                    time_point::duration d(_get_clock_time() * 1000000);
                     time_point tp(d);
                     return tp;
                 }
