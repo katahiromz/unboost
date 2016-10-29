@@ -118,8 +118,22 @@
             //
             // treat_as_floating_point
             //
-            template <class Rep>
-            struct treat_as_floating_point : is_floating_point<Rep> { };
+            template <typename Rep>
+            struct treat_as_floating_point {
+                enum { value = 0 };
+            };
+            template <>
+            struct treat_as_floating_point<float> {
+                enum { value = 1 };
+            };
+            template <>
+            struct treat_as_floating_point<double> {
+                enum { value = 1 };
+            };
+            template <>
+            struct treat_as_floating_point<long double> {
+                enum { value = 1 };
+            };
 
             //
             // _numeric_limits_lowest
@@ -314,7 +328,7 @@
 
                 void fix_floating() {
                     if (!is_floating_)
-                        rep_ = rep(int(rep_));
+                        rep_ = rep(_int64_t(rep_));
                 }
 
                 friend inline auto_duration

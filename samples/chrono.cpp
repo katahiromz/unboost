@@ -235,6 +235,7 @@ int main(void) {
 #else   // Unboost
         using namespace unboost::chrono;
         using unboost::ratio;
+        typedef ratio<1, 100> centi;
 #endif
         typedef duration<int, ratio<1, 100000000> >    shakes;
         typedef duration<int, centi>                   jiffies;
