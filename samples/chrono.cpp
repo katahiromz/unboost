@@ -4,12 +4,27 @@
 #include <iostream>
 #include <cassert>
 
-#include <unboost/chrono.hpp>
+#ifdef CXX11
+    #include <ratio>
+    #include <chrono>
+#elif defined(BOOST)
+    #include <boost/ratio.hpp>
+    #include <boost/chrono.hpp>
+#else   // Unboost
+    #include <unboost/ratio.hpp>
+    #include <unboost/chrono.hpp>
+#endif
 
 int main(void) {
-    using namespace unboost::chrono;
     std::cout << "chrono" << std::endl;
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
+        using namespace unboost::chrono;
+#endif
         seconds sec(1);
         std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
         std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
@@ -18,8 +33,18 @@ int main(void) {
         assert(duration_cast<milliseconds>(sec).count() == 1000);
         assert(duration_cast<seconds>(sec).count() == 1);
     }
+
     {
-        unboost_auto_duration sec(seconds(1));
+#ifdef CXX11
+        using namespace std::chrono;
+        auto sec = seconds(1);
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        auto sec = seconds(1);
+#else   // Unboost
+        using namespace unboost::chrono;
+        unboost_auto_duration sec = seconds(1);
+#endif
         std::cout << duration_cast<microseconds>(sec).count() << " microseconds" << std::endl;
         std::cout << duration_cast<milliseconds>(sec).count() << " milliseconds" << std::endl;
         std::cout << duration_cast<seconds>(sec).count() << " seconds" << std::endl;
@@ -27,55 +52,103 @@ int main(void) {
         assert(duration_cast<milliseconds>(sec).count() == 1000);
         assert(duration_cast<seconds>(sec).count() == 1);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::ratio;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::ratio;
+#else   // Unboost
+        using namespace unboost::chrono;
+        using unboost::ratio;
+#endif
         milliseconds ms(3);
         microseconds us = 2 * ms;
-        duration<double, unboost::ratio<1, 30> > hz30(3.5);
+        duration<double, ratio<1, 30> > hz30(3.5);
         assert(ms.count() == 3);
         assert(us.count() == 6000);
         assert(hz30.count() == 3.5);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::ratio;
+        milliseconds ms(3);
+        auto us = microseconds(2 * ms);
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::ratio;
+        milliseconds ms(3);
+        auto us = microseconds(2 * ms);
+#else   // Unboost
+        using namespace unboost::chrono;
+        using unboost::ratio;
         milliseconds ms(3);
         unboost_auto_duration us = microseconds(2 * ms);
-        duration<double, unboost::ratio<1, 30> > hz30(3.5);
+#endif
+        duration<double, ratio<1, 30> > hz30(3.5);
         assert(ms.count() == 3);
         assert(us.count() == 6000);
         assert(hz30.count() == 3.5);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
+        using namespace unboost::chrono;
+#endif
         seconds s1(10);
         seconds s2 = -s1;
         assert(s2.count() == -10);
+        seconds s3(10);
+#ifdef CXX11
+        auto s4 = -s3;
+#elif defined(BOOST)
+        auto s4 = -s3;
+#else   // Unboost
+        unboost_auto_duration s4 = -s3;
+#endif
+        assert(s4.count() == -10);
+        hours h1(1);
+        minutes m1 = ++h1;
+        m1--;
+        assert(m1.count() == 119);
+        hours h2(1);
+#ifdef CXX11
+        auto m2 = minutes(++h2);
+#elif defined(BOOST)
+        auto m2 = minutes(++h2);
+#else   // Unboost
+        unboost_auto_duration m2 = minutes(++h2);
+#endif
+        m2--;
+        assert(m2.count() == 119);
+        minutes m3(11);
+        m3 *= 2;
+        m3 += hours(10);
+        assert(m3.count() == 622);
+        assert(duration_cast<hours>(m3).count() == 10);
+        m3 %= hours(1);
+        assert(m3.count() == 22);
     }
+
     {
-        seconds s1(10);
-        unboost_auto_duration s2 = -s1;
-        assert(s2.count() == -10);
-    }
-    {
-        hours h(1);
-        minutes m = ++h;
-        m--;
-        assert(m.count() == 119);
-    }
-    {
-        hours h(1);
-        unboost_auto_duration m = minutes(++h);
-        m--;
-        assert(m.count() == 119);
-    }
-    {
-        minutes m(11);
-        m *= 2;
-        m += hours(10);
-        assert(m.count() == 622);
-        assert(duration_cast<hours>(m).count() == 10);
-        m %= hours(1);
-        assert(m.count() == 22);
-    }
-    {
+#ifdef CXX11
+        using namespace std::chrono;
+        auto m = minutes(11);
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        auto m = minutes(11);
+#else   // Unboost
+        using namespace unboost::chrono;
         unboost_auto_duration m = minutes(11);
+#endif
         m *= 2;
         m += hours(10);
         assert(m.count() == 622);
@@ -83,7 +156,15 @@ int main(void) {
         m %= hours(1);
         assert(m.count() == 22);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
+        using namespace unboost::chrono;
+#endif
         seconds s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
         assert(s.count() == 4807);
@@ -92,8 +173,18 @@ int main(void) {
         assert(duration_cast<minutes>(s % hours(1)).count() == 20);
         assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        auto s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        auto s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
+#else   // Unboost
+        using namespace unboost::chrono;
         unboost_auto_duration s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
+#endif
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
         assert(s.count() == 4807);
     
@@ -101,21 +192,54 @@ int main(void) {
         assert(duration_cast<minutes>(s % hours(1)).count() == 20);
         assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
+        using namespace unboost::chrono;
+#endif
         assert(seconds(2) == milliseconds(2000));
         assert(seconds(61) > minutes(1));
     }
+
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        auto sec2 = seconds(2);
+        auto sec61 = seconds(61);
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        auto sec2 = seconds(2);
+        auto sec61 = seconds(61);
+#else   // Unboost
+        using namespace unboost::chrono;
         unboost_auto_duration sec2 = seconds(2);
         unboost_auto_duration sec61 = seconds(61);
+#endif
         assert(sec2 == milliseconds(2000));
         assert(sec61 > minutes(1));
     }
+
     {
-        typedef duration<int, unboost::ratio<1, 100000000> >    shakes;
-        typedef duration<int, unboost::centi>                   jiffies;
-        typedef duration<float, unboost::ratio<12096,10000> >   microfortnights;
-        typedef duration<float, unboost::ratio<3155,1000> >     nanocenturies;
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::ratio;
+        typedef ratio<1, 100> centi;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::ratio;
+        typedef ratio<1, 100> centi;
+#else   // Unboost
+        using namespace unboost::chrono;
+        using unboost::ratio;
+#endif
+        typedef duration<int, ratio<1, 100000000> >    shakes;
+        typedef duration<int, centi>                   jiffies;
+        typedef duration<float, ratio<12096, 10000> >  microfortnights;
+        typedef duration<float, ratio<3155, 1000> >    nanocenturies;
         seconds sec(1);
     
         assert(duration_cast<shakes>(sec).count() == 100000000);
