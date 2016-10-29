@@ -147,15 +147,15 @@
                     Rep r = (Rep)0.1;
                     if ((int)r != 0) {
                         if (sizeof(Rep) == sizeof(float)) {
-                            r = FLT_MAX;
+                            r = (Rep)FLT_MAX;
                             return -r;
                         }
                         if (sizeof(Rep) == sizeof(double)) {
-                            r = DBL_MAX;
+                            r = (Rep)DBL_MAX;
                             return -r;
                         }
                         if (sizeof(Rep) == sizeof(long double)) {
-                            r = LDBL_MAX;
+                            r = (Rep)LDBL_MAX;
                             return -r;
                         }
                     }
@@ -341,7 +341,7 @@
                     auto_ratio cf = ad2.period_ / to_period;
                     return auto_duration(
                         static_cast<to_rep>(ad2.count() * cf.num / cf.den),
-                        to_period, ad1.is_floating_);
+                        to_period, ad1.is_floating_ || ad2.is_floating_);
                 }
 
                 auto_ratio get_period() const { return period_; }
@@ -625,6 +625,7 @@
             }
 
             struct system_clock;
+
             template <typename Clock, typename Dur>
             struct time_point;
 
@@ -643,8 +644,12 @@
                 auto_time_point(const unboost::chrono::time_point<Clock2, Dur2>& t)
                     : m_d(t.time_since_epoch()) { }
 
-                auto_duration time_since_epoch() const { return m_d; }
+                duration time_since_epoch() const { return m_d; }
 
+                self_type& operator=(const self_type& d) {
+                    m_d = duration(d.m_d);
+                    return *this;
+                }
                 self_type& operator+=(const duration& d) {
                     m_d += d;
                     return *this;
@@ -663,11 +668,11 @@
                     return self_type(d);
                 }
 
-                auto_duration get_duration() const { return m_d; }
+                duration get_duration() const { return m_d; }
 
             protected:
-                auto_duration m_d;
-            };
+                duration m_d;
+            }; // struct auto_time_point
             #define unboost_auto_time_point unboost::chrono::auto_time_point
 
             template <typename Clock, typename Dur = typename Clock::duration>
@@ -756,7 +761,7 @@
                 enum { is_steady = 0 };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time() * 1000000);
+                    time_point::duration d(_get_clock_time() * 1000000.0);
                     time_point tp(d);
                     return tp;
                 }
@@ -783,7 +788,7 @@
                 enum { is_steady = true };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time() * 1000000);
+                    time_point::duration d(_get_clock_time() * 1000000.0);
                     time_point tp(d);
                     return tp;
                 }
@@ -792,28 +797,28 @@
             inline auto_time_point
             operator+(const auto_time_point& lhs, const auto_duration& rhs) {
                 auto_duration d = create_common_duration(lhs.get_duration(), rhs);
-                d = auto_duration_cast(d, lhs.time_since_epoch() + rhs);
+                d = d(lhs.time_since_epoch() + rhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_time_point
             operator+(const auto_duration& lhs, const auto_time_point& rhs) {
                 auto_duration d = create_common_duration(rhs.get_duration(), lhs);
-                d = auto_duration_cast(d, rhs.time_since_epoch() + lhs);
+                d = d(rhs.time_since_epoch() + lhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_time_point
             operator-(const auto_time_point& lhs, const auto_duration& rhs) {
                 auto_duration d = create_common_duration(lhs.get_duration(), rhs);
-                d = auto_duration_cast(d, lhs.time_since_epoch() - rhs);
+                d = d(lhs.time_since_epoch() - rhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_duration
             operator-(const auto_time_point& lhs, const auto_time_point& rhs) {
-                auto_duration d =create_common_duration(lhs.get_duration(), rhs.get_duration());
-                return lhs.time_since_epoch() - rhs.time_since_epoch();
+                auto_duration d = create_common_duration(lhs.get_duration(), rhs.get_duration());
+                return d(lhs.time_since_epoch() - rhs.time_since_epoch());
             }
 
             template <typename Clock, typename Dur1, typename Dur2>
