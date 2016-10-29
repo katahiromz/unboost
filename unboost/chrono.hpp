@@ -10,8 +10,7 @@
 #include <cmath>
 #undef min
 #undef max
-// NOTE: Use UNBOOST_MAKE_COMMON_DURATION instead of
-//       common_type<duration, duration>.
+// NOTE: Use UNBOOST_MAKE_COMMON_DURATION instead of common_type<duration, duration>.
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CHRONO) + defined(UNBOOST_USE_BOOST_CHRONO) + defined(UNBOOST_USE_WIN32_CHRONO) + defined(UNBOOST_USE_POSIX_CHRONO)) == 0)
@@ -168,40 +167,13 @@
 
             class auto_duration;
 
-#if 0
-            template <typename CT, typename Period1, typename Period2>
-            struct _common_duration_type_helper {
-            protected:
-                enum {
-                    _gcd_num = _GCD<Period1::num, Period2::num>::value,
-                    _gcd_den = _GCD<Period1::den, Period2::den>::value,
-                    _p1_den = Period1::den,
-                    _p2_den = Period2::den
-                };
-                typedef ratio<_gcd_num, (_p1_den / _gcd_den) * _p2_den> _r;
-            public:
-                typedef duration<CT, _r> type;
-            };
-
-            template <typename T1, typename T2>
-            struct common_duration_type { };
-
-            template <typename Rep1, typename Period1, typename Rep2, typename Period2>
-            struct common_duration_type<duration<Rep1, Period1>,
-                                        duration<Rep2, Period2> >
-            {
-                typedef typename _common_duration_type_helper<
-                    typename common_type<Rep1, Rep2>::type,
-                        Period1, Period2>::type     type;
-            };
-#endif  // 0
-
             auto_duration
             auto_duration_cast(const auto_duration& ad1,
                                const auto_duration& ad2);
             auto_duration
             create_common_duration(const auto_duration& ad1,
                                    const auto_duration& ad2);
+
             #define UNBOOST_MAKE_COMMON_DURATION(new_dur,dur1,dur2) \
                 auto_duration new_dur = create_common_duration(dur1(), dur2())
 
