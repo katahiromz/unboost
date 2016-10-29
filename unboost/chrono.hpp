@@ -624,6 +624,44 @@
                         / static_cast<cr>(cf.den)));
             }
 
+            template <typename Clock, typename Dur>
+            struct time_point {
+                typedef Clock clock;
+                typedef Dur duration;
+                typedef typename duration::rep rep;
+                typedef typename duration::period period;
+                typedef time_point<Clock, Dur> self_type;
+
+                time_point() : m_d(duration::zero()) { }
+                explicit time_point(const duration& d) : m_d(d) { }
+
+                template <typename Dur2>
+                time_point(const time_point<clock, Dur2>& t)
+                    : m_d(t.time_since_epoch()) { }
+
+                duration time_since_epoch() const { return m_d; }
+
+                self_type& operator+=(const duration& d) {
+                    m_d += d;
+                    return *this;
+                }
+                self_type& operator-=(const duration& d) {
+                    m_d -= d;
+                    return *this;
+                }
+
+                static self_type min() {
+                    duration d = duration::min();
+                    return self_type(d);
+                }
+                static self_type max() {
+                    duration d = duration::max();
+                    return self_type(d);
+                }
+            protected:
+                duration m_d;
+            }; // struct time_point
+
             // FIXME: define time_point
             #ifdef UNBOOST_USE_WIN32_CHRONO
                 //
