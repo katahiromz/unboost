@@ -5,7 +5,6 @@
 #define UNBOOST_CHRONO_HPP_
 
 #include "unboost.hpp"
-#include "type_traits.hpp"
 #include "ratio.hpp"
 #include <cmath>
 #undef min
@@ -227,7 +226,7 @@
                 auto_duration(const duration<Rep2, Period2>& d) {
                     rep_ = static_cast<rep>(d.count());
                     period_ = Period2();
-                    is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
+                    is_floating_ = (bool)treat_as_floating_point<Rep2>::value;
                     fix_floating();
                 }
 
@@ -235,7 +234,7 @@
                 auto_duration& operator=(const duration<Rep2, Period2>& d) {
                     rep_ = static_cast<rep>(d.count());
                     period_ = Period2();
-                    is_floating_ = (bool)unboost::is_floating_point<Rep2>::value;
+                    is_floating_ = (bool)treat_as_floating_point<Rep2>::value;
                     fix_floating();
                     return *this;
                 }
@@ -364,7 +363,7 @@
             //
             inline auto_duration
             create_common_duration(const auto_duration& ad1,
-                                    const auto_duration& ad2)
+                                   const auto_duration& ad2)
             {
                 auto_ratio period1 = ad1.get_period();
                 auto_ratio period2 = ad2.get_period();
@@ -619,18 +618,65 @@
                 assert(cf.den != 0);
                 typedef double cr;
                 return ToDur(static_cast<to_rep>(
-                    static_cast<cr>(ad.count())
-                        * static_cast<cr>(cf.num)
-                        / static_cast<cr>(cf.den)));
+                    static_cast<cr>(ad.count()) * static_cast<cr>(cf.num)
+                                                / static_cast<cr>(cf.den)));
             }
+
+            struct system_clock;
+            template <typename Clock, typename Dur>
+            struct time_point;
+
+            struct auto_time_point {
+                typedef system_clock                clock;
+                typedef auto_duration               duration;
+                typedef typename duration::rep      rep;
+                typedef typename duration::period   period;
+                typedef auto_time_point             self_type;
+                typedef auto_time_point             time_point;
+
+                auto_time_point() : m_d(duration::zero()) { }
+                auto_time_point(const auto_duration& ad) : m_d(ad) { }
+
+                template <typename Dur2>
+                auto_time_point(const unboost::chrono::time_point<clock, Dur2>& t)
+                    : m_d(t.time_since_epoch()) { }
+
+                duration time_since_epoch() const { return m_d; }
+
+                self_type& operator+=(const duration& d) {
+                    m_d += d;
+                    return *this;
+                }
+                self_type& operator-=(const duration& d) {
+                    m_d -= d;
+                    return *this;
+                }
+
+                static self_type min() {
+                    duration d = duration::min();
+                    return self_type(d);
+                }
+                static self_type max() {
+                    duration d = duration::max();
+                    return self_type(d);
+                }
+
+                duration get_duration() const { return m_d; }
+
+            protected:
+                duration m_d;
+            };
 
             template <typename Clock, typename Dur>
             struct time_point {
-                typedef Clock clock;
-                typedef Dur duration;
-                typedef typename duration::rep rep;
-                typedef typename duration::period period;
-                typedef time_point<Clock, Dur> self_type;
+                typedef Clock                       clock;
+                typedef Dur                         duration;
+                typedef typename duration::rep      rep;
+                typedef typename duration::period   period;
+                typedef time_point<Clock, Dur>      self_type;
+
+                // NOTE: ISO C++ forbids nested type:
+                //typedef time_point<Clock, Dur> time_point;
 
                 time_point() : m_d(duration::zero()) { }
                 explicit time_point(const duration& d) : m_d(d) { }
@@ -662,11 +708,168 @@
                 duration m_d;
             }; // struct time_point
 
-            // FIXME: define time_point
+            template <typename ToDur, typename Clock, typename Dur>
+            inline time_point<Clock, ToDur>
+            time_point_cast(const time_point<Clock, Dur>& t) {
+                typedef time_point<Clock, ToDur> TP;
+                const ToDur to_dur = duration_cast<ToDur>(t.time_since_epoch());
+                return TP(to_dur);
+            }
+
+            _uint64_t _get_system_clock_time(void);
+            _uint64_t _get_steady_clock_time(void);
+
+            struct system_clock {
+                typedef chrono::microseconds    duration;
+                typedef duration::rep           rep;
+                typedef duration::period        period;
+                typedef chrono::time_point<system_clock, duration> time_point;
+                typedef system_clock self_type;
+                enum { is_steady = 0 };
+
+                static time_point now() {
+                    time_point::duration d(_get_system_clock_time());
+                    time_point tp(d);
+                    return tp;
+                }
+
+                static std::time_t to_time_t(const time_point& t) {
+                    duration tse = t.time_since_epoch();
+                    chrono::seconds sec = duration_cast<chrono::seconds>(tse);
+                    return std::time_t(sec.count());
+                }
+                static time_point from_time_t(std::time_t t) {
+                    chrono::seconds sec = chrono::seconds(t);
+                    chrono::time_point<system_clock, chrono::seconds> f(sec);
+                    return time_point_cast<system_clock::duration>(f);
+                }
+            }; // struct system_clock
+            typedef system_clock high_resolution_clock;
+
+            struct steady_clock {
+                typedef chrono::microseconds    duration;
+                typedef duration::rep           rep;
+                typedef duration::period        period;
+                typedef chrono::time_point<steady_clock, duration> time_point;
+                typedef steady_clock self_type;
+                enum { is_steady = true };
+
+                static time_point now() {
+                    time_point::duration d(_get_steady_clock_time());
+                    time_point tp(d);
+                    return tp;
+                }
+            };
+
+            inline auto_time_point
+            operator+(const auto_time_point& lhs, const auto_duration& rhs) {
+                auto_duration d = create_common_duration(lhs.get_duration(), rhs);
+                d = auto_duration_cast(d, lhs.time_since_epoch() + rhs);
+                auto_time_point ret(d);
+                return ret;
+            }
+            inline auto_time_point
+            operator+(const auto_duration& lhs, const auto_time_point& rhs) {
+                auto_duration d = create_common_duration(rhs.get_duration(), lhs);
+                d = auto_duration_cast(d, rhs.time_since_epoch() + lhs);
+                auto_time_point ret(d);
+                return ret;
+            }
+            inline auto_time_point
+            operator-(const auto_time_point& lhs, const auto_duration& rhs) {
+                auto_duration d = create_common_duration(lhs.get_duration(), rhs);
+                d = auto_duration_cast(d, lhs.time_since_epoch() - rhs);
+                auto_time_point ret(d);
+                return ret;
+            }
+            inline auto_duration
+            operator-(const auto_time_point& lhs, const auto_time_point& rhs) {
+                auto_duration d =create_common_duration(lhs.get_duration(), rhs.get_duration());
+                return lhs.time_since_epoch() - rhs.time_since_epoch();
+            }
+
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator==(const time_point<Clock, Dur1>& lhs,
+                       const time_point<Clock, Dur2>& rhs)
+            {
+                return lhs.time_since_epoch() == rhs.time_since_epoch();
+            }
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator!=(const time_point<Clock, Dur1>& lhs,
+                       const time_point<Clock, Dur2>& rhs)
+            {
+                return !(lhs == rhs);
+            }
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator<(const time_point<Clock, Dur1>& lhs,
+                      const time_point<Clock, Dur2>& rhs)
+            {
+                return lhs.time_since_epoch() < rhs.time_since_epoch();
+            }
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator>=(const time_point<Clock, Dur1>& lhs,
+                       const time_point<Clock, Dur2>& rhs)
+            {
+                return !(lhs < rhs);
+            }
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator>(const time_point<Clock, Dur1>& lhs,
+                      const time_point<Clock, Dur2>& rhs)
+            {
+                return lhs.time_since_epoch() > rhs.time_since_epoch();
+            }
+            template <typename Clock, typename Dur1, typename Dur2>
+            inline bool
+            operator<=(const time_point<Clock, Dur1>& lhs,
+                       const time_point<Clock, Dur2>& rhs)
+            {
+                return !(lhs > rhs);
+            }
+
+            inline bool
+            operator==(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return lhs.time_since_epoch() == rhs.time_since_epoch();
+            }
+            inline bool
+            operator!=(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return !(lhs == rhs);
+            }
+            inline bool
+            operator<(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return lhs.time_since_epoch() < rhs.time_since_epoch();
+            }
+            inline bool
+            operator>=(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return !(lhs < rhs);
+            }
+            inline bool
+            operator>(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return lhs.time_since_epoch() > rhs.time_since_epoch();
+            }
+            inline bool
+            operator<=(const auto_time_point& lhs, const auto_time_point& rhs) {
+                return !(lhs > rhs);
+            }
+
             #ifdef UNBOOST_USE_WIN32_CHRONO
-                //
+                inline _uint64_t _get_system_clock_time(void) {
+                    //...
+                }
+                inline _uint64_t _get_steady_clock_time(void) {
+                    //...
+                }
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                //
+                inline _uint64_t _get_system_clock_time(void) {
+                    //...
+                }
+                inline _uint64_t _get_steady_clock_time(void) {
+                    //...
+                }
             #else
                 #error You lose.
             #endif
