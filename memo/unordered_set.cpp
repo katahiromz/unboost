@@ -1,4 +1,4 @@
-#include <cstddef>  // for std::size_t, std::ptrdiff_t
+#include <vector>   // for std::vector
 #include <limits>   // for std::numeric_limits
 
 template <typename Key,
@@ -16,9 +16,25 @@ public:
     typedef const value_type&   const_reference;
     typedef value_type *        pointer;
     typedef const value_type *  const_pointer;
-    // FIXME: bucket_type
-    // FIXME: iterator, const_iterator
-    // FIXME: local_iterator, const_local_iterator
+
+    struct bucket_type : public std::vector<pointer> {
+        bucket_type() { }
+        ~bucket_type() {
+            size_t count = size();
+            for (size_t i = 0; i < count; ++i) {
+                pointer ptr = at(i);
+                if (ptr != NULL)
+                    delete ptr;
+            }
+        }
+    };
+
+    typedef std::vector<bucket_type>            bucket_list;
+    typedef bucket_type::iterator               local_iterator;
+    typedef bucket_type::const_iterator   const_local_iterator;
+    typedef std::pair<bucket_list::iterator, local_iterator>  iterator;
+    typedef std::pair<bucket_list::const_iterator, const_local_iterator>  const_iterator;
+
     typedef unordered_set<Key, Hash, KeyEqual> self_type;
 
     unordered_set() {
