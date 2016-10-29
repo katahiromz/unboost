@@ -661,10 +661,10 @@
                     return self_type(d);
                 }
 
-                duration get_duration() const { return m_d; }
+                auto_duration get_duration() const { return m_d; }
 
             protected:
-                duration m_d;
+                auto_duration m_d;
             };
 
             template <typename Clock, typename Dur>
