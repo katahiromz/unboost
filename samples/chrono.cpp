@@ -7,12 +7,15 @@
 #ifdef CXX11
     #include <ratio>
     #include <chrono>
+    #include <thread>
 #elif defined(BOOST)
     #include <boost/ratio.hpp>
     #include <boost/chrono.hpp>
+    #include <boost/thread.hpp>
 #else   // Unboost
     #include <unboost/ratio.hpp>
     #include <unboost/chrono.hpp>
+    #include <unboost/thread.hpp>
 #endif
 
 int main(void) {
@@ -168,7 +171,7 @@ int main(void) {
         seconds s = hours(1) + 2 * minutes(10) + seconds(70) / 10;
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
         assert(s.count() == 4807);
-    
+
         assert(duration_cast<hours>(s).count() == 1);
         assert(duration_cast<minutes>(s % hours(1)).count() == 20);
         assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
@@ -187,7 +190,7 @@ int main(void) {
 #endif
         std::cout << "1 hour + 2*10 min + 70/10 sec = " << s.count() << " seconds\n";
         assert(s.count() == 4807);
-    
+
         assert(duration_cast<hours>(s).count() == 1);
         assert(duration_cast<minutes>(s % hours(1)).count() == 20);
         assert(duration_cast<seconds>(s % minutes(1)).count() == 7);
@@ -242,7 +245,7 @@ int main(void) {
         typedef duration<float, ratio<12096, 10000> >  microfortnights;
         typedef duration<float, ratio<3155, 1000> >    nanocenturies;
         seconds sec(1);
-    
+
         assert(duration_cast<shakes>(sec).count() == 100000000);
         assert(duration_cast<jiffies>(sec).count() == 100);
         double f1 = duration_cast<microfortnights>(sec).count();
@@ -251,117 +254,97 @@ int main(void) {
         assert(0.31695 <= f2 && f2 <= 0.31696);
     }
 
-    //const unsigned threshold = 1200;
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        high_resolution_clock::time_point start = high_resolution_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        high_resolution_clock::time_point end = high_resolution_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        unboost_auto_time_point start = high_resolution_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        unboost_auto_time_point end = high_resolution_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //// steady_clock
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        steady_clock::time_point start = steady_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        steady_clock::time_point end = steady_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        unboost_auto_time_point start = steady_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        unboost_auto_time_point end = steady_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //// system_clock
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        system_clock::time_point start = system_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        system_clock::time_point end = system_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //{
-    //    for (size_t ms = 1000; ms < 2000; ms += 500) {
-    //        unboost_auto_time_point start = system_clock::now();
-    //        milliseconds dura(ms);
-    //        unboost::this_thread::sleep_for(dura);
-    //        unboost_auto_time_point end = system_clock::now();
-    //
-    //        unboost_auto_duration elapsed = end - start;
-    //        assert(ms - threshold <= elapsed.count() && elapsed.count() + threshold);
-    //    }
-    //}
-    //{
-    //    time_point<system_clock> p1, p2, p3;
-    //    typedef duration<_int64_t, ratio<3600 * 24> >  days;
-    //    typedef duration<_int64_t, ratio<3600 * 24 * 31> > months;
-    //    typedef duration<_int64_t, ratio<3600 * 24 * 356> >  years;
-    //
-    //    p2 = system_clock::now();
-    //    p3 = p2 - hours(24);
-    //
-    //    std::time_t epoch_time = system_clock::to_time_t(p1);
-    //    std::cout << "epoch: " << std::ctime(&epoch_time);
-    //
-    //    std::time_t today_time = system_clock::to_time_t(p2);
-    //    std::cout << "today: " << std::ctime(&today_time);
-    //
-    //    std::cout << "years since epoch: "
-    //              << duration_cast<years>(p2.time_since_epoch()).count()
-    //              << '\n';
-    //    std::cout << "yesterday, years since epoch: "
-    //              << duration_cast<years>(p3.time_since_epoch()).count()
-    //              << '\n';
-    //}
-    //{
-    //    time_point<system_clock> now = system_clock::now();
-    //    std::vector<time_point<system_clock>> times;
-    //    times.push_back(now - hours(24));
-    //    times.push_back(now - hours(48));
-    //    times.push_back(now + hours(24));
-    //
-    //    time_point<system_clock> earliest = time_point<system_clock>::max();
-    //
-    //    std::cout << "all times:\n";
-    //    for (const auto &time : times) {
-    //        std::time_t t = system_clock::to_time_t(time);
-    //        std::cout << std::ctime(&t);
-    //
-    //        if (time < earliest) earliest = time;
-    //    }
-    //
-    //    std::time_t t = system_clock::to_time_t(earliest);
-    //    std::cout << "earliest:\n" << std::ctime(&t);
-    //}
+    const unsigned threshold = 400;
+    // high_resolution_clock
+    std::cout << "high_resolution_clock" << std::endl;
+    {
+        using namespace unboost::chrono;
+        for (size_t ms = 1000; ms < 2000; ms += 300) {
+            high_resolution_clock::time_point start = high_resolution_clock::now();
+            milliseconds dura(ms);
+            unboost::this_thread::sleep_for(dura);
+            high_resolution_clock::time_point end = high_resolution_clock::now();
+
+            milliseconds elapsed = end - start;
+            std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
+            assert(abs((int)ms - (int)elapsed.count()) < threshold);
+        }
+    }
+    // steady_clock
+    std::cout << "steady_clock" << std::endl;
+    {
+        using namespace unboost::chrono;
+        for (size_t ms = 1000; ms < 2000; ms += 300) {
+            steady_clock::time_point start = steady_clock::now();
+            milliseconds dura(ms);
+            unboost::this_thread::sleep_for(dura);
+            steady_clock::time_point end = steady_clock::now();
+
+            milliseconds elapsed = end - start;
+            std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
+            assert(abs((int)ms - (int)elapsed.count()) < threshold);
+        }
+    }
+    // system_clock
+    std::cout << "system_clock" << std::endl;
+    {
+        using namespace unboost::chrono;
+        for (size_t ms = 1000; ms < 2000; ms += 300) {
+            system_clock::time_point start = system_clock::now();
+            milliseconds dura(ms);
+            unboost::this_thread::sleep_for(dura);
+            system_clock::time_point end = system_clock::now();
+
+            milliseconds elapsed = end - start;
+            std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
+            assert(abs((int)ms - (int)elapsed.count()) < threshold);
+        }
+    }
+    {
+        using namespace unboost::chrono;
+        using unboost::ratio;
+        time_point<system_clock> p1, p2, p3;
+        typedef duration<unboost::_int64_t, ratio<3600 * 24> >  days;
+        typedef duration<unboost::_int64_t, ratio<3600 * 24 * 30> > months;
+        typedef duration<unboost::_int64_t, ratio<3600 * 24 * 365> >  years;
+
+        p2 = system_clock::now();
+        p3 = p2 - hours(24);
+
+        std::time_t epoch_time = system_clock::to_time_t(p1);
+        std::cout << "epoch: " << std::asctime(std::gmtime(&epoch_time));
+
+        std::time_t today_time = system_clock::to_time_t(p2);
+        std::cout << "today: " << std::asctime(std::gmtime(&today_time));
+
+        std::cout << "years since epoch: "
+                  << duration_cast<years>(p2.time_since_epoch()).count()
+                  << '\n';
+        std::cout << "yesterday, years since epoch: "
+                  << duration_cast<years>(p3.time_since_epoch()).count()
+                  << '\n';
+    }
+    {
+        using namespace unboost::chrono;
+        time_point<system_clock> now = system_clock::now();
+        std::vector<time_point<system_clock>> times;
+        times.push_back(now - hours(24));
+        times.push_back(now - hours(48));
+        times.push_back(now + hours(24));
+
+        time_point<system_clock> earliest = time_point<system_clock>::max();
+
+        std::cout << "all times:\n";
+        for (const auto &time : times) {
+            std::time_t t = system_clock::to_time_t(time);
+            std::cout << std::asctime(std::gmtime(&t));
+
+            if (time < earliest) earliest = time;
+        }
+
+        std::time_t t = system_clock::to_time_t(earliest);
+        std::cout << "earliest:\n" << std::asctime(std::gmtime(&t));
+    }
 
     std::cout << "success" << std::endl;
 

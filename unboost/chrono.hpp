@@ -72,7 +72,8 @@
             using std::common_type;
         } // namespace chrono
     } // namespace unboost
-    #define unboost_auto_duration auto
+    #define unboost_auto_duration       auto
+    #define unboost_auto_time_point     auto
     #define UNBOOST_MAKE_COMMON_DURATION(new_dur, dur1, dur2) \
         typedef std::common_type<dur1, dur2> new_dur
 #elif defined(UNBOOST_USE_BOOST_CHRONO)
@@ -96,7 +97,8 @@
             using boost::chrono::time_point_cast;
         } // namespace chrono
     } // namespace unboost
-    #define unboost_auto_duration auto
+    #define unboost_auto_duration       auto
+    #define unboost_auto_time_point     auto
     #define UNBOOST_MAKE_COMMON_DURATION(new_dur, dur1, dur2) \
         typedef boost::common_type<dur1, dur2> new_dur
 #elif defined(UNBOOST_USE_WIN32_CHRONO) || defined(UNBOOST_USE_POSIX_CHRONO)
@@ -520,37 +522,37 @@
             //
             // auto_duration operators
             //
-            inline auto_duration 
+            inline auto_duration
             operator+(const auto_duration& lhs, const auto_duration& rhs) {
                 auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(CD(lhs).count() + CD(rhs).count());
             }
-            inline auto_duration 
+            inline auto_duration
             operator-(const auto_duration& lhs, const auto_duration& rhs) {
                 auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(CD(lhs).count() - CD(rhs).count());
             }
-            inline auto_duration 
+            inline auto_duration
             operator*(double s, const auto_duration& d) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
-            inline auto_duration 
+            inline auto_duration
             operator*(double s, const duration<Rep, Period>& d) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
-            inline auto_duration 
+            inline auto_duration
             operator*(const auto_duration& d, double s) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
-            inline auto_duration 
+            inline auto_duration
             operator*(const duration<Rep, Period>& d, double s) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
-            inline auto_duration 
+            inline auto_duration
             operator/(const auto_duration& d, double s) {
                 return d(d.count() / s);
             }
@@ -558,11 +560,11 @@
             operator/(const auto_duration& lhs, const auto_duration& rhs) {
                 return lhs.count() / rhs.count();
             }
-            inline auto_duration 
+            inline auto_duration
             operator%(const auto_duration& d, double s) {
                 return d(std::fmod(d.count(), s));
             }
-            inline auto_duration 
+            inline auto_duration
             operator%(const auto_duration& lhs, const auto_duration& rhs) {
                 auto_duration CD = create_common_duration(lhs, rhs);
                 return CD(std::fmod(CD(lhs).count(), CD(rhs).count()));
@@ -637,11 +639,11 @@
                 auto_time_point() : m_d(duration::zero()) { }
                 auto_time_point(const auto_duration& ad) : m_d(ad) { }
 
-                template <typename Dur2>
-                auto_time_point(const unboost::chrono::time_point<clock, Dur2>& t)
+                template <typename Clock2, typename Dur2>
+                auto_time_point(const unboost::chrono::time_point<Clock2, Dur2>& t)
                     : m_d(t.time_since_epoch()) { }
 
-                duration time_since_epoch() const { return m_d; }
+                auto_duration time_since_epoch() const { return m_d; }
 
                 self_type& operator+=(const duration& d) {
                     m_d += d;
@@ -666,8 +668,9 @@
             protected:
                 auto_duration m_d;
             };
+            #define unboost_auto_time_point unboost::chrono::auto_time_point
 
-            template <typename Clock, typename Dur>
+            template <typename Clock, typename Dur = typename Clock::duration>
             struct time_point {
                 typedef Clock                       clock;
                 typedef Dur                         duration;
@@ -681,11 +684,20 @@
                 time_point() : m_d(duration::zero()) { }
                 explicit time_point(const duration& d) : m_d(d) { }
 
+                time_point(const auto_duration& d) : m_d(d) { }
+
                 template <typename Dur2>
                 time_point(const time_point<clock, Dur2>& t)
                     : m_d(t.time_since_epoch()) { }
 
+                time_point(const auto_time_point& t) : m_d(t.get_duration()) { }
+
                 duration time_since_epoch() const { return m_d; }
+
+                self_type& operator=(const auto_time_point& other) {
+                    m_d = other.get_duration();
+                    return *this;
+                }
 
                 self_type& operator+=(const duration& d) {
                     m_d += d;
@@ -716,8 +728,28 @@
                 return TP(to_dur);
             }
 
-            _uint64_t _get_system_clock_time(void);
-            _uint64_t _get_steady_clock_time(void);
+            // NOTE: epoch is 1970.01.01
+            #ifdef UNBOOST_USE_WIN32_CHRONO
+                inline double _get_clock_time(void) {
+                    SYSTEMTIME st;
+                    FILETIME ft;
+                    ULARGE_INTEGER uli;
+                    ::GetSystemTime(&st);
+                    ::SystemTimeToFileTime(&st, &ft);
+                    uli.LowPart = ft.dwLowDateTime;
+                    uli.HighPart = ft.dwHighDateTime;
+                    return (uli.QuadPart - 8596618904) / 10.0;
+                }
+            #elif defined(UNBOOST_USE_POSIX_CHRONO)
+                inline double _get_clock_time(void) {
+                    struct timeval tv;
+                    struct timezone tz;
+                    gettimeofday(&tv);
+                    return tv.tv_sec * 1000000 + tv.tv_usec;
+                }
+            #else
+                #error You lose.
+            #endif
 
             struct system_clock {
                 typedef chrono::microseconds    duration;
@@ -728,7 +760,7 @@
                 enum { is_steady = 0 };
 
                 static time_point now() {
-                    time_point::duration d(_get_system_clock_time());
+                    time_point::duration d(_get_clock_time());
                     time_point tp(d);
                     return tp;
                 }
@@ -755,7 +787,7 @@
                 enum { is_steady = true };
 
                 static time_point now() {
-                    time_point::duration d(_get_steady_clock_time());
+                    time_point::duration d(_get_clock_time());
                     time_point tp(d);
                     return tp;
                 }
@@ -855,24 +887,6 @@
             operator<=(const auto_time_point& lhs, const auto_time_point& rhs) {
                 return !(lhs > rhs);
             }
-
-            #ifdef UNBOOST_USE_WIN32_CHRONO
-                inline _uint64_t _get_system_clock_time(void) {
-                    //...
-                }
-                inline _uint64_t _get_steady_clock_time(void) {
-                    //...
-                }
-            #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                inline _uint64_t _get_system_clock_time(void) {
-                    //...
-                }
-                inline _uint64_t _get_steady_clock_time(void) {
-                    //...
-                }
-            #else
-                #error You lose.
-            #endif
         } // namespace chrono
     } // namespace unboost
     #define unboost_auto_duration unboost::chrono::auto_duration
