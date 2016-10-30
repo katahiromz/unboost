@@ -617,11 +617,11 @@
             //
             template <typename ToDur, typename Rep, typename Period>
             inline ToDur duration_cast(const duration<Rep, Period>& d) {
+                typedef typename ToDur::period  to_period;
                 auto_ratio p0(Period::num, Period::den);
-                auto_ratio p1 = typename ToDur::period();
+                auto_ratio p1 = to_period();
                 auto_ratio CF = p0 / p1;
                 typedef typename ToDur::rep     to_rep;
-                typedef typename ToDur::period  to_period;
                 typedef typename common_type<to_rep, Rep>::type cr0;
                 typedef typename common_type<cr0, _int64_t>::type CR;
                 if (CF.num == 1 && CF.den == 1)
@@ -655,14 +655,15 @@
             struct time_point;
 
             struct auto_time_point {
-                typedef system_clock                clock;
-                typedef auto_duration               duration;
-                typedef typename duration::rep      rep;
-                typedef typename duration::period   period;
-                typedef auto_time_point             self_type;
-                typedef auto_time_point             time_point;
+                typedef system_clock            clock;
+                typedef auto_duration           duration;
+                typedef _auto_duration_rep      rep;
+                typedef auto_ratio              period;
+                typedef auto_time_point         self_type;
+                typedef auto_time_point         time_point;
+                typedef auto_time_point         local_time_point;
 
-                auto_time_point() : m_d(duration::zero()) { }
+                auto_time_point() : m_d(auto_duration::zero()) { }
                 auto_time_point(const auto_duration& ad) : m_d(ad) { }
 
                 template <typename Clock2, typename Dur2>
@@ -685,18 +686,18 @@
                 }
 
                 static self_type min() {
-                    duration d = duration::min();
+                    auto_duration d = auto_duration::min();
                     return self_type(d);
                 }
                 static self_type max() {
-                    duration d = duration::max();
+                    auto_duration d = auto_duration::max();
                     return self_type(d);
                 }
 
                 duration get_duration() const { return m_d; }
 
             protected:
-                duration m_d;
+                auto_duration m_d;
             }; // struct auto_time_point
             #define unboost_auto_time_point unboost::chrono::auto_time_point
 
@@ -809,19 +810,20 @@
             struct system_clock {
                 // duration in 100-nanoseconds
                 typedef _system_duration                            duration;
-                typedef duration::rep                               rep;
-                typedef duration::period                            period;
+                typedef _system_duration::rep                       rep;
+                typedef _system_duration::period                    period;
                 typedef chrono::time_point<system_clock, duration>  time_point;
+                typedef chrono::time_point<system_clock, duration>  local_time_point;
                 typedef system_clock                                self_type;
                 enum { is_steady = 0 };
 
-                static time_point now() {
-                    time_point::duration d(_get_system_clock_time());
-                    time_point tp(d);
+                static local_time_point now() {
+                    local_time_point::duration d(_get_system_clock_time());
+                    local_time_point tp(d);
                     return tp;
                 }
 
-                static std::time_t to_time_t(const time_point& t) {
+                static std::time_t to_time_t(const local_time_point& t) {
                     duration tse = t.time_since_epoch();
                     chrono::seconds sec = duration_cast<chrono::seconds>(tse);
                     return std::time_t(sec.count());
@@ -834,16 +836,17 @@
             }; // struct system_clock
 
             struct steady_clock {
-                typedef _steady_duration        duration;
-                typedef duration::rep           rep;
-                typedef duration::period        period;
+                typedef _steady_duration            duration;
+                typedef _steady_duration::rep       rep;
+                typedef _steady_duration::period    period;
                 typedef chrono::time_point<steady_clock, duration> time_point;
-                typedef steady_clock self_type;
+                typedef chrono::time_point<steady_clock, duration> local_time_point;
+                typedef steady_clock                self_type;
                 enum { is_steady = true };
 
-                static time_point now() {
-                    time_point::duration d(_get_steady_clock_time());
-                    time_point tp(d);
+                static local_time_point now() {
+                    local_time_point::duration d(_get_steady_clock_time());
+                    local_time_point tp(d);
                     return tp;
                 }
             };
