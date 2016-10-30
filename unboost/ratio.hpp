@@ -54,6 +54,23 @@ namespace unboost {
     inline _ratio_intmax_t _gcd(_ratio_intmax_t x, _ratio_intmax_t y) {
         return _abs(_gcd0(x, y));
     }
+
+    inline _int64_t _sign(_int64_t x) {
+        return (x < 0 ? -1 : 1);
+    }
+    inline _int64_t _abs(_int64_t x) {
+        return (x < 0 ? -x : x);
+    }
+    inline _int64_t _gcd0(_int64_t x, _int64_t y) {
+        if (x == 0)
+            return y;
+        if (y == 0)
+            return x;
+        return _gcd0(y, x % y);
+    }
+    inline _int64_t _gcd(_int64_t x, _int64_t y) {
+        return _abs(_gcd0(x, y));
+    }
 } // namespace unboost
 
 // If not choosed, choose one
