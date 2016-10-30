@@ -717,7 +717,7 @@
                 time_point(const auto_duration& d) : m_d(d) { }
 
                 template <typename Dur2>
-                time_point(const time_point<clock, Dur2>& t)
+                time_point(const unboost::chrono::time_point<clock, Dur2>& t)
                     : m_d(t.time_since_epoch()) { }
 
                 time_point(const auto_time_point& t) : m_d(t.get_duration()) { }
