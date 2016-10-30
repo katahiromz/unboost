@@ -301,6 +301,38 @@ int main(void) {
             assert(abs((int)ms - (int)elapsed.count()) < threshold);
         }
     }
+    {
+        using namespace unboost::chrono;
+        duration<int> foo;
+        duration<int> bar(10);
+
+        foo = bar;               // 10  10
+        foo = foo + bar;         // 20  10
+        ++foo;                   // 21  10
+        --bar;                   // 21   9
+        foo *= 2;                // 42   9
+        foo /= 3;                // 14   9
+        bar += (foo % bar);      // 14  14
+
+        assert(foo == bar);
+        assert(foo.count() == 14);
+        assert(bar.count() == 14);
+
+        auto_duration foo2 = duration<int>();
+        auto_duration bar2 = duration<int>(10);
+
+        foo2 = bar2;                // 10  10
+        foo2 = foo2 + bar2;         // 20  10
+        ++foo2;                     // 21  10
+        --bar2;                     // 21   9
+        foo2 *= 2;                  // 42   9
+        foo2 /= 3;                  // 14   9
+        bar2 += (foo2 % bar2);      // 14  14
+
+        assert(foo2 == bar2);
+        assert(foo2.count() == 14);
+        assert(bar2.count() == 14);
+    }
 #endif
     // FIXME:
     {
