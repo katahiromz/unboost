@@ -4,7 +4,7 @@
 /* This file is public domain software (PDS). */
 
 #ifndef UNBOOST_PSTDINT_H
-#define UNBOOST_PSTDINT_H    4   /* Version 4 */
+#define UNBOOST_PSTDINT_H    5   /* Version 5 */
 
 #if (defined(__cplusplus) && __cplusplus >= 201103L)
     // C++11 and later
@@ -209,8 +209,8 @@
         #define INTPTR_MAX              INT64_MAX
         #define UINTPTR_MIN             UINT64_MIN
         #define UINTPTR_MAX             UINT64_MAX
-    #elif defined(__x86_64__) || defined(__ppc64__)
-        /* 64-bit non-Windows C/C++ compiler */
+    #if defined(_LP64) || defined(__LP64__)
+        /* LP64 compiler */
         #ifdef __cplusplus
             #include <climits>
         #else
@@ -324,101 +324,8 @@
         #define INTPTR_MAX              INT64_MAX
         #define UINTPTR_MIN             UINT64_MIN
         #define UINTPTR_MAX             UINT64_MAX
-    #elif defined(MSDOS) || defined(DOS) || defined(_WIN16) || defined(LSI_C)
-        /* MS-DOS C/C++ compiler */
-        #ifdef __cplusplus
-            #include <climits>
-        #else
-            #include <limits.h>
-        #endif
-
-        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
-        namespace unboost {
-        #endif
-            typedef signed char             int8_t;
-            typedef short                   int16_t;
-            typedef long                    int32_t;
-
-            typedef short                   int_fast8_t;
-            typedef short                   int_fast16_t;
-            typedef long                    int_fast32_t;
-
-            typedef signed char             int_least8_t;
-            typedef short                   int_least16_t;
-            typedef long                    int_least32_t;
-
-            typedef unsigned char           uint8_t;
-            typedef unsigned short          uint16_t;
-            typedef unsigned long           uint32_t;
-
-            typedef unsigned short          uint_fast8_t;
-            typedef unsigned short          uint_fast16_t;
-            typedef unsigned long           uint_fast32_t;
-
-            typedef unsigned char           uint_least8_t;
-            typedef unsigned short          uint_least16_t;
-            typedef unsigned long           uint_least32_t;
-
-            typedef long                    intmax_t;
-            typedef unsigned long           uintmax_t;
-        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
-        } // namespace unboost
-        #endif
-
-        #define INT8_MIN                SCHAR_MIN
-        #define INT16_MIN               SHRT_MIN
-        #define INT32_MIN               LONG_MIN
-
-        #define INT8_MAX                SCHAR_MAX
-        #define INT16_MAX               SHRT_MAX
-        #define INT32_MAX               LONG_MAX
-
-        #define INT_FAST8_MIN           INT_MIN
-        #define INT_FAST16_MIN          INT_MIN
-        #define INT_FAST32_MIN          LONG_MIN
-
-        #define INT_FAST8_MAX           INT_MAX
-        #define INT_FAST16_MAX          INT_MAX
-        #define INT_FAST32_MAX          LONG_MAX
-
-        #define INT_LEAST8_MIN          SCHAR_MIN
-        #define INT_LEAST16_MIN         SHRT_MIN
-        #define INT_LEAST32_MIN         LONG_MIN
-
-        #define INT_LEAST8_MAX          SCHAR_MAX
-        #define INT_LEAST16_MAX         SHRT_MAX
-        #define INT_LEAST32_MAX         LONG_MAX
-
-        #define UINT8_MIN               UCHAR_MIN
-        #define UINT16_MIN              USHRT_MIN
-        #define UINT32_MIN              ULONG_MIN
-
-        #define UINT8_MAX               UCHAR_MAX
-        #define UINT16_MAX              USHRT_MAX
-        #define UINT32_MAX              ULONG_MAX
-
-        #define UINT_FAST8_MIN          UINT_MIN
-        #define UINT_FAST16_MIN         UINT_MIN
-        #define UINT_FAST32_MIN         ULONG_MIN
-
-        #define UINT_FAST8_MAX          UINT_MAX
-        #define UINT_FAST16_MAX         UINT_MAX
-        #define UINT_FAST32_MAX         ULONG_MAX
-
-        #define UINT_LEAST8_MIN         UCHAR_MIN
-        #define UINT_LEAST16_MIN        USHRT_MIN
-        #define UINT_LEAST32_MIN        ULONG_MIN
-
-        #define UINT_LEAST8_MAX         UCHAR_MAX
-        #define UINT_LEAST16_MAX        USHRT_MAX
-        #define UINT_LEAST32_MAX        ULONG_MAX
-
-        #define INTPTR_MIN              INT32_MIN
-        #define INTPTR_MAX              INT32_MAX
-        #define UINTPTR_MIN             UINT32_MIN
-        #define UINTPTR_MAX             UINT32_MAX
     #elif defined(__GNUC__) || defined(__clang__)
-        /* GNU/clang C/C++ compiler */
+        /* GNU/clang C/C++ compiler (non-LP64, non-Windows) */
         #ifdef __cplusplus
             #include <climits>
         #else
@@ -558,6 +465,99 @@
         #define INTPTR_MAX              INT64_MAX
         #define UINTPTR_MIN             UINT64_MIN
         #define UINTPTR_MAX             UINT64_MAX
+    #elif defined(MSDOS) || defined(DOS) || defined(_WIN16) || defined(LSI_C)
+        /* MS-DOS C/C++ compiler */
+        #ifdef __cplusplus
+            #include <climits>
+        #else
+            #include <limits.h>
+        #endif
+
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
+        namespace unboost {
+        #endif
+            typedef signed char             int8_t;
+            typedef short                   int16_t;
+            typedef long                    int32_t;
+
+            typedef short                   int_fast8_t;
+            typedef short                   int_fast16_t;
+            typedef long                    int_fast32_t;
+
+            typedef signed char             int_least8_t;
+            typedef short                   int_least16_t;
+            typedef long                    int_least32_t;
+
+            typedef unsigned char           uint8_t;
+            typedef unsigned short          uint16_t;
+            typedef unsigned long           uint32_t;
+
+            typedef unsigned short          uint_fast8_t;
+            typedef unsigned short          uint_fast16_t;
+            typedef unsigned long           uint_fast32_t;
+
+            typedef unsigned char           uint_least8_t;
+            typedef unsigned short          uint_least16_t;
+            typedef unsigned long           uint_least32_t;
+
+            typedef long                    intmax_t;
+            typedef unsigned long           uintmax_t;
+        #if defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE)
+        } // namespace unboost
+        #endif
+
+        #define INT8_MIN                SCHAR_MIN
+        #define INT16_MIN               SHRT_MIN
+        #define INT32_MIN               LONG_MIN
+
+        #define INT8_MAX                SCHAR_MAX
+        #define INT16_MAX               SHRT_MAX
+        #define INT32_MAX               LONG_MAX
+
+        #define INT_FAST8_MIN           INT_MIN
+        #define INT_FAST16_MIN          INT_MIN
+        #define INT_FAST32_MIN          LONG_MIN
+
+        #define INT_FAST8_MAX           INT_MAX
+        #define INT_FAST16_MAX          INT_MAX
+        #define INT_FAST32_MAX          LONG_MAX
+
+        #define INT_LEAST8_MIN          SCHAR_MIN
+        #define INT_LEAST16_MIN         SHRT_MIN
+        #define INT_LEAST32_MIN         LONG_MIN
+
+        #define INT_LEAST8_MAX          SCHAR_MAX
+        #define INT_LEAST16_MAX         SHRT_MAX
+        #define INT_LEAST32_MAX         LONG_MAX
+
+        #define UINT8_MIN               UCHAR_MIN
+        #define UINT16_MIN              USHRT_MIN
+        #define UINT32_MIN              ULONG_MIN
+
+        #define UINT8_MAX               UCHAR_MAX
+        #define UINT16_MAX              USHRT_MAX
+        #define UINT32_MAX              ULONG_MAX
+
+        #define UINT_FAST8_MIN          UINT_MIN
+        #define UINT_FAST16_MIN         UINT_MIN
+        #define UINT_FAST32_MIN         ULONG_MIN
+
+        #define UINT_FAST8_MAX          UINT_MAX
+        #define UINT_FAST16_MAX         UINT_MAX
+        #define UINT_FAST32_MAX         ULONG_MAX
+
+        #define UINT_LEAST8_MIN         UCHAR_MIN
+        #define UINT_LEAST16_MIN        USHRT_MIN
+        #define UINT_LEAST32_MIN        ULONG_MIN
+
+        #define UINT_LEAST8_MAX         UCHAR_MAX
+        #define UINT_LEAST16_MAX        USHRT_MAX
+        #define UINT_LEAST32_MAX        ULONG_MAX
+
+        #define INTPTR_MIN              INT32_MIN
+        #define INTPTR_MAX              INT32_MAX
+        #define UINTPTR_MIN             UINT32_MIN
+        #define UINTPTR_MAX             UINT32_MAX
     #else
         #error Not supported yet. You lose.
     #endif
