@@ -188,9 +188,21 @@
     #endif
 #endif
 
+#ifdef UNBOOST_USE_WIN32_EVENT
+    #ifndef UNBOOST_USE_WIN32_THREAD
+        #define UNBOOST_USE_WIN32_THREAD
+    #endif
+#endif
+
 #ifdef UNBOOST_USE_POSIX_THREAD
     #ifndef UNBOOST_USE_POSIX_EVENT
         #define UNBOOST_USE_POSIX_EVENT
+    #endif
+#endif
+
+#ifdef UNBOOST_USE_POSIX_EVENT
+    #ifndef UNBOOST_USE_POSIX_THREAD
+        #define UNBOOST_USE_POSIX_THREAD
     #endif
 #endif
 

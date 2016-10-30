@@ -70,7 +70,7 @@
         } // namespace unboost
     #endif  /* defined(__cplusplus) && defined(UNBOOST_USE_PSTDINT_NAMESPACE) */
 #else
-    #if defined(_WIN32)
+    #ifdef _WIN32
         /* 32-bit or 64-bit Windows C/C++ compiler */
         #ifndef _INC_WINDOWS
             #ifndef NOMINMAX
@@ -209,7 +209,7 @@
         #define INTPTR_MAX              INT64_MAX
         #define UINTPTR_MIN             UINT64_MIN
         #define UINTPTR_MAX             UINT64_MAX
-    #if defined(_LP64) || defined(__LP64__)
+    #elif defined(_LP64) || defined(__LP64__)
         /* LP64 compiler */
         #ifdef __cplusplus
             #include <climits>

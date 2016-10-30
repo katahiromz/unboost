@@ -704,8 +704,8 @@
             struct time_point {
                 typedef Clock                       clock;
                 typedef Dur                         duration;
-                typedef typename duration::rep      rep;
-                typedef typename duration::period   period;
+                typedef typename Dur::rep           rep;
+                typedef typename Dur::period        period;
                 typedef time_point<Clock, Dur>      self_type;
 
                 // NOTE: ISO C++ forbids nested type:
