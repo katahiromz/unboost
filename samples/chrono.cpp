@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 #ifdef CXX11
     #include <ratio>
@@ -253,20 +254,62 @@ int main(void) {
         double f2 = duration_cast<nanocenturies>(sec).count();
         assert(0.31695 <= f2 && f2 <= 0.31696);
     }
+    {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::ratio;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::ratio;
+#else   // Unboost
+        using namespace unboost::chrono;
+        using unboost::ratio;
+#endif
+        seconds a(1);
+        milliseconds b = a;
+        assert(b.count() == 1000);
 
-#if 0
-    const unsigned threshold = 300;
+        milliseconds c(1200);
+        seconds d = duration_cast<seconds>(c);
+        assert(d.count() == 1);
+
+        typedef duration<float, ratio<1, 1000> > milliseconds_f;
+        typedef duration<float, ratio<1, 1> > seconds_f;
+
+        milliseconds_f x(1200.0f);
+        seconds_f y = x;
+        assert(y.count() == 1.2);
+    }
+    const unsigned threshold = 100;
     // high_resolution_clock
     std::cout << "high_resolution_clock" << std::endl;
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::this_thread::sleep_for;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::this_thread::sleep_for;
+#else   // Unboost
         using namespace unboost::chrono;
+        using unboost::this_thread::sleep_for;
+#endif
         for (size_t ms = 1000; ms < 2000; ms += 300) {
             high_resolution_clock::time_point start = high_resolution_clock::now();
             milliseconds dura(ms);
-            unboost::this_thread::sleep_for(dura);
+            sleep_for(dura);
             high_resolution_clock::time_point end = high_resolution_clock::now();
 
-            milliseconds elapsed = end - start;
+#ifdef CXX11
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#elif defined(BOOST)
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#else   // Unboost
+            unboost_auto_duration span = end - start;
+            unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
+#endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
             assert(abs((int)ms - (int)elapsed.count()) < threshold);
         }
@@ -274,14 +317,32 @@ int main(void) {
     // steady_clock
     std::cout << "steady_clock" << std::endl;
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::this_thread::sleep_for;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::this_thread::sleep_for;
+#else   // Unboost
         using namespace unboost::chrono;
+        using unboost::this_thread::sleep_for;
+#endif
         for (size_t ms = 1000; ms < 2000; ms += 300) {
             steady_clock::time_point start = steady_clock::now();
             milliseconds dura(ms);
-            unboost::this_thread::sleep_for(dura);
+            sleep_for(dura);
             steady_clock::time_point end = steady_clock::now();
 
-            milliseconds elapsed = end - start;
+#ifdef CXX11
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#elif defined(BOOST)
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#else   // Unboost
+            unboost_auto_duration span = end - start;
+            unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
+#endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
             assert(abs((int)ms - (int)elapsed.count()) < threshold);
         }
@@ -289,20 +350,44 @@ int main(void) {
     // system_clock
     std::cout << "system_clock" << std::endl;
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::this_thread::sleep_for;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::this_thread::sleep_for;
+#else   // Unboost
         using namespace unboost::chrono;
+        using unboost::this_thread::sleep_for;
+#endif
         for (size_t ms = 1000; ms < 2000; ms += 300) {
             system_clock::time_point start = system_clock::now();
             milliseconds dura(ms);
-            unboost::this_thread::sleep_for(dura);
+            sleep_for(dura);
             system_clock::time_point end = system_clock::now();
 
-            milliseconds elapsed = end - start;
+#ifdef CXX11
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#elif defined(BOOST)
+            auto span = end - start;
+            auto elapsed = duration_cast<milliseconds>(span);
+#else   // Unboost
+            unboost_auto_duration span = end - start;
+            unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
+#endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
             assert(abs((int)ms - (int)elapsed.count()) < threshold);
         }
     }
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
         using namespace unboost::chrono;
+#endif
         duration<int> foo;
         duration<int> bar(10);
 
@@ -318,8 +403,16 @@ int main(void) {
         assert(foo.count() == 14);
         assert(bar.count() == 14);
 
-        auto_duration foo2 = duration<int>();
-        auto_duration bar2 = duration<int>(10);
+#ifdef CXX11
+        auto foo2 = duration<int>();
+        auto bar2 = duration<int>(10);
+#elif defined(BOOST)
+        auto foo2 = duration<int>();
+        auto bar2 = duration<int>(10);
+#else   // Unboost
+        unboost_auto_duration foo2 = duration<int>();
+        unboost_auto_duration bar2 = duration<int>(10);
+#endif
 
         foo2 = bar2;                // 10  10
         foo2 = foo2 + bar2;         // 20  10
@@ -333,13 +426,23 @@ int main(void) {
         assert(foo2.count() == 14);
         assert(bar2.count() == 14);
     }
-#endif
-    // FIXME:
     {
+#ifdef CXX11
+        using namespace std::chrono;
+        using std::ratio;
+        time_point<system_clock> p1, p2, p3;
+        typedef duration<long long, ratio<3600 * 24 * 365> >  years;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+        using boost::ratio;
+        time_point<system_clock> p1, p2, p3;
+        typedef duration<long long, ratio<3600 * 24 * 365> >  years;
+#else   // Unboost
         using namespace unboost::chrono;
         using unboost::ratio;
         time_point<system_clock> p1, p2, p3;
         typedef duration<unboost::_int64_t, ratio<3600 * 24 * 365> >  years;
+#endif
 
         p2 = system_clock::now();
         p3 = p2 - hours(24);
@@ -358,7 +461,13 @@ int main(void) {
                   << '\n';
     }
     {
+#ifdef CXX11
+        using namespace std::chrono;
+#elif defined(BOOST)
+        using namespace boost::chrono;
+#else   // Unboost
         using namespace unboost::chrono;
+#endif
         time_point<system_clock> now = system_clock::now();
         std::vector<time_point<system_clock>> times;
         times.push_back(now - hours(24));
