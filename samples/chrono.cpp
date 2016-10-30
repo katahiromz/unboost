@@ -278,7 +278,7 @@ int main(void) {
 
         milliseconds_f x(1200.0f);
         seconds_f y = x;
-        assert(y.count() == 1.2);
+        assert(1.1 <= y.count() && y.count() <= 1.3);
     }
     const unsigned threshold = 100;
     // high_resolution_clock
@@ -469,7 +469,7 @@ int main(void) {
         using namespace unboost::chrono;
 #endif
         time_point<system_clock> now = system_clock::now();
-        std::vector<time_point<system_clock>> times;
+        std::vector<time_point<system_clock> > times;
         times.push_back(now - hours(24));
         times.push_back(now - hours(48));
         times.push_back(now + hours(24));
@@ -477,11 +477,12 @@ int main(void) {
         time_point<system_clock> earliest = time_point<system_clock>::max();
 
         std::cout << "all times:\n";
-        for (const auto &time : times) {
-            std::time_t t = system_clock::to_time_t(time);
+        size_t count = times.size();
+        for (size_t i = 0; i < count; ++i) {
+            std::time_t t = system_clock::to_time_t(times[i]);
             std::cout << std::asctime(std::gmtime(&t));
 
-            if (time < earliest) earliest = time;
+            if (times[i] < earliest) earliest = times[i];
         }
 
         std::time_t t = system_clock::to_time_t(earliest);

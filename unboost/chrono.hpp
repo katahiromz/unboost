@@ -634,11 +634,11 @@
             }
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
+                typedef typename ToDur::period  to_period;
                 auto_ratio p0 = ad.get_period();
-                auto_ratio p1 = typename ToDur::period();
+                auto_ratio p1 = to_period();
                 auto_ratio CF = p0 / p1;
                 typedef typename ToDur::rep     to_rep;
-                typedef typename ToDur::period  to_period;
                 typedef _auto_duration_rep CR;
                 if (CF.num == 1 && CF.den == 1)
                     return ToDur(to_rep(ad.count()));
@@ -712,7 +712,7 @@
                 // NOTE: ISO C++ forbids nested type:
                 //typedef time_point<Clock, Dur> time_point;
 
-                time_point() : m_d(duration::zero()) { }
+                time_point() : m_d(Dur::zero()) { }
                 explicit time_point(const duration& d) : m_d(d) { }
 
                 time_point(const auto_duration& d) : m_d(d) { }
@@ -740,11 +740,11 @@
                 }
 
                 static self_type min() {
-                    duration d = duration::min();
+                    Dur d = Dur::min();
                     return self_type(d);
                 }
                 static self_type max() {
-                    duration d = duration::max();
+                    Dur d = Dur::max();
                     return self_type(d);
                 }
             protected:
