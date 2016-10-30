@@ -326,10 +326,12 @@
                 }
                 type& operator%=(const rep& rhs) {
                     rep_ = std::fmod(rep_, rhs);
+                    fix_floating();
                     return *this;
                 }
                 type& operator%=(const type& rhs) {
                     rep_ = std::fmod(rep_, auto_duration_cast(*this, rhs).count());
+                    fix_floating();
                     return *this;
                 }
 
@@ -839,28 +841,29 @@
             inline auto_time_point
             operator+(const auto_time_point& lhs, const auto_duration& rhs) {
                 auto_duration d = create_common_duration(lhs.get_duration(), rhs);
-                d = d(lhs.time_since_epoch() + rhs);
+                d = d(lhs.time_since_epoch()) + d(rhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_time_point
             operator+(const auto_duration& lhs, const auto_time_point& rhs) {
                 auto_duration d = create_common_duration(rhs.get_duration(), lhs);
-                d = d(rhs.time_since_epoch() + lhs);
+                d = d(rhs.time_since_epoch()) + d(lhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_time_point
             operator-(const auto_time_point& lhs, const auto_duration& rhs) {
                 auto_duration d = create_common_duration(lhs.get_duration(), rhs);
-                d = d(lhs.time_since_epoch() - rhs);
+                d = d(lhs.time_since_epoch()) - d(rhs);
                 auto_time_point ret(d);
                 return ret;
             }
             inline auto_duration
             operator-(const auto_time_point& lhs, const auto_time_point& rhs) {
                 auto_duration d = create_common_duration(lhs.get_duration(), rhs.get_duration());
-                return d(lhs.time_since_epoch() - rhs.time_since_epoch());
+                d = d(lhs.time_since_epoch()) - d(rhs.time_since_epoch());
+                return d;
             }
 
             template <typename Clock, typename Dur1, typename Dur2>
