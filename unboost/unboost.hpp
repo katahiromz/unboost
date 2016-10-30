@@ -49,8 +49,10 @@
 //////////////////////////////////////////////////////////////////////////////
 // treat GNU extension
 
-#if !defined(__GNUC__) && !defined(__clang__)
-    #define __extension__   /**/
+#ifndef __extension__
+    #if !defined(__GNUC__) && !defined(__clang__)
+        #define __extension__   /**/
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
