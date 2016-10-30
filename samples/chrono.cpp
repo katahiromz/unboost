@@ -307,8 +307,6 @@ int main(void) {
         using namespace unboost::chrono;
         using unboost::ratio;
         time_point<system_clock> p1, p2, p3;
-        typedef duration<unboost::_int64_t, ratio<3600 * 24> >  days;
-        typedef duration<unboost::_int64_t, ratio<3600 * 24 * 30> > months;
         typedef duration<unboost::_int64_t, ratio<3600 * 24 * 365> >  years;
 
         p2 = system_clock::now();

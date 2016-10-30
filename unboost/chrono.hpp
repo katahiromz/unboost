@@ -6,6 +6,7 @@
 
 #include "unboost.hpp"
 #include "ratio.hpp"
+#include "type_traits.hpp"
 #include <cmath>
 #undef min
 #undef max
@@ -197,7 +198,7 @@
             //
             class auto_duration {
             public:
-                typedef double rep;
+                typedef long double rep;
                 typedef auto_ratio period;
                 typedef auto_duration type;
 
@@ -208,6 +209,10 @@
                     fix_floating();
                 }
                 explicit auto_duration(double r) : rep_(r), period_() {
+                    is_floating_ = true;
+                    fix_floating();
+                }
+                explicit auto_duration(long double r) : rep_(r), period_() {
                     is_floating_ = true;
                     fix_floating();
                 }
@@ -533,35 +538,35 @@
                 return CD(CD(lhs).count() - CD(rhs).count());
             }
             inline auto_duration
-            operator*(double s, const auto_duration& d) {
+            operator*(long double s, const auto_duration& d) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
             inline auto_duration
-            operator*(double s, const duration<Rep, Period>& d) {
+            operator*(long double s, const duration<Rep, Period>& d) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
             inline auto_duration
-            operator*(const auto_duration& d, double s) {
+            operator*(const auto_duration& d, long double s) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
             inline auto_duration
-            operator*(const duration<Rep, Period>& d, double s) {
+            operator*(const duration<Rep, Period>& d, long double s) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
             inline auto_duration
-            operator/(const auto_duration& d, double s) {
+            operator/(const auto_duration& d, long double s) {
                 return d(d.count() / s);
             }
-            inline double
+            inline long double
             operator/(const auto_duration& lhs, const auto_duration& rhs) {
                 return lhs.count() / rhs.count();
             }
             inline auto_duration
-            operator%(const auto_duration& d, double s) {
+            operator%(const auto_duration& d, long double s) {
                 return d(std::fmod(d.count(), s));
             }
             inline auto_duration
@@ -598,11 +603,12 @@
                 return !(lhs > rhs);
             }
 
-            typedef duration<_int64_t, ratio<1, 1000000> > microseconds;
-            typedef duration<_int64_t, ratio<1, 1000> >    milliseconds;
-            typedef duration<_int64_t>                     seconds;
-            typedef duration<_int64_t, ratio<60> >         minutes;
-            typedef duration<_int64_t, ratio<3600> >       hours;
+            typedef duration<_int64_t, ratio<1, 1000000000> >   nanoseconds;
+            typedef duration<_int64_t, ratio<1, 1000000> >      microseconds;
+            typedef duration<_int64_t, ratio<1, 1000> >         milliseconds;
+            typedef duration<_int64_t>                          seconds;
+            typedef duration<_int64_t, ratio<60> >              minutes;
+            typedef duration<_int64_t, ratio<3600> >            hours;
 
             //
             // duration_cast
@@ -614,14 +620,19 @@
             }
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
+                auto_ratio p0 = ad.get_period();
+                auto_ratio p1 = typename ToDur::period();
+                auto_ratio CF = p0 / p1;
                 typedef typename ToDur::rep     to_rep;
                 typedef typename ToDur::period  to_period;
-                auto_ratio cf = ad.get_period() / to_period();
-                assert(cf.den != 0);
-                typedef double cr;
-                return ToDur(static_cast<to_rep>(
-                    static_cast<cr>(ad.count()) * static_cast<cr>(cf.num)
-                                                / static_cast<cr>(cf.den)));
+                typedef long double CR;
+                if (CF.num == 1 && CF.den == 1)
+                    return ToDur(to_rep(ad.count()));
+                if (CF.num != 1 && CF.den == 1)
+                    return ToDur(to_rep(CR(ad.count()) * CR(CF.num)));
+                if (CF.num == 1 && CF.den != 1)
+                    return ToDur(to_rep(CR(ad.count()) / CR(CF.den)));
+                return ToDur(to_rep(CR(ad.count()) * CR(CF.num) / CR(CF.den)));
             }
 
             struct system_clock;
@@ -735,33 +746,63 @@
 
             // NOTE: epoch is 1970.01.01
             #ifdef UNBOOST_USE_WIN32_CHRONO
-                inline double _get_clock_time(void) {
+                typedef ratio<1, 10000000>  _nano100;
+                typedef chrono::duration<_int64_t, _nano100>     _system_duration;
+                typedef chrono::duration<_int64_t, nanoseconds> _steady_duration;
+                inline _int64_t _get_system_clock_time(void) {
+                    // in 100-nanoseconds
                     FILETIME ft;
                     ::GetSystemTimeAsFileTime(&ft);
-                    LONGLONG n = ((LONGLONG)ft.dwHighDateTime << 32) + ft.dwLowDateTime;
-                    return ((n - 116444736000000000) / 10000000.0);
+                    LONGLONG n = ft.dwHighDateTime;
+                    n <<= 32;
+                    n |= ft.dwLowDateTime;
+                    return n - 0x19DB1DED53E8000;
+                }
+                inline LARGE_INTEGER *_get_perf_freq() {
+                    static LARGE_INTEGER s_freq;
+                    if (!::QueryPerformanceFrequency(&s_freq))
+                        assert(0);
+                    return &s_freq;
+                }
+                inline _int64_t _get_steady_clock_time(void) {
+                    // in nanoseconds
+                    static LARGE_INTEGER *s_pfreq = _get_perf_freq();
+                    LARGE_INTEGER counter;
+                    ::QueryPerformanceCounter(&counter);
+                    return counter.QuadPart * (1000000000 / s_pfreq->QuadPart);
                 }
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                inline double _get_clock_time(void) {
+                typedef chrono::duration<_int64_t, microseconds> _system_duration;
+                typedef chrono::duration<_int64_t, microseconds> _steady_duration;
+                inline _int64_t _get_system_clock_time(void) {
+                    // in microseconds
                     struct timeval tv;
                     struct timezone tz;
                     gettimeofday(&tv);
-                    return tv.tv_sec + tv.tv_usec / 1000000.0;
+                    return tv.tv_sec * 1000000 + tv.tv_usec;
+                }
+                inline _int64_t _get_steady_clock_time(void) {
+                    // in microseconds
+                    struct timeval tv;
+                    struct timezone tz;
+                    gettimeofday(&tv);
+                    return tv.tv_sec * 1000000 + tv.tv_usec;
                 }
             #else
                 #error You lose.
             #endif
 
             struct system_clock {
-                typedef chrono::microseconds    duration;
-                typedef duration::rep           rep;
-                typedef duration::period        period;
-                typedef chrono::time_point<system_clock, duration> time_point;
-                typedef system_clock self_type;
+                // duration in 100-nanoseconds
+                typedef _system_duration                            duration;
+                typedef duration::rep                               rep;
+                typedef duration::period                            period;
+                typedef chrono::time_point<system_clock, duration>  time_point;
+                typedef system_clock                                self_type;
                 enum { is_steady = 0 };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time() * 1000000.0);
+                    time_point::duration d(_get_system_clock_time());
                     time_point tp(d);
                     return tp;
                 }
@@ -777,10 +818,9 @@
                     return time_point_cast<system_clock::duration>(f);
                 }
             }; // struct system_clock
-            typedef system_clock high_resolution_clock;
 
             struct steady_clock {
-                typedef chrono::microseconds    duration;
+                typedef _steady_duration        duration;
                 typedef duration::rep           rep;
                 typedef duration::period        period;
                 typedef chrono::time_point<steady_clock, duration> time_point;
@@ -788,11 +828,12 @@
                 enum { is_steady = true };
 
                 static time_point now() {
-                    time_point::duration d(_get_clock_time() * 1000000.0);
+                    time_point::duration d(_get_steady_clock_time());
                     time_point tp(d);
                     return tp;
                 }
             };
+            typedef steady_clock high_resolution_clock;
 
             inline auto_time_point
             operator+(const auto_time_point& lhs, const auto_duration& rhs) {

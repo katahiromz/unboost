@@ -305,11 +305,11 @@ namespace unboost {
 
         struct auto_ratio {
             typedef auto_ratio type;
-            _ratio_intmax_t num;
-            _ratio_intmax_t den;
+            _int64_t num;
+            _int64_t den;
 
             auto_ratio() : num(0), den(1) { }
-            auto_ratio(_ratio_intmax_t N, _ratio_intmax_t D) {
+            auto_ratio(_int64_t N, _int64_t D) {
                 num = _sign(N) * _sign(D) * _abs(N) / _gcd(N, D);
                 den = _abs(D) / _gcd(N, D);
             }
@@ -380,38 +380,38 @@ namespace unboost {
 
         inline auto_ratio
         operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _ratio_intmax_t _Num = ar1.num * ar2.den + ar2.num * ar1.den;
-            _ratio_intmax_t _Den = ar1.den * ar2.den;
-            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) *
+            _int64_t _Num = ar1.num * ar2.den + ar2.num * ar1.den;
+            _int64_t _Den = ar1.den * ar2.den;
+            _int64_t num = _sign(_Num) * _sign(_Den) *
                                   _abs(_Num) / _gcd(_Num, _Den);
-            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
             return auto_ratio(num, den);
         }
         inline auto_ratio
         operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _ratio_intmax_t _Num = ar1.num * ar2.den - ar2.num * ar1.den;
-            _ratio_intmax_t _Den = ar1.den * ar2.den;
-            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) *
+            _int64_t _Num = ar1.num * ar2.den - ar2.num * ar1.den;
+            _int64_t _Den = ar1.den * ar2.den;
+            _int64_t num = _sign(_Num) * _sign(_Den) *
                                   _abs(_Num) / _gcd(_Num, _Den);
-            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
             return auto_ratio(num, den);
         }
         inline auto_ratio
         operator*(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _ratio_intmax_t _Num = ar1.num * ar2.num;
-            _ratio_intmax_t _Den = ar1.den * ar2.den;
-            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+            _int64_t _Num = ar1.num * ar2.num;
+            _int64_t _Den = ar1.den * ar2.den;
+            _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
                                   _gcd(_Num, _Den);
-            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
             return auto_ratio(num, den);
         }
         inline auto_ratio
         operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _ratio_intmax_t _Num = ar1.num * ar2.den;
-            _ratio_intmax_t _Den = ar1.den * ar2.num;
-            _ratio_intmax_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+            _int64_t _Num = ar1.num * ar2.den;
+            _int64_t _Den = ar1.den * ar2.num;
+            _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
                                   _gcd(_Num, _Den);
-            _ratio_intmax_t den = _abs(_Den) / _gcd(_Num, _Den);
+            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
             return auto_ratio(num, den);
         }
         inline bool
