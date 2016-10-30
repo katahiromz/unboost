@@ -400,8 +400,7 @@
 
                 duration() { }
 
-                template <class Rep2>
-                explicit duration(const Rep2& r) : rep_(r) { }
+                explicit duration(const Rep& r) : rep_(r) { }
 
                 template <class Rep2, class Period2>
                 duration(const duration<Rep2, Period2>& d) {
@@ -618,8 +617,20 @@
             //
             template <typename ToDur, typename Rep, typename Period>
             inline ToDur duration_cast(const duration<Rep, Period>& d) {
-                auto_duration ad = d;
-                return duration_cast<ToDur>(ad);
+                auto_ratio p0(Period::num, Period::den);
+                auto_ratio p1 = typename ToDur::period();
+                auto_ratio CF = p0 / p1;
+                typedef typename ToDur::rep     to_rep;
+                typedef typename ToDur::period  to_period;
+                typedef typename common_type<to_rep, Rep>::type cr0;
+                typedef typename common_type<cr0, _int64_t>::type CR;
+                if (CF.num == 1 && CF.den == 1)
+                    return ToDur(to_rep(d.count()));
+                if (CF.num != 1 && CF.den == 1)
+                    return ToDur(to_rep(CR(d.count()) * CR(CF.num)));
+                if (CF.num == 1 && CF.den != 1)
+                    return ToDur(to_rep(CR(d.count()) / CR(CF.den)));
+                return ToDur(to_rep(CR(d.count()) * CR(CF.num) / CR(CF.den)));
             }
             template <typename ToDur>
             inline ToDur duration_cast(const auto_duration& ad) {
