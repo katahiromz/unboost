@@ -196,11 +196,12 @@
             //
             // auto_duration
             //
+            typedef long double     _auto_duration_rep;
             class auto_duration {
             public:
-                typedef long double rep;
-                typedef auto_ratio period;
-                typedef auto_duration type;
+                typedef _auto_duration_rep  rep;
+                typedef auto_ratio          period;
+                typedef auto_duration       type;
 
                 auto_duration() : rep_(), period_(1, 1), is_floating_(false) { }
 
@@ -538,35 +539,35 @@
                 return CD(CD(lhs).count() - CD(rhs).count());
             }
             inline auto_duration
-            operator*(long double s, const auto_duration& d) {
+            operator*(_auto_duration_rep s, const auto_duration& d) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
             inline auto_duration
-            operator*(long double s, const duration<Rep, Period>& d) {
+            operator*(_auto_duration_rep s, const duration<Rep, Period>& d) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
             inline auto_duration
-            operator*(const auto_duration& d, long double s) {
+            operator*(const auto_duration& d, _auto_duration_rep s) {
                 return d(d.count() * s);
             }
             template <typename Rep, typename Period>
             inline auto_duration
-            operator*(const duration<Rep, Period>& d, long double s) {
+            operator*(const duration<Rep, Period>& d, _auto_duration_rep s) {
                 auto_duration ad = d;
                 return ad(ad.count() * s);
             }
             inline auto_duration
-            operator/(const auto_duration& d, long double s) {
+            operator/(const auto_duration& d, _auto_duration_rep s) {
                 return d(d.count() / s);
             }
-            inline long double
+            inline _auto_duration_rep
             operator/(const auto_duration& lhs, const auto_duration& rhs) {
                 return lhs.count() / rhs.count();
             }
             inline auto_duration
-            operator%(const auto_duration& d, long double s) {
+            operator%(const auto_duration& d, _auto_duration_rep s) {
                 return d(std::fmod(d.count(), s));
             }
             inline auto_duration
@@ -625,7 +626,7 @@
                 auto_ratio CF = p0 / p1;
                 typedef typename ToDur::rep     to_rep;
                 typedef typename ToDur::period  to_period;
-                typedef long double CR;
+                typedef _auto_duration_rep CR;
                 if (CF.num == 1 && CF.den == 1)
                     return ToDur(to_rep(ad.count()));
                 if (CF.num != 1 && CF.den == 1)
