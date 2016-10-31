@@ -1,3 +1,6 @@
+// exception.hpp --- Unboost exceptions
+//////////////////////////////////////////////////////////////////////////////
+
 #ifndef UNBOOST_EXCEPTION_HPP_
 #define UNBOOST_EXCEPTION_HPP_
 
