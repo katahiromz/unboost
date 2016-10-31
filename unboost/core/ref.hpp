@@ -4,7 +4,7 @@
 #ifndef UNBOOST_CORE_REF_HPP_
 #define UNBOOST_CORE_REF_HPP_
 
-#include "unboost.hpp"
+#include "../unboost.hpp"
 
 // NOTE: function types are not supported yet
 
@@ -19,6 +19,7 @@
             #define UNBOOST_USE_CXX11_REF
         #else
             #define UNBOOST_USE_UNBOOST_REF
+        #endif
     #endif
 #endif
 
