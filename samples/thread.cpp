@@ -7,9 +7,12 @@
 #ifdef CXX11
     #include <thread>
     #include <mutex>
+    #include <functional>       // for std::ref, std::cref, ...
 #elif defined(BOOST)
+    #include <boost/ref.hpp>    // for boost::ref, boost::cref, ...
     #include <boost/thread.hpp>
 #else   // Unboost
+    #include <unboost/ref.hpp>  // for unboost::ref, unboost::cref, ...
     #include <unboost/thread.hpp>
 #endif
 
@@ -26,12 +29,14 @@ bool checked = false;
     void thread_proc1(int n) {
         checked = true;
         std::cout << "in thread_proc #" << std::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << std::endl;
         assert(n == 2);
     }
 
-    void thread_proc2(int n, int m) {
+    void thread_proc2(int n, const int& m) {
         checked = true;
         std::cout << "in thread_proc #" << std::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << ", m = " << m << std::endl;
         assert(n == 2);
         assert(m == 3);
     }
@@ -44,12 +49,14 @@ bool checked = false;
     void thread_proc1(int n) {
         checked = true;
         std::cout << "in thread_proc #" << boost::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << std::endl;
         assert(n == 2);
     }
 
-    void thread_proc2(int n, int m) {
+    void thread_proc2(int n, const int& m) {
         checked = true;
         std::cout << "in thread_proc #" << boost::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << ", m = " << m << std::endl;
         assert(n == 2);
         assert(m == 3);
     }
@@ -62,12 +69,14 @@ bool checked = false;
     void thread_proc1(int n) {
         checked = true;
         std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << std::endl;
         assert(n == 2);
     }
 
-    void thread_proc2(int n, int m) {
+    void thread_proc2(int n, const int& m) {
         checked = true;
         std::cout << "in thread_proc #" << unboost::this_thread::get_id() << std::endl;
+        std::cout << "n = " << n << ", m = " << m << std::endl;
         assert(n == 2);
         assert(m == 3);
     }
@@ -182,7 +191,8 @@ int main(void) {
     std::cout << "sleep 2 seconds" << std::endl;
     std::this_thread::sleep_for(dura);
     checked = false;
-    std::thread t2(thread_proc2, 2, 3);
+    int m = 3;
+    std::thread t2(thread_proc2, 2, std::cref(m));
     t2.join();
     assert(checked);
 
@@ -215,7 +225,8 @@ int main(void) {
     std::cout << "sleep 2 seconds" << std::endl;
     boost::this_thread::sleep_for(dura);
     checked = false;
-    boost::thread t2(thread_proc2, 2, 3);
+    int m = 3;
+    boost::thread t2(thread_proc2, 2, boost::cref(m));
     t2.join();
     assert(checked);
 
@@ -248,7 +259,8 @@ int main(void) {
     std::cout << "sleep 2 seconds" << std::endl;
     unboost::this_thread::sleep_for(dura);
     checked = false;
-    unboost::thread t2(thread_proc2, 2, 3);
+    int m = 3;
+    unboost::thread t2(thread_proc2, 2, unboost::cref(m));
     t2.join();
     assert(checked);
 
