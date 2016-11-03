@@ -206,6 +206,18 @@
     #endif
 #endif
 
+#ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
+    #ifndef UNBOOST_USE_CXX11_FORWARD_LIST
+        #define UNBOOST_USE_CXX11_FORWARD_LIST
+    #endif
+#endif
+
+#ifdef UNBOOST_USE_UNBOOST_FORWARD_LIST
+    #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+    #endif
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // consistency checks
 
