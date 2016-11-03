@@ -23,7 +23,7 @@
         using std::forward_list;
     }
 #elif defined(UNBOOST_USE_UNBOOST_FORWARD_LIST)
-    #include <iterator>
+    #include <iterator>   // for std::forward_iterator_tag
     namespace unboost {
         template <typename T>
         struct _ctor_helper {
