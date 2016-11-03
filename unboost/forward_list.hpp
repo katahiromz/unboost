@@ -23,7 +23,8 @@
         using std::forward_list;
     }
 #elif defined(UNBOOST_USE_UNBOOST_FORWARD_LIST)
-    #include <iterator>   // for std::forward_iterator_tag
+    #include <iterator>     // for std::forward_iterator_tag
+    #include <functional>   // for std::less
     namespace unboost {
         template <typename T>
         struct _ctor_helper {
@@ -46,7 +47,7 @@
                 return ptr;
             }
 
-            static void operator delete(void *, void *) { }
+            static void operator delete(void *) { }
         }; // _ctor_helper<T>
 
         template <typename T>
@@ -99,7 +100,7 @@
             typedef ptrdiff_t                       difference_type;
             typedef std::forward_iterator_tag       iterator_category;
 
-            _forward_list_node<T>* m_node;
+            node_type *m_node;
 
             _forward_list_iterator() : m_node(NULL) { }
             explicit _forward_list_iterator(node_type *n) : m_node(n) { }
