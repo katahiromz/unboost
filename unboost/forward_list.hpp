@@ -815,42 +815,42 @@
             node_type *_insert_after(const_iterator pos) {
                 node_type *node = _create_node();
                 node->m_next = pos.m_node->m_next;
-                pos.m_node->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
             template <typename ARG1>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1) {
                 node_type *node = _create_node(arg1);
                 node->m_next = pos.m_node->m_next;
-                const_cast<node_type *>(pos.m_node)->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
             template <typename ARG1, typename ARG2>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2) {
                 node_type *node = _create_node(arg1, arg2);
                 node->m_next = pos.m_node->m_next;
-                const_cast<node_type *>(pos.m_node)->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
                 node_type *node = _create_node(arg1, arg2, arg3);
                 node->m_next = pos.m_node->m_next;
-                const_cast<node_type *>(pos.m_node)->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
                 node_type *node = _create_node(arg1, arg2, arg3, arg4);
                 node->m_next = pos.m_node->m_next;
-                const_cast<node_type *>(pos.m_node)->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
                 node_type *node = _create_node(arg1, arg2, arg3, arg4, arg5);
                 node->m_next = pos.m_node->m_next;
-                const_cast<node_type *>(pos.m_node)->m_next = node;
+                _node_from_cit(pos)->m_next = node;
                 return node;
             }
 

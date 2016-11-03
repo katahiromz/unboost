@@ -12,7 +12,22 @@
     using unboost::forward_list;
 #endif
 
+struct creature {
+    static int s_count;
+    creature() {
+        ++s_count;
+    }
+    creature(const creature&) {
+        ++s_count;
+    }
+    ~creature() {
+        --s_count;
+    }
+};
+/*static*/ int creature::s_count = 0;
+
 typedef forward_list<char> FL;
+typedef forward_list<creature> CFL;
 
 void print(const FL& fl) {
     FL::const_iterator it = fl.begin();
@@ -291,6 +306,15 @@ int main(void) {
     assert(*it == 2);
     ++it;
     assert(it == chars.end());
+
+    CFL creatures;
+    assert(creature::s_count == 0);
+    creatures.emplace_front();
+    assert(creature::s_count == 1);
+    creatures.emplace_front();
+    assert(creature::s_count == 2);
+    creatures.clear();
+    assert(creature::s_count == 0);
 
     return 0;
 } // main
