@@ -117,9 +117,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="198.75605"
-     inkscape:cy="142.84317"
+     inkscape:zoom="3.959798"
+     inkscape:cx="263.85542"
+     inkscape:cy="54.373062"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -485,5 +485,17 @@
        cy="834.36218"
        rx="0.44642857"
        ry="0.53571427" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="206.23357"
+       y="1046.5538"
+       id="text4195"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4197"
+         x="206.23357"
+         y="1046.5538"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#ffffff;fill-opacity:1">© 2016 katahiromz</tspan></text>
   </g>
 </svg>
