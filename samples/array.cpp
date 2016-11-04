@@ -16,11 +16,11 @@ int main(void) {
     std::cout << "array" << std::endl;
 
 #ifdef CXX11
-    std::array<int, 2> a = {2, 3};
+    std::array<int, 2> a = {{2, 3}};
 #elif defined(BOOST)
-    boost::array<int, 2> a = {2, 3};
+    boost::array<int, 2> a = {{2, 3}};
 #else
-    unboost::array<int, 2> a = {2, 3};
+    unboost::array<int, 2> a = {{2, 3}};
 #endif
 
     assert(a[0] == 2);
