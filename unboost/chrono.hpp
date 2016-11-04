@@ -5,9 +5,8 @@
 #define UNBOOST_CHRONO_HPP_
 
 #include "unboost.hpp"
-#include "ratio.hpp"
-#include "type_traits.hpp"
-#include <cmath>
+#include "ratio.hpp"        // for unboost::ratio, ...
+#include "type_traits.hpp"  // for unboost::common_type
 #undef min
 #undef max
 // NOTE: Use UNBOOST_MAKE_COMMON_DURATION instead of common_type<duration, duration>.
