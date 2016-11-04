@@ -7,6 +7,8 @@
 #include "unboost.hpp"
 #include "static_assert.hpp"
 
+// NOTE: Unboost's unboost::ratio uses 32-bit integers (_ratio_intmax_t).
+
 namespace unboost {
     typedef int _ratio_intmax_t;
     typedef unsigned int _ratio_uintmax_t;
