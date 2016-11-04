@@ -33,6 +33,15 @@
     #endif
 #endif
 
+#ifndef UNBOOST_OLD_COMPILER
+    #ifdef UNBOOST_OLD_BORLAND
+        #define UNBOOST_OLD_COMPILER
+    #endif
+    #ifdef __WATCOMC__
+        #define UNBOOST_OLD_COMPILER
+    #endif
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // Is Unboost on C++11? (UNBOOST_CXX11)
 
@@ -182,39 +191,42 @@
     #endif
 #endif
 
+// thread and event depends each other
 #ifdef UNBOOST_USE_WIN32_THREAD
     #ifndef UNBOOST_USE_WIN32_EVENT
         #define UNBOOST_USE_WIN32_EVENT
     #endif
 #endif
-
 #ifdef UNBOOST_USE_WIN32_EVENT
     #ifndef UNBOOST_USE_WIN32_THREAD
         #define UNBOOST_USE_WIN32_THREAD
     #endif
 #endif
-
 #ifdef UNBOOST_USE_POSIX_THREAD
     #ifndef UNBOOST_USE_POSIX_EVENT
         #define UNBOOST_USE_POSIX_EVENT
     #endif
 #endif
-
 #ifdef UNBOOST_USE_POSIX_EVENT
     #ifndef UNBOOST_USE_POSIX_THREAD
         #define UNBOOST_USE_POSIX_THREAD
     #endif
 #endif
 
+// type_traits depends on rvalref
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
-    #ifndef UNBOOST_USE_CXX11_FORWARD_LIST
-        #define UNBOOST_USE_CXX11_FORWARD_LIST
+    #ifndef UNBOOST_USE_CXX11_RVALREF
+        #define UNBOOST_USE_CXX11_RVALREF
     #endif
 #endif
-
-#ifdef UNBOOST_USE_UNBOOST_FORWARD_LIST
-    #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-        #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+#ifdef UNBOOST_USE_BOOST_TYPE_TRAITS
+    #ifndef UNBOOST_USE_BOOST_RVALREF
+        #define UNBOOST_USE_BOOST_RVALREF
+    #endif
+#endif
+#ifdef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+    #ifndef UNBOOST_USE_UNBOOST_RVALREF
+        #define UNBOOST_USE_UNBOOST_RVALREF
     #endif
 #endif
 

@@ -5,7 +5,7 @@
 #define UNBOOST_FORWARD_LIST_HPP_
 
 #include "unboost.hpp"
-#include "type_traits.hpp"
+#include "rvalref.hpp"  // for r-value reference
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_FORWARD_LIST) + defined(UNBOOST_USE_UNBOOST_FORWARD_LIST)) == 0)

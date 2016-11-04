@@ -1,10 +1,11 @@
-// type_traits.hpp --- Unboost type traits and R-value reference
+// type_traits.hpp --- Unboost type traits
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_TYPE_TRAITS_HPP_
 #define UNBOOST_TYPE_TRAITS_HPP_
 
 #include "unboost.hpp"
+#include "rvalref.hpp"  // for r-value reference
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_TYPE_TRAITS) + defined(UNBOOST_USE_BOOST_TYPE_TRAITS) + defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)) == 0)
@@ -17,7 +18,7 @@
     #endif
 #endif
 
-#if defined(UNBOOST_OLD_BORLAND) || defined(__WATCOMC__)
+#if defined(UNBOOST_OLD_BORLAND) || defined(__WATCOMC__) || defined(UNBOOST_OLD_COMPILER)
     // there is no const or volatile info
     #ifndef UNBOOST_NO_CV_INFO
         #define UNBOOST_NO_CV_INFO
@@ -28,8 +29,8 @@
     #endif
 #endif
 
-#if (1500 <= _MSC_VER)
-    // Visual C++ 2008
+#if defined(_MSC_VER) && (_MSC_VER <= 1500)
+    // Visual C++ 2008 or former
     #ifndef UNBOOST_NO_CV_INFO
         #define UNBOOST_NO_CV_INFO
     #endif
@@ -37,11 +38,8 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
-    #include <utility>          // for std::move, std::forward
     #include <type_traits>
     namespace unboost {
-        using std::move;
-        using std::forward;
         using std::integral_constant;
         using std::true_type;
         using std::false_type;
@@ -55,7 +53,6 @@
         using std::is_function;
         using std::is_pointer;
         using std::is_lvalue_reference;
-        using std::is_rvalue_reference;
         using std::is_member_object_pointer;
         using std::is_member_function_pointer;
         using std::is_fundamental;
@@ -63,7 +60,6 @@
         using std::is_scalar;
         using std::is_object;
         using std::is_compound;
-        using std::is_reference;
         using std::is_member_pointer;
         using std::is_const;
         using std::is_volatile;
@@ -114,9 +110,6 @@
         using std::add_cv;
         using std::add_const;
         using std::add_volatile;
-        using std::remove_reference;
-        using std::add_lvalue_reference;
-        using std::add_rvalue_reference;
         using std::remove_pointer;
         using std::add_pointer;
         using std::make_signed;
@@ -136,12 +129,9 @@
     #define UNBOOST_RVALREF_TYPE(...)     __VA_ARGS__&&
     #define UNBOOST_RVALREF(value)        value
 #elif defined(UNBOOST_USE_BOOST_TYPE_TRAITS)
-    #include <boost/utility.hpp>    // for boost::move, boost::forward
     #include <boost/type_traits.hpp>
 
     namespace unboost {
-        //using boost::move;
-        //using boost::forward;
         using boost::integral_constant;
         using boost::true_type;
         using boost::false_type;
@@ -155,7 +145,6 @@
         using boost::is_function;
         using boost::is_pointer;
         using boost::is_lvalue_reference;
-        //using boost::is_rvalue_reference;
         using boost::is_member_object_pointer;
         using boost::is_member_function_pointer;
         using boost::is_fundamental;
@@ -163,7 +152,6 @@
         using boost::is_scalar;
         using boost::is_object;
         using boost::is_compound;
-        //using boost::is_reference;
         using boost::is_member_pointer;
         using boost::is_const;
         using boost::is_volatile;
@@ -194,9 +182,6 @@
         using boost::add_cv;
         using boost::add_const;
         using boost::add_volatile;
-        //using boost::remove_reference;
-        //using boost::add_lvalue_reference;
-        //using boost::add_rvalue_reference;
         using boost::remove_pointer;
         using boost::add_pointer;
         using boost::make_signed;
@@ -209,139 +194,9 @@
         using boost::enable_if;
         using boost::conditional;
         using boost::common_type;
-
-        #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
-            // R-value reference
-            template <typename T>
-            struct rvalue_ref {
-                T& m_ref;
-                rvalue_ref(T& ref) : m_ref(ref) { }
-            };
-
-            #ifdef UNBOOST_OLD_BORLAND
-                #define UNBOOST_RVALREF_TYPE(type) \
-                    unboost::rvalue_ref<type > /**/
-            #else
-                #define UNBOOST_RVALREF_TYPE(...) \
-                    unboost::rvalue_ref<__VA_ARGS__ > /**/
-            #endif
-            #define UNBOOST_RVALREF(value)          (value).m_ref
-
-            template <typename T>
-            struct remove_reference { typedef T type; }
-            template <typename T>
-            struct remove_reference<T&> { typedef T type; }
-            template <typename T>
-            struct remove_reference<UNBOOST_RVALREF_TYPE(T) >
-            { typedef T type; }
-
-            template <typename T>
-            inline typename rvalue_ref<remove_reference<T>::type> move(T& t) {
-                rvalue_ref ref(t);
-                return ref;
-            }
-
-            template <typename T>
-            inline UNBOOST_RVALREF_TYPE(T)
-            forward(typename remove_reference<T>::type& t) {
-                return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
-            }
-            template <typename T>
-            inline UNBOOST_RVALREF_TYPE(T)
-            forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
-                return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
-            }
-
-            template <typename>
-            struct is_rvalue_reference : public false_type { };
-            template <typename T>
-            struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
-
-            template <typename T>
-            struct is_reference : false_type { };
-            template <typename T>
-            struct is_reference<T&> : true_type { };
-            template <typename T>
-            struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
-
-            template <typename T>
-            struct add_lvalue_reference {
-                typedef T& type;
-            };
-            template <typename T>
-            struct add_lvalue_reference<T&> {
-                typedef T& type;
-            };
-            template <typename T>
-            struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
-                typedef T& type;
-            };
-
-            template <typename T>
-            struct add_rvalue_reference {
-                typedef UNBOOST_RVALREF_TYPE(T) type;
-            };
-            template <typename T>
-            struct add_rvalue_reference<T&> {
-                typedef T& type;
-            };
-            template <typename T>
-            struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
-                typedef UNBOOST_RVALREF_TYPE(T) type;
-            };
-        #else
-            using boost::is_rvalue_reference;
-            using boost::is_reference;
-            using boost::remove_reference;
-            using boost::add_lvalue_reference;
-            using boost::add_rvalue_reference;
-            #define UNBOOST_RVALREF_TYPE(...)       __VA_ARGS__&&
-            #define UNBOOST_RVALREF(value)          value
-        #endif
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_TYPE_TRAITS)
     namespace unboost {
-        // R-value reference
-        template <typename T>
-        struct rvalue_ref {
-            T& m_ref;
-            rvalue_ref(T& ref) : m_ref(ref) { }
-        };
-
-        #ifdef UNBOOST_OLD_BORLAND
-            #define UNBOOST_RVALREF_TYPE(type) \
-                unboost::rvalue_ref<type > /**/
-        #else
-            #define UNBOOST_RVALREF_TYPE(...) \
-                unboost::rvalue_ref<__VA_ARGS__ > /**/
-        #endif
-        #define UNBOOST_RVALREF(value)      (value).m_ref
-
-        template <typename T>
-        struct remove_reference { typedef T type; };
-        template <typename T>
-        struct remove_reference<T&> { typedef T type; };
-        template <typename T>
-        struct remove_reference<UNBOOST_RVALREF_TYPE(T) > { typedef T type; };
-
-        template <typename T>
-        inline rvalue_ref<typename remove_reference<T>::type>
-        move(T& t) {
-            rvalue_ref<T> ref(t);
-            return ref;
-        }
-
-        template <typename T>
-        inline UNBOOST_RVALREF_TYPE(T)
-        forward(typename remove_reference<T>::type& t) {
-            return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
-        }
-        template <typename T>
-        inline UNBOOST_RVALREF_TYPE(T)
-        forward(UNBOOST_RVALREF_TYPE(typename remove_reference<T>::type) t) {
-            return static_cast<UNBOOST_RVALREF_TYPE(T) >(t);
-        }
-
         template <typename T, T v>
         struct integral_constant {
             typedef T value_type;
@@ -349,8 +204,8 @@
             enum { value = (int)v };
             operator value_type() const { return (value_type)value; }
         };
-        typedef integral_constant<bool, true> true_type;
-        typedef integral_constant<bool, false> false_type;
+        typedef integral_constant<bool, true>   true_type;
+        typedef integral_constant<bool, false>  false_type;
 
         template <typename T1, typename T2>
         struct is_same {
@@ -390,6 +245,7 @@
 
         template <typename T>
         struct is_integral : public false_type { };
+
 #ifndef UNBOOST_NO_CV_INFO
         template <typename T>
         struct is_integral<const T> : public is_integral<T> { };
@@ -477,11 +333,6 @@
         template <typename T>
         struct is_lvalue_reference<T&> : public true_type { };
 
-        template <typename T>
-        struct is_rvalue_reference : public false_type { };
-        template <typename T>
-        struct is_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > : public true_type { };
-
         // FIXME: is_member_object_pointer, is_member_function_pointer
 
         template <typename T>
@@ -489,13 +340,6 @@
             is_integral<T>::value || is_floating_point<T>::value> { };
 
         // FIXME: is_scalar, is_object, is_compound
-
-        template <typename T>
-        struct is_reference : false_type { };
-        template <typename T>
-        struct is_reference<T&> : true_type { };
-        template <typename T>
-        struct is_reference<UNBOOST_RVALREF_TYPE(T) > : true_type { };
 
         // FIXME: is_member_pointer
 
@@ -643,32 +487,6 @@
         struct add_cv {
             typedef typename add_const<T>::type const_added_type;
             typedef typename add_volatile<const_added_type>::type type;
-        };
-
-        template <typename T>
-        struct add_lvalue_reference {
-            typedef T& type;
-        };
-        template <typename T>
-        struct add_lvalue_reference<T&> {
-            typedef T& type;
-        };
-        template <typename T>
-        struct add_lvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
-            typedef T& type;
-        };
-
-        template <typename T>
-        struct add_rvalue_reference {
-            typedef UNBOOST_RVALREF_TYPE(T) type;
-        };
-        template <typename T>
-        struct add_rvalue_reference<T&> {
-            typedef T& type;
-        };
-        template <typename T>
-        struct add_rvalue_reference<UNBOOST_RVALREF_TYPE(T) > {
-            typedef UNBOOST_RVALREF_TYPE(T) type;
         };
 
         template <typename T>
