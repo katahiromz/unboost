@@ -213,20 +213,20 @@
     #endif
 #endif
 
-// type_traits depends on rvalref
+// type_traits depends on rvref
 #ifdef UNBOOST_USE_CXX11_TYPE_TRAITS
-    #ifndef UNBOOST_USE_CXX11_RVALREF
-        #define UNBOOST_USE_CXX11_RVALREF
+    #ifndef UNBOOST_USE_CXX11_RVREF
+        #define UNBOOST_USE_CXX11_RVREF
     #endif
 #endif
 #ifdef UNBOOST_USE_BOOST_TYPE_TRAITS
-    #ifndef UNBOOST_USE_BOOST_RVALREF
-        #define UNBOOST_USE_BOOST_RVALREF
+    #ifndef UNBOOST_USE_BOOST_RVREF
+        #define UNBOOST_USE_BOOST_RVREF
     #endif
 #endif
 #ifdef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-    #ifndef UNBOOST_USE_UNBOOST_RVALREF
-        #define UNBOOST_USE_UNBOOST_RVALREF
+    #ifndef UNBOOST_USE_UNBOOST_RVREF
+        #define UNBOOST_USE_UNBOOST_RVREF
     #endif
 #endif
 

@@ -201,11 +201,11 @@
         inline const T& get(const array<T, N>& a) {
             return a.data()[I];
         }
-        #ifdef UNBOOST_RVALREF
+        #ifdef UNBOOST_RVREF
             template <size_t I, typename T, size_t N>
-            inline UNBOOST_RVALREF_TYPE(T)
-            get(UNBOOST_RVALREF_TYPE(array<T, N>) a) {
-                return unboost::move(UNBOOST_RVALREF(a).data()[I]);
+            inline UNBOOST_RVREF_TYPE(T)
+            get(UNBOOST_RVREF_TYPE(array<T, N>) a) {
+                return unboost::move(UNBOOST_RVREF(a).data()[I]);
             }
         #endif
     } // namespace unboost

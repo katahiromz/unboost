@@ -5,7 +5,7 @@
 #define UNBOOST_FORWARD_LIST_HPP_
 
 #include "unboost.hpp"
-#include "rvalref.hpp"  // for r-value reference
+#include "rvref.hpp"  // for r-value reference
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_FORWARD_LIST) + defined(UNBOOST_USE_UNBOOST_FORWARD_LIST)) == 0)
@@ -652,31 +652,31 @@
                 }
             }
 
-        #ifdef UNBOOST_RVALREF
-            forward_list(UNBOOST_RVALREF_TYPE(self_type) other) {
-                m_head.m_next = UNBOOST_RVALREF(other).m_head.m_next;
-                UNBOOST_RVALREF(other).m_head.m_next = NULL;
+        #ifdef UNBOOST_RVREF
+            forward_list(UNBOOST_RVREF_TYPE(self_type) other) {
+                m_head.m_next = UNBOOST_RVREF(other).m_head.m_next;
+                UNBOOST_RVREF(other).m_head.m_next = NULL;
             }
 
-            self_type& operator=(UNBOOST_RVALREF_TYPE(self_type) other) {
+            self_type& operator=(UNBOOST_RVREF_TYPE(self_type) other) {
                 clear();
-                m_head.m_next = UNBOOST_RVALREF(other).m_head.m_next;
-                UNBOOST_RVALREF(other).m_head = NULL;
+                m_head.m_next = UNBOOST_RVREF(other).m_head.m_next;
+                UNBOOST_RVREF(other).m_head = NULL;
                 return *this;
             }
 
-            void push_front(UNBOOST_RVALREF_TYPE(T) value) {
+            void push_front(UNBOOST_RVREF_TYPE(T) value) {
                 _insert_after(before_cbegin(), value);
             }
 
-            void splice_after(const_iterator pos, UNBOOST_RVALREF_TYPE(self_type) other) {
+            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other) {
                 node_type *node1, *node2, *next1, *next2;
-                if (UNBOOST_RVALREF(other).empty()) {
+                if (UNBOOST_RVREF(other).empty()) {
                     return;
                 }
-                UNBOOST_RVALREF(other).reverse();
+                UNBOOST_RVREF(other).reverse();
                 node1 = _node_from_cit(pos);
-                node2 = UNBOOST_RVALREF(other).m_head.m_next;
+                node2 = UNBOOST_RVREF(other).m_head.m_next;
                 do {
                     next1 = node1->m_next;
                     next2 = node2->m_next;
@@ -684,9 +684,9 @@
                     node2->m_next = next1;
                     node2 = next2;
                 } while (node2);
-                UNBOOST_RVALREF(other).m_head.m_next = NULL;
+                UNBOOST_RVREF(other).m_head.m_next = NULL;
             }
-            void splice_after(const_iterator pos, UNBOOST_RVALREF_TYPE(self_type) other,
+            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other,
                               const_iterator it)
             {
                 node_type *pos_node = pos.m_node;
@@ -704,10 +704,10 @@
                 node->m_next = (next ? next->m_next : NULL);
                 pos_node->m_next = node;
 
-                if (UNBOOST_RVALREF(other).m_head.m_next == it_node)
-                    UNBOOST_RVALREF(other).m_head.m_next = NULL;
+                if (UNBOOST_RVREF(other).m_head.m_next == it_node)
+                    UNBOOST_RVREF(other).m_head.m_next = NULL;
             }
-            void splice_after(const_iterator pos, UNBOOST_RVALREF_TYPE(self_type) other,
+            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other,
                               const_iterator _before, const_iterator _end)
             {
                 node_type *list = NULL;
@@ -734,26 +734,26 @@
                 }
             }
 
-            iterator insert_after(const_iterator pos, UNBOOST_RVALREF_TYPE(T) value) {
+            iterator insert_after(const_iterator pos, UNBOOST_RVREF_TYPE(T) value) {
                 iterator it(_insert_after(pos, move(value)));
                 return it;
             }
 
-            void merge(UNBOOST_RVALREF_TYPE(self_type) other) {
+            void merge(UNBOOST_RVREF_TYPE(self_type) other) {
                 std::less<T> l;
                 merge(other, l);
             }
 
             template <class Compare>
-            void merge(UNBOOST_RVALREF_TYPE(self_type) other, Compare comp) {
-                if (this == &UNBOOST_RVALREF(other))
+            void merge(UNBOOST_RVREF_TYPE(self_type) other, Compare comp) {
+                if (this == &UNBOOST_RVREF(other))
                     return;
 
                 node_type *next;
                 node_type *node1 = &m_head;
-                node_type *node2 = &UNBOOST_RVALREF(other).m_head;
+                node_type *node2 = &UNBOOST_RVREF(other).m_head;
                 m_head.m_next = NULL;
-                UNBOOST_RVALREF(other).m_head.m_next = NULL;
+                UNBOOST_RVREF(other).m_head.m_next = NULL;
                 while (node1->m_next && node2->m_next) {
                     if (comp(*node1->get(), *node2->get())) {
                         node1->m_next = m_head.m_next;
@@ -770,9 +770,9 @@
                 if (node2->m_next) {
                     node1->m_next = node2;
                 }
-                UNBOOST_RVALREF(other).m_head.m_next = NULL;
+                UNBOOST_RVREF(other).m_head.m_next = NULL;
             }
-        #endif  // def UNBOOST_RVALREF
+        #endif  // def UNBOOST_RVREF
 
         protected:
             node_type m_head;
