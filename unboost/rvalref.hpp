@@ -136,7 +136,8 @@
             };
 
             template <typename T>
-            inline rvalref<typename remove_reference<T>::type> move(T& t) {
+            inline rvalref<typename remove_reference<T>::type>
+            move(T& t) {
                 rvalref<typename remove_reference<T>::type> ref(t);
                 return ref;
             }
@@ -233,7 +234,7 @@
             template <typename T>
             inline rvalref<typename remove_reference<T>::type>
             move(T& t) {
-                rvalref<T> ref(t);
+                rvalref<typename remove_reference<T>::type> ref(t);
                 return ref;
             }
 
