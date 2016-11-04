@@ -125,12 +125,8 @@
         using std::underlying_type;
         using std::result_of;
     } // namespace unboost
-
-    #define UNBOOST_RVALREF_TYPE(...)     __VA_ARGS__&&
-    #define UNBOOST_RVALREF(value)        value
 #elif defined(UNBOOST_USE_BOOST_TYPE_TRAITS)
     #include <boost/type_traits.hpp>
-
     namespace unboost {
         using boost::integral_constant;
         using boost::true_type;
