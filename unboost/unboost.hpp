@@ -68,126 +68,93 @@
 // dependencies
 
 // thread depends on chrono
-#ifdef UNBOOST_USE_THREAD
-    #ifndef UNBOOST_USE_CHRONO
-        #define UNBOOST_USE_CHRONO
+#ifdef UNBOOST_USE_CXX11_THREAD
+    #ifndef UNBOOST_USE_CXX11_CHRONO
+        #define UNBOOST_USE_CXX11_CHRONO
     #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_THREAD
-        #ifndef UNBOOST_USE_CXX11_CHRONO
-            #define UNBOOST_USE_CXX11_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_BOOST_THREAD)
-        #ifndef UNBOOST_USE_BOOST_CHRONO
-            #define UNBOOST_USE_BOOST_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_WIN32_THREAD)
-        #ifndef UNBOOST_USE_WIN32_CHRONO
-            #define UNBOOST_USE_WIN32_CHRONO
-        #endif
-    #elif defined(UNBOOST_USE_POSIX_THREAD)
-        #ifndef UNBOOST_USE_POSIX_CHRONO
-            #define UNBOOST_USE_POSIX_CHRONO
-        #endif
+#elif defined(UNBOOST_USE_BOOST_THREAD)
+    #ifndef UNBOOST_USE_BOOST_CHRONO
+        #define UNBOOST_USE_BOOST_CHRONO
+    #endif
+#elif defined(UNBOOST_USE_WIN32_THREAD)
+    #ifndef UNBOOST_USE_WIN32_CHRONO
+        #define UNBOOST_USE_WIN32_CHRONO
+    #endif
+#elif defined(UNBOOST_USE_POSIX_THREAD)
+    #ifndef UNBOOST_USE_POSIX_CHRONO
+        #define UNBOOST_USE_POSIX_CHRONO
     #endif
 #endif
 
 // chrono depends on type_traits and ratio
-#ifdef UNBOOST_USE_CHRONO
-    #ifndef UNBOOST_USE_RATIO
-        #define UNBOOST_USE_RATIO
+#ifdef UNBOOST_USE_CXX11_CHRONO
+    #ifndef UNBOOST_USE_CXX11_RATIO
+        #define UNBOOST_USE_CXX11_RATIO
     #endif
-    #ifndef UNBOOST_USE_TYPE_TRAITS
-        #define UNBOOST_USE_TYPE_TRAITS
+    #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
+        #define UNBOOST_USE_CXX11_TYPE_TRAITS
     #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_CHRONO
-        #ifndef UNBOOST_USE_CXX11_RATIO
-            #define UNBOOST_USE_CXX11_RATIO
-        #endif
-        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
-            #define UNBOOST_USE_CXX11_TYPE_TRAITS
-        #endif
+#endif
+#ifdef UNBOOST_USE_BOOST_CHRONO
+    #ifndef UNBOOST_USE_BOOST_RATIO
+        #define UNBOOST_USE_BOOST_RATIO
     #endif
-    #ifdef UNBOOST_USE_BOOST_CHRONO
-        #ifndef UNBOOST_USE_BOOST_RATIO
-            #define UNBOOST_USE_BOOST_RATIO
-        #endif
-        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
-            #define UNBOOST_USE_BOOST_TYPE_TRAITS
-        #endif
+    #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
+        #define UNBOOST_USE_BOOST_TYPE_TRAITS
     #endif
-    #ifdef UNBOOST_USE_UNBOOST_CHRONO
-        #ifndef UNBOOST_USE_UNBOOST_RATIO
-            #define UNBOOST_USE_UNBOOST_RATIO
-        #endif
-        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
-        #endif
+#endif
+#ifdef UNBOOST_USE_UNBOOST_CHRONO
+    #ifndef UNBOOST_USE_UNBOOST_RATIO
+        #define UNBOOST_USE_UNBOOST_RATIO
+    #endif
+    #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #endif
 #endif
 
 // filesystem depends on smart_ptr
-#ifdef UNBOOST_USE_FILESYSTEM
-    #ifndef UNBOOST_USE_SMART_PTR
-        #define UNBOOST_USE_SMART_PTR
+#ifdef UNBOOST_USE_BOOST_FILESYSTEM
+    #ifndef UNBOOST_USE_BOOST_SMART_PTR
+        #define UNBOOST_USE_BOOST_SMART_PTR
     #endif
-    //
-    #ifdef UNBOOST_USE_BOOST_FILESYSTEM
-        #ifndef UNBOOST_USE_BOOST_SMART_PTR
-            #define UNBOOST_USE_BOOST_SMART_PTR
-        #endif
-    #endif
-    #ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
-        #ifndef UNBOOST_USE_UNBOOST_SMART_PTR
-            #define UNBOOST_USE_UNBOOST_SMART_PTR
-        #endif
+#endif
+#ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
+    #ifndef UNBOOST_USE_UNBOOST_SMART_PTR
+        #define UNBOOST_USE_UNBOOST_SMART_PTR
     #endif
 #endif
 
 // smart pointer depends on type traits
-#ifdef UNBOOST_USE_SMART_PTR
-    #ifndef UNBOOST_USE_TYPE_TRAITS
-        #define UNBOOST_USE_TYPE_TRAITS
+#ifdef UNBOOST_USE_CXX11_SMART_PTR
+    #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
+        #define UNBOOST_USE_CXX11_TYPE_TRAITS
     #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_SMART_PTR
-        #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
-            #define UNBOOST_USE_CXX11_TYPE_TRAITS
-        #endif
+#endif
+#ifdef UNBOOST_USE_BOOST_SMART_PTR
+    #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
+        #define UNBOOST_USE_BOOST_TYPE_TRAITS
     #endif
-    #ifdef UNBOOST_USE_BOOST_SMART_PTR
-        #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
-            #define UNBOOST_USE_BOOST_TYPE_TRAITS
-        #endif
-    #endif
-    #ifdef UNBOOST_USE_UNBOOST_SMART_PTR
-        #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
-        #endif
+#endif
+#ifdef UNBOOST_USE_UNBOOST_SMART_PTR
+    #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #endif
 #endif
 
 // ratio depends on static_assert
-#ifdef UNBOOST_USE_RATIO
-    #ifndef UNBOOST_USE_STATIC_ASSERT
-        #define UNBOOST_USE_STATIC_ASSERT
+#ifdef UNBOOST_USE_CXX11_RATIO
+    #ifndef UNBOOST_USE_CXX11_STATIC_ASSERT
+        #define UNBOOST_USE_CXX11_STATIC_ASSERT
     #endif
-    //
-    #ifdef UNBOOST_USE_CXX11_RATIO
-        #ifndef UNBOOST_USE_CXX11_STATIC_ASSERT
-            #define UNBOOST_USE_CXX11_STATIC_ASSERT
-        #endif
+#endif
+#ifdef UNBOOST_USE_BOOST_RATIO
+    #ifndef UNBOOST_USE_BOOST_STATIC_ASSERT
+        #define UNBOOST_USE_BOOST_STATIC_ASSERT
     #endif
-    #ifdef UNBOOST_USE_BOOST_RATIO
-        #ifndef UNBOOST_USE_BOOST_STATIC_ASSERT
-            #define UNBOOST_USE_BOOST_STATIC_ASSERT
-        #endif
-    #endif
-    #ifdef UNBOOST_USE_UNBOOST_RATIO
-        #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
-            #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
-        #endif
+#endif
+#ifdef UNBOOST_USE_UNBOOST_RATIO
+    #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
+        #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
     #endif
 #endif
 
