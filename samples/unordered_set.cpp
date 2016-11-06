@@ -37,7 +37,7 @@ int main(void) {
     assert(usi1.find(1) != usi1.end());
     assert(usi1.count(1) == 1);
 
-    usi1.emplace(2);
+    usi1.insert(2);
     assert(usi1.size() == 2);
     assert(usi1.find(2) != usi1.end());
     assert(usi1.count(2) == 1);
@@ -68,9 +68,9 @@ int main(void) {
     assert(usi1.empty());
     assert(usi1.size() == 0);
 
-    usi1.emplace(1);
-    usi1.emplace(2);
-    usi1.emplace(2);
+    usi1.insert(1);
+    usi1.insert(2);
+    usi1.insert(2);
 
     assert(usi1.count(1) == 1);
     assert(usi1.count(2) == 1);
@@ -106,9 +106,9 @@ int main(void) {
     assert(usi1.empty());
     assert(usi1.size() == 0);
 
-    uss.emplace("1");
-    uss.emplace("2");
-    uss.emplace("2");
+    uss.insert("1");
+    uss.insert("2");
+    uss.insert("2");
     assert(uss.find("1") != uss.end());
     assert(uss.find("2") != uss.end());
     assert(uss.find("3") == uss.end());
@@ -117,7 +117,7 @@ int main(void) {
     assert(uss.count("3") == 0);
 
     uss.erase("2");
-    uss.emplace("3");
+    uss.insert("3");
     assert(uss.find("1") != uss.end());
     assert(uss.find("2") == uss.end());
     assert(uss.find("3") != uss.end());
@@ -133,12 +133,11 @@ int main(void) {
     }
 
     usi1.clear();
-    for (int i = 0; i < 100; ++i) {
-        usi1.emplace(i);
-    }
+    usi1.max_load_factor(10000);
     usi1.rehash(5);
-    std::cout << "##" << usi1.bucket_count() << std::endl;
-    assert(usi1.bucket_count() == 5);
+    for (int i = 0; i < 100; ++i) {
+        usi1.insert(i);
+    }
 
     {
         unordered_set<int>::local_iterator lit = usi1.begin(1), lend = usi1.end(1);

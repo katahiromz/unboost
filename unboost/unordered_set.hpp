@@ -502,6 +502,8 @@
 
             void rehash(size_type count) {
                 assert(count);
+                if (count <= bucket_count() && size() > 0)
+                    return;
                 _init_buckets(count);
                 node_type *node = m_list.m_head.m_next;
                 node_type *next;
