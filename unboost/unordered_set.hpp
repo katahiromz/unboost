@@ -322,6 +322,13 @@
                 super_iterator  m_super_it;
                 size_type       m_count;
                 bucket_type() : m_super_it(), m_count(0) { }
+                void _fix(size_type i, size_type count) {
+                    size_type hash_value = m_super_it->m_hash_value;
+                    if (hash_value % count != i) {
+                        super_iterator super_it;
+                        m_super_it = super_it;
+                    }
+                }
             };
 
             unordered_set() : m_element_count(0), m_max_load_factor(1) {
@@ -670,12 +677,21 @@
 
             iterator erase(const_iterator pos) {
                 assert(pos != cend());
-                super_const_iterator prev_it = m_list.before_cbegin();
+                const Key& key = pos.m_super_it->m_key;
+                size_type i = bucket(key);
+                super_const_iterator prev_it;
+                if (key_eq()(key, m_buckets[i].m_super_it->m_key)) {
+                    prev_it = m_list.before_cbegin();
+                } else {
+                    prev_it = m_buckets[i].m_super_it;
+                }
                 super_const_iterator iend = m_list.cend();
                 super_const_iterator it = prev_it;
                 ++it;
                 while (it != iend) {
                     if (it == pos.m_super_it) {
+                        _remove(it, i);
+                        --m_element_count;
                         return m_list.erase_after(prev_it);
                     }
                     ++it;
@@ -748,16 +764,22 @@
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
             }
-            void _remove(super_iterator super_it, size_type i) {
+            void _remove(super_const_iterator super_it, size_type i) {
                 assert(i < bucket_count());
                 assert(!_is_bucket_empty(i));
                 --(m_buckets[i].m_count);
                 if (m_buckets[i].m_count == 0) {
                     super_iterator sit;
                     m_buckets[i].m_super_it = sit;
-                } else if (m_buckets[i].m_super_it == super_it) {
-                    ++(m_buckets[i].m_super_it);
-                    size_type i = m_buckets[i].m_super_it->m_hash_value % bucket_count();
+                } else {
+                    super_const_iterator bucket_it = m_buckets[i].m_super_it;
+                    super_const_iterator iend;
+                    if (bucket_it == super_it) {
+                        const size_type hash_value = hash_function()(bucket_it->m_key);
+                        const size_type count = bucket_count();
+                        ++(m_buckets[i].m_super_it);
+                        m_buckets[i]._fix(hash_value % count, count);
+                    }
                 }
             }
         }; // unordered_set<Key, Hash, KeyEq>

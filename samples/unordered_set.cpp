@@ -75,11 +75,21 @@ int main(void) {
     assert(us.find(1) != us.end());
     assert(us.find(2) != us.end());
     assert(us.find(3) == us.end());
+    assert(us.size() == 2);
 
     us.erase(2);
     assert(us.find(1) != us.end());
     assert(us.find(2) == us.end());
     assert(us.find(3) == us.end());
+    assert(us.size() == 1);
+
+    us.erase(1);
+    assert(us.find(1) == us.end());
+    assert(us.find(2) == us.end());
+    assert(us.find(3) == us.end());
+
+    assert(us.empty());
+    assert(us.size() == 0);
 
     std::cout << "success" << std::endl;
 
