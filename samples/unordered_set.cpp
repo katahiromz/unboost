@@ -125,6 +125,13 @@ int main(void) {
     assert(uss.count("2") == 0);
     assert(uss.count("3") == 1);
 
+    {
+        unordered_set<std::string>::iterator it, end = uss.end();
+        for (it = uss.begin(); it != end; ++it) {
+            std::cout << "\"" << *it << "\"" << std::endl;
+        }
+    }
+
     std::cout << "success" << std::endl;
 
     return 0;
