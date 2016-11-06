@@ -164,7 +164,7 @@
                 const node_data *_get_data() const { return &*m_super_it; }
                       size_type& _get_hash_value()       { return _get_data()->m_hash_value; }
                 const size_type& _get_hash_value() const { return _get_data()->m_hash_value; }
-            };
+            }; // iterator
             struct const_iterator {
                 typedef const_iterator  self_type;
                 typedef Key             value_type;
@@ -196,7 +196,7 @@
 
                 const node_data *_get_data() const { return m_super_it->get(); }
                 const size_type& _get_hash_value() const { return _get_data()->m_hash_value; }
-            };
+            }; // const_iterator
 
             struct local_iterator {
                 typedef local_iterator  self_type;
@@ -331,7 +331,7 @@
                         m_super_it = super_it;
                     }
                 }
-            };
+            }; // bucket_type
 
             unordered_set() : m_element_count(0), m_max_load_factor(1) {
                 _init_buckets(5);
