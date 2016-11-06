@@ -186,6 +186,16 @@
                     return *this;
                 }
 
+                self_type& operator++() {
+                    ++m_super_it;
+                    return *this;
+                }
+                self_type operator++(int) {
+                    self_type temp(*this);
+                    ++m_super_it;
+                    return temp;
+                }
+
                 reference operator*() const { return m_super_it->m_key; }
                 pointer operator->() const { return &m_super_it->m_key; }
 
@@ -361,7 +371,7 @@
             unordered_set(const self_type& other)
                 : m_element_count(0), m_max_load_factor(1)
             {
-                _init_buckets(5);
+                _init_buckets(other.bucket_count());
                 insert(other.begin(), other.end());
             }
 
@@ -639,6 +649,16 @@
 
             std::pair<iterator, bool> insert(const Key& key) {
                 return emplace(key);
+            }
+            iterator insert(const_iterator hint, const Key& key) {
+                return insert(key).first;
+            }
+            template <typename InputIterator>
+            void insert(InputIterator first, InputIterator last) {
+                while (first != last) {
+                    insert(*first);
+                    ++first;
+                }
             }
 
             self_type& operator=(const self_type& other) {

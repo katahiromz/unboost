@@ -24,6 +24,7 @@ int main(void) {
 #endif
 
     unordered_set<int> us;
+    unordered_set<int> us2;
 
     assert(us.empty());
     assert(us.size() == 0);
@@ -67,6 +68,7 @@ int main(void) {
 
     us.emplace(1);
     us.emplace(2);
+    us.emplace(2);
 
     assert(us.count(1) == 1);
     assert(us.count(2) == 1);
@@ -76,6 +78,17 @@ int main(void) {
     assert(us.find(2) != us.end());
     assert(us.find(3) == us.end());
     assert(us.size() == 2);
+
+    us2 = us;
+
+    assert(us2.count(1) == 1);
+    assert(us2.count(2) == 1);
+    assert(us2.count(3) == 0);
+
+    assert(us2.find(1) != us.end());
+    assert(us2.find(2) != us.end());
+    assert(us2.find(3) == us.end());
+    assert(us2.size() == 2);
 
     us.erase(2);
     assert(us.find(1) != us.end());
