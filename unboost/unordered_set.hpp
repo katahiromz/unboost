@@ -508,8 +508,7 @@
                 m_list.m_head.m_next = NULL;
                 while (node) {
                     next = node->m_next;
-                    const Key& key = node->get()->m_key;
-                    _emplace_key_node_0(key, node);
+                    _emplace_key_node_0(node->get()->m_key, node);
                     node = next;
                 }
             }
@@ -766,7 +765,6 @@
                 node->get()->m_hash_value = hash_function()(key);
 
                 std::pair<iterator, bool> ret = _emplace_key_node_0(key, node);
-
                 _rehash_if_case();
                 return ret;
             }
