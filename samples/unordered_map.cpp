@@ -35,6 +35,7 @@ int main(void) {
     assert(um.count(2) == 1);
     assert(um.count(4) == 1);
     assert(um.count(5) == 0);
+
     std::cout << "success" << std::endl;
 
     return 0;

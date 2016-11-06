@@ -36,5 +36,7 @@ int main(void) {
     assert(us.count(2) == 1);
     assert(us.count(3) == 0);
 
+    std::cout << "success" << std::endl;
+
     return 0;
 }
