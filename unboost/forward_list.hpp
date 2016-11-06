@@ -79,6 +79,11 @@
             _forward_list_iterator() : m_node(NULL) { }
             explicit _forward_list_iterator(node_type *n) : m_node(n) { }
 
+            _forward_list_iterator& operator=(node_type *n) {
+                m_node = n;
+                return *this;
+            }
+
             reference operator*() const { return *m_node->get(); }
             pointer operator->() const { return m_node->get(); }
 
@@ -123,6 +128,11 @@
             _forward_list_const_iterator() : m_node(NULL) { }
             explicit _forward_list_const_iterator(const node_type *n) : m_node(n) { }
             _forward_list_const_iterator(const iterator& it) : m_node(it.m_node) { }
+
+            _forward_list_const_iterator& operator=(const node_type *n) {
+                m_node = n;
+                return *this;
+            }
 
             reference operator*() const { return *m_node->get(); }
             pointer operator->() const { return m_node->get(); }

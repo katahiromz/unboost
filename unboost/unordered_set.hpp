@@ -711,19 +711,6 @@
                 ++(m_buckets[i].m_count);
                 _rehash_if_case();
             }
-            void _add_2(super_iterator super_it, size_type i) {
-                assert(i < bucket_count());
-                if (m_buckets[i].m_super_it == super_iterator()) {
-                    m_buckets[i].m_super_it = super_it;
-                }
-                ++(m_buckets[i].m_count);
-                ++m_element_count;
-                _rehash_if_case();
-            }
-            void _add_2(node_type *node, size_type i) {
-                super_iterator it(node);
-                _add_2(it, i);
-            }
             void _remove(super_const_iterator super_it, size_type i) {
                 assert(i < bucket_count());
                 assert(!_is_bucket_empty(i));
@@ -752,13 +739,16 @@
                 }
                 node->get()->m_hash_value = hash_function()(key);
                 const size_type i = bucket(node->get()->m_hash_value);
-                super_iterator sit;
-                if (_is_bucket_empty(i))
-                    sit = m_list.before_begin();
-                else
-                    sit = m_buckets[i].m_super_it;
-                m_list._add_node_after(sit, node);
-                _add_2(node, i);
+                if (_is_bucket_empty(i)) {
+                    m_list._add_node_after(m_list.before_begin(), node);
+                    m_buckets[i].m_super_it = node;
+                } else {
+                    m_list._add_node_after(m_buckets[i].m_super_it, node);
+                }
+                ++(m_buckets[i].m_count);
+                ++m_element_count;
+                _rehash_if_case();
+
                 return std::make_pair(node, true);
             }
         }; // unordered_set<Key, Hash, KeyEq>
