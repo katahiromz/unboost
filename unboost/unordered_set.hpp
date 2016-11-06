@@ -719,6 +719,9 @@
 
             self_type& operator=(const self_type& other) {
                 clear();
+                m_max_load_factor = other.m_max_load_factor;
+                m_hasher = other.m_hasher;
+                m_key_eq = other.m_key_eq;
                 insert(other.begin(), other.end());
                 return *this;
             }
