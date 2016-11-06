@@ -231,20 +231,22 @@
                     : m_super_it(si), m_b_index(index), m_b_count(count) { }
 
                 reference _get_key() {
-                    return *m_super_it.m_node->get()->m_key;
+                    return m_super_it.m_node->get()->m_key;
                 }
                 const_reference _get_key() const {
-                    return *m_super_it.m_node->get()->m_key;
+                    return m_super_it.m_node->get()->m_key;
                 }
                 size_type& _get_hash_value() {
-                    return *m_super_it.m_node->get()->m_hash_value;
+                    return m_super_it.m_node->get()->m_hash_value;
                 }
                 const size_type& _get_hash_value() const {
-                    return *m_super_it.m_node->get()->m_hash_value;
+                    return m_super_it.m_node->get()->m_hash_value;
                 }
 
-                reference operator*() const { return _get_key(); }
-                pointer operator->() const { return &_get_key(); }
+                      reference operator*()       { return _get_key(); }
+                const_reference operator*() const { return _get_key(); }
+                      pointer operator->()        { return &_get_key(); }
+                const_pointer operator->() const  { return &_get_key(); }
 
                 void _fix() {
                     if (m_super_it.m_node) {
@@ -294,10 +296,10 @@
                     : m_super_it(si), m_b_index(index), m_b_count(count) { }
 
                 const_reference _get_key() const {
-                    return *m_super_it.m_node->get()->key;
+                    return m_super_it.m_node->get()->key;
                 }
                 const size_type& _get_hash_value() const {
-                    return *m_super_it.m_node->get()->hash_value;
+                    return m_super_it.m_node->get()->hash_value;
                 }
 
                 reference operator*() const { return _get_key(); }
@@ -387,8 +389,8 @@
                     local_iterator lit;
                     return lit;
                 } else {
-                    iterator it = m_buckets[n].m_super_it;
-                    const size_type hash_value = it._get_hash_value();
+                    super_iterator it = m_buckets[n].m_super_it;
+                    const size_type hash_value = it->m_hash_value;
                     const size_type count = bucket_count();
                     local_iterator lit(it, hash_value % count, count);
                     return lit;
@@ -402,8 +404,8 @@
                     local_const_iterator lit;
                     return lit;
                 } else {
-                    const_iterator it = m_buckets[n].m_super_it;
-                    const size_type hash_value = it._get_hash_value();
+                    super_const_iterator it = m_buckets[n].m_super_it;
+                    const size_type hash_value = it->m_hash_value;
                     const size_type count = bucket_count();
                     local_const_iterator lit(it, hash_value % count, count);
                     return lit;
@@ -501,9 +503,14 @@
             void rehash(size_type count) {
                 assert(count);
                 _init_buckets(count);
-                super_iterator it = m_list.begin(), iend = m_list.end();
-                for (; it != iend; ++it) {
-                    _add(it, it.m_node);
+                node_type *node = m_list.m_head.m_next;
+                node_type *next;
+                m_list.m_head.m_next = NULL;
+                while (node) {
+                    next = node->m_next;
+                    const Key& key = node->get()->m_key;
+                    _emplace_key_node_0(key, node);
+                    node = next;
                 }
             }
 
@@ -735,14 +742,7 @@
             }
 
             std::pair<iterator, bool>
-            _emplace_key_node(const Key& key, node_type *node) {
-                iterator it = find(key);
-                if (it != end()) {
-                    delete node;
-                    return std::make_pair(it, false);
-                }
-                node->get()->m_hash_value = hash_function()(key);
-
+            _emplace_key_node_0(const Key& key, node_type *node) {
                 const size_type i = node->get()->m_hash_value % bucket_count();
                 if (_is_bucket_empty(i)) {
                     m_list._add_node_after(m_list.before_begin(), node);
@@ -753,9 +753,22 @@
 
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
-                _rehash_if_case();
-
                 return std::make_pair(node, true);
+            }
+
+            std::pair<iterator, bool>
+            _emplace_key_node(const Key& key, node_type *node) {
+                iterator it = find(key);
+                if (it != end()) {
+                    delete node;
+                    return std::make_pair(it, false);
+                }
+                node->get()->m_hash_value = hash_function()(key);
+
+                std::pair<iterator, bool> ret = _emplace_key_node_0(key, node);
+
+                _rehash_if_case();
+                return ret;
             }
         }; // unordered_set<Key, Hash, KeyEq>
     } // namespace unboost
