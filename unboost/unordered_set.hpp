@@ -135,6 +135,7 @@
 
                 iterator() : m_super_it() { }
                 iterator(super_iterator si) : m_super_it(si) { }
+                iterator(node_type *node) : m_super_it(node) { }
                 iterator& operator=(super_iterator si) {
                     m_super_it = si;
                     return *this;
@@ -179,6 +180,7 @@
                 const_iterator() : m_super_it() { }
                 const_iterator(iterator it) : m_super_it(it.m_super_it) { }
                 const_iterator(super_const_iterator si) : m_super_it(si) { }
+                const_iterator(const node_type *node) : m_super_it(node) { }
                 const_iterator& operator=(super_const_iterator si) {
                     m_super_it = si;
                     return *this;
@@ -549,122 +551,44 @@
 
             std::pair<iterator, bool>
             emplace() {
-                Key key();
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin());
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node();
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
             template <typename ARG1>
             std::pair<iterator, bool>
             emplace(const ARG1& arg1) {
-                Key key(arg1);
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin(), arg1);
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node(arg1);
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2>
             std::pair<iterator, bool>
             emplace(const ARG1& arg1, const ARG2& arg2) {
-                Key key(arg1, arg2);
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2);
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node(arg1, arg2);
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             std::pair<iterator, bool>
             emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                Key key(arg1, arg2, arg3);
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3);
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node(arg1, arg2, arg3);
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             std::pair<iterator, bool>
             emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                Key key(arg1, arg2, arg3, arg4);
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3, arg4);
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3, arg4);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4);
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             std::pair<iterator, bool>
             emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                Key key(arg1, arg2, arg3, arg4, arg5);
-                iterator it = find(key);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                const size_type hash_value = hash_function()(key);
-                const size_type i = bucket(hash_value);
-                super_iterator super_it;
-                if (_is_bucket_empty(i))
-                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3, arg4, arg5);
-                else
-                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3, arg4, arg5);
-                it = super_it;
-                it._get_hash_value() = hash_value;
-                _add_2(super_it, i);
-                return std::make_pair(it, true);
+                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4, arg5);
+                const Key& key = node->get()->m_key;
+                return _emplace_key_node(key, node);
             }
 
             std::pair<iterator, iterator> equal_range(const Key& key) {
@@ -752,6 +676,11 @@
                 assert(i < bucket_count());
                 return m_buckets[i].m_count == 0;
             }
+            void _rehash_if_case() {
+                if (load_factor() > max_load_factor()) {
+                    rehash(bucket_count() * 2);
+                }
+            }
             void _add(super_iterator super_it, node_type *node) {
                 node_data *data = node->get();
                 assert(data);
@@ -760,9 +689,7 @@
                     m_buckets[i].m_super_it = super_it;
                 }
                 ++(m_buckets[i].m_count);
-                if (load_factor() > max_load_factor()) {
-                    rehash(bucket_count() * 2);
-                }
+                _rehash_if_case();
             }
             void _add_2(super_iterator super_it, size_type i) {
                 assert(i < bucket_count());
@@ -771,9 +698,11 @@
                 }
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
-                if (load_factor() > max_load_factor()) {
-                    rehash(bucket_count() * 2);
-                }
+                _rehash_if_case();
+            }
+            void _add_2(node_type *node, size_type i) {
+                super_iterator it(node);
+                _add_2(it, i);
             }
             void _remove(super_const_iterator super_it, size_type i) {
                 assert(i < bucket_count());
@@ -792,6 +721,25 @@
                     ++(m_buckets[i].m_super_it);
                     m_buckets[i]._fix(hash_value % count, count);
                 }
+            }
+
+            std::pair<iterator, bool>
+            _emplace_key_node(const Key& key, node_type *node) {
+                iterator it = find(key);
+                if (it != end()) {
+                    delete node;
+                    return std::make_pair(it, false);
+                }
+                node->get()->m_hash_value = hash_function()(key);
+                const size_type i = bucket(node->get()->m_hash_value);
+                super_iterator sit;
+                if (_is_bucket_empty(i))
+                    sit = m_list.before_begin();
+                else
+                    sit = m_buckets[i].m_super_it;
+                m_list._add_node_after(sit, node);
+                _add_2(node, i);
+                return std::make_pair(node, true);
             }
         }; // unordered_set<Key, Hash, KeyEq>
     } // namespace unboost
