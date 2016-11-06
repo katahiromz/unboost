@@ -76,6 +76,11 @@ int main(void) {
     assert(us.find(2) != us.end());
     assert(us.find(3) == us.end());
 
+    us.erase(2);
+    assert(us.find(1) != us.end());
+    assert(us.find(2) == us.end());
+    assert(us.find(3) == us.end());
+
     std::cout << "success" << std::endl;
 
     return 0;

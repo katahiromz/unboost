@@ -177,6 +177,7 @@
                 super_const_iterator    m_super_it;
 
                 const_iterator() : m_super_it() { }
+                const_iterator(iterator it) : m_super_it(it.m_super_it) { }
                 const_iterator(super_const_iterator si) : m_super_it(si) { }
                 const_iterator& operator=(super_const_iterator si) {
                     m_super_it = si;
@@ -668,31 +669,19 @@
             }
 
             iterator erase(const_iterator pos) {
-                assert(pos != end());
-                node_data *data1 = pos.m_node->get();
-                assert(data1);
-                const size_type hash_value = data1->m_hash_value;
-                const size_type i = hash_value % bucket_count();
-                iterator iend = end();
-                if (_is_bucket_empty(i))
-                    return iend;
-
-                iterator prev_it = m_buckets[i].m_prev_it;
-                iterator it = prev_it;
+                assert(pos != cend());
+                super_const_iterator prev_it = m_list.before_cbegin();
+                super_const_iterator iend = m_list.cend();
+                super_const_iterator it = prev_it;
                 ++it;
-                for (; it != iend; ++it, ++prev_it) {
-                    node_data *data2 = it.m_node->get();
-                    assert(data2);
-                    if (data2->m_hash_value == hash_value) {
-                        if (key_eq()(data1->m_key, data2->m_key)) {
-                            ++it;
-                            m_list.erase_after(prev_it);
-                            _remove(prev_it, i);
-                            return it;
-                        }
+                while (it != iend) {
+                    if (it == pos.m_super_it) {
+                        return m_list.erase_after(prev_it);
                     }
+                    ++it;
+                    ++prev_it;
                 }
-                return iend;
+                return end();
             }
             size_type erase(const Key& key) {
                 iterator it = find(key);
@@ -768,6 +757,7 @@
                     m_buckets[i].m_super_it = sit;
                 } else if (m_buckets[i].m_super_it == super_it) {
                     ++(m_buckets[i].m_super_it);
+                    size_type i = m_buckets[i].m_super_it->m_hash_value % bucket_count();
                 }
             }
         }; // unordered_set<Key, Hash, KeyEq>
