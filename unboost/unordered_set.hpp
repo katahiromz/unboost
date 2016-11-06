@@ -743,7 +743,7 @@
                 }
                 node->get()->m_hash_value = hash_function()(key);
 
-                const size_type i = bucket(node->get()->m_hash_value);
+                const size_type i = node->get()->m_hash_value % bucket_count();
                 if (_is_bucket_empty(i)) {
                     m_list._add_node_after(m_list.before_begin(), node);
                     m_buckets[i].m_super_it = node;

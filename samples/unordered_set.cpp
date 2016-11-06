@@ -2,6 +2,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <string>
 #include <cassert>
 
 #ifdef CXX11
@@ -23,86 +24,106 @@ int main(void) {
     using unboost::unordered_set;
 #endif
 
-    unordered_set<int> us;
-    unordered_set<int> us2;
+    unordered_set<int> usi1;
+    unordered_set<int> usi2;
+    unordered_set<std::string> uss;
 
-    assert(us.empty());
-    assert(us.size() == 0);
-    assert(us.find(1) == us.end());
+    assert(usi1.empty());
+    assert(usi1.size() == 0);
+    assert(usi1.find(1) == usi1.end());
 
-    us.insert(1);
-    assert(us.size() == 1);
-    assert(us.find(1) != us.end());
-    assert(us.count(1) == 1);
+    usi1.insert(1);
+    assert(usi1.size() == 1);
+    assert(usi1.find(1) != usi1.end());
+    assert(usi1.count(1) == 1);
 
-    us.emplace(2);
-    assert(us.size() == 2);
-    assert(us.find(2) != us.end());
-    assert(us.count(2) == 1);
+    usi1.emplace(2);
+    assert(usi1.size() == 2);
+    assert(usi1.find(2) != usi1.end());
+    assert(usi1.count(2) == 1);
 
     {
-        unordered_set<int>::iterator it, end = us.end();
-        for (it = us.begin(); it != end; ++it) {
+        unordered_set<int>::iterator it, end = usi1.end();
+        for (it = usi1.begin(); it != end; ++it) {
             std::cout << *it << std::endl;
         }
     }
 
-    std::cout << "#" << us.count(1) << std::endl;
-    assert(us.count(1) == 1);
-    assert(us.count(2) == 1);
-    assert(us.count(3) == 0);
-    us.rehash(10);
+    std::cout << "#" << usi1.count(1) << std::endl;
+    assert(usi1.count(1) == 1);
+    assert(usi1.count(2) == 1);
+    assert(usi1.count(3) == 0);
+    usi1.rehash(10);
 
-    std::cout << "#" << us.count(1) << std::endl;
-    assert(us.count(1) == 1);
-    assert(us.count(2) == 1);
-    assert(us.count(3) == 0);
+    std::cout << "#" << usi1.count(1) << std::endl;
+    assert(usi1.count(1) == 1);
+    assert(usi1.count(2) == 1);
+    assert(usi1.count(3) == 0);
 
-    assert(us.find(1) != us.end());
-    assert(us.find(2) != us.end());
-    assert(us.find(3) == us.end());
+    assert(usi1.find(1) != usi1.end());
+    assert(usi1.find(2) != usi1.end());
+    assert(usi1.find(3) == usi1.end());
 
-    us.clear();
-    assert(us.empty());
-    assert(us.size() == 0);
+    usi1.clear();
+    assert(usi1.empty());
+    assert(usi1.size() == 0);
 
-    us.emplace(1);
-    us.emplace(2);
-    us.emplace(2);
+    usi1.emplace(1);
+    usi1.emplace(2);
+    usi1.emplace(2);
 
-    assert(us.count(1) == 1);
-    assert(us.count(2) == 1);
-    assert(us.count(3) == 0);
+    assert(usi1.count(1) == 1);
+    assert(usi1.count(2) == 1);
+    assert(usi1.count(3) == 0);
 
-    assert(us.find(1) != us.end());
-    assert(us.find(2) != us.end());
-    assert(us.find(3) == us.end());
-    assert(us.size() == 2);
+    assert(usi1.find(1) != usi1.end());
+    assert(usi1.find(2) != usi1.end());
+    assert(usi1.find(3) == usi1.end());
+    assert(usi1.size() == 2);
 
-    us2 = us;
+    usi2 = usi1;
 
-    assert(us2.count(1) == 1);
-    assert(us2.count(2) == 1);
-    assert(us2.count(3) == 0);
+    assert(usi2.count(1) == 1);
+    assert(usi2.count(2) == 1);
+    assert(usi2.count(3) == 0);
 
-    assert(us2.find(1) != us.end());
-    assert(us2.find(2) != us.end());
-    assert(us2.find(3) == us.end());
-    assert(us2.size() == 2);
+    assert(usi2.find(1) != usi1.end());
+    assert(usi2.find(2) != usi1.end());
+    assert(usi2.find(3) == usi1.end());
+    assert(usi2.size() == 2);
 
-    us.erase(2);
-    assert(us.find(1) != us.end());
-    assert(us.find(2) == us.end());
-    assert(us.find(3) == us.end());
-    assert(us.size() == 1);
+    usi1.erase(2);
+    assert(usi1.find(1) != usi1.end());
+    assert(usi1.find(2) == usi1.end());
+    assert(usi1.find(3) == usi1.end());
+    assert(usi1.size() == 1);
 
-    us.erase(1);
-    assert(us.find(1) == us.end());
-    assert(us.find(2) == us.end());
-    assert(us.find(3) == us.end());
+    usi1.erase(1);
+    assert(usi1.find(1) == usi1.end());
+    assert(usi1.find(2) == usi1.end());
+    assert(usi1.find(3) == usi1.end());
 
-    assert(us.empty());
-    assert(us.size() == 0);
+    assert(usi1.empty());
+    assert(usi1.size() == 0);
+
+    uss.emplace("1");
+    uss.emplace("2");
+    uss.emplace("2");
+    assert(uss.find("1") != uss.end());
+    assert(uss.find("2") != uss.end());
+    assert(uss.find("3") == uss.end());
+    assert(uss.count("1") == 1);
+    assert(uss.count("2") == 1);
+    assert(uss.count("3") == 0);
+
+    uss.erase("2");
+    uss.emplace("3");
+    assert(uss.find("1") != uss.end());
+    assert(uss.find("2") == uss.end());
+    assert(uss.find("3") != uss.end());
+    assert(uss.count("1") == 1);
+    assert(uss.count("2") == 0);
+    assert(uss.count("3") == 1);
 
     std::cout << "success" << std::endl;
 
