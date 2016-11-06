@@ -321,7 +321,9 @@
             struct bucket_type {
                 super_iterator  m_super_it;
                 size_type       m_count;
+
                 bucket_type() : m_super_it(), m_count(0) { }
+
                 void _fix(size_type i, size_type count) {
                     size_type hash_value = m_super_it->m_hash_value;
                     if (hash_value % count != i) {
@@ -755,6 +757,9 @@
                     m_buckets[i].m_super_it = super_it;
                 }
                 ++(m_buckets[i].m_count);
+                if (load_factor() > max_load_factor()) {
+                    rehash(bucket_count() * 2);
+                }
             }
             void _add_2(super_iterator super_it, size_type i) {
                 assert(i < bucket_count());
@@ -763,6 +768,9 @@
                 }
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
+                if (load_factor() > max_load_factor()) {
+                    rehash(bucket_count() * 2);
+                }
             }
             void _remove(super_const_iterator super_it, size_type i) {
                 assert(i < bucket_count());
