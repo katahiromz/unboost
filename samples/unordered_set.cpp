@@ -24,14 +24,29 @@ int main(void) {
 #endif
 
     unordered_set<int> us;
+
+    assert(us.empty());
+    assert(us.size() == 0);
+    assert(us.find(1) == us.end());
+
     us.insert(1);
-    us.insert(2);
+    assert(us.size() == 1);
+    assert(us.find(1) != us.end());
+    assert(us.count(1) == 1);
+
+    us.emplace(2);
+    assert(us.size() == 2);
+    assert(us.find(2) != us.end());
+    assert(us.count(2) == 1);
+
     {
         unordered_set<int>::iterator it, end = us.end();
         for (it = us.begin(); it != end; ++it) {
             std::cout << *it << std::endl;
         }
     }
+
+    std::cout << "#" << us.count(1) << std::endl;
     assert(us.count(1) == 1);
     assert(us.count(2) == 1);
     assert(us.count(3) == 0);
@@ -41,7 +56,26 @@ int main(void) {
     assert(us.count(2) == 1);
     assert(us.count(3) == 0);
 
+    assert(us.find(1) != us.end());
+    assert(us.find(2) != us.end());
+    assert(us.find(3) == us.end());
+
+    us.clear();
+    assert(us.empty());
+    assert(us.size() == 0);
+
+    us.emplace(1);
+    us.emplace(2);
+
+    assert(us.count(1) == 1);
+    assert(us.count(2) == 1);
+    assert(us.count(3) == 0);
+
+    assert(us.find(1) != us.end());
+    assert(us.find(2) != us.end());
+    assert(us.find(3) == us.end());
+
     std::cout << "success" << std::endl;
 
     return 0;
-}
+} // main
