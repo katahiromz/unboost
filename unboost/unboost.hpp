@@ -120,7 +120,7 @@
     #endif
 #endif
 
-// thread and event depends each other
+// win32/posix thread and win32/posix event depends each other
 #ifdef UNBOOST_USE_WIN32_THREAD
     #ifndef UNBOOST_USE_WIN32_EVENT
         #define UNBOOST_USE_WIN32_EVENT
