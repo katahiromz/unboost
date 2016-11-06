@@ -23,7 +23,7 @@ int main(void) {
     using unboost::unordered_set;
 #endif
 
-    unordered_set<int> us(1);
+    unordered_set<int> us;
 
     assert(us.empty());
     assert(us.size() == 0);
