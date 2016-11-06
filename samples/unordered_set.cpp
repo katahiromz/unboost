@@ -52,6 +52,7 @@ int main(void) {
     assert(us.count(3) == 0);
     us.rehash(10);
 
+    std::cout << "#" << us.count(1) << std::endl;
     assert(us.count(1) == 1);
     assert(us.count(2) == 1);
     assert(us.count(3) == 0);

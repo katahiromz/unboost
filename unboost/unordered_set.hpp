@@ -135,6 +135,10 @@
 
                 iterator() : m_super_it() { }
                 iterator(super_iterator si) : m_super_it(si) { }
+                iterator& operator=(super_iterator si) {
+                    m_super_it = si;
+                    return *this;
+                }
 
                 self_type& operator++() {
                     ++m_super_it;
@@ -158,7 +162,8 @@
 
                       node_data *_get_data()       { return &*m_super_it; }
                 const node_data *_get_data() const { return &*m_super_it; }
-                size_type _get_hash_value() const { return _get_data()->m_hash_value; }
+                      size_type& _get_hash_value()       { return _get_data()->m_hash_value; }
+                const size_type& _get_hash_value() const { return _get_data()->m_hash_value; }
             };
             struct const_iterator {
                 typedef const_iterator  self_type;
@@ -173,6 +178,10 @@
 
                 const_iterator() : m_super_it() { }
                 const_iterator(super_const_iterator si) : m_super_it(si) { }
+                const_iterator& operator=(super_const_iterator si) {
+                    m_super_it = si;
+                    return *this;
+                }
 
                 reference operator*() const { return m_super_it->m_key; }
                 pointer operator->() const { return &m_super_it->m_key; }
@@ -185,7 +194,7 @@
                 }
 
                 const node_data *_get_data() const { return m_super_it->get(); }
-                size_type _get_hash_value() const { return _get_data()->m_hash_value; }
+                const size_type& _get_hash_value() const { return _get_data()->m_hash_value; }
             };
 
             struct local_iterator {
@@ -309,10 +318,9 @@
             }; // local_const_iterator
 
             struct bucket_type {
-                super_iterator  m_prev_it;
+                super_iterator  m_super_it;
                 size_type       m_count;
-                bucket_type(super_iterator prev_it)
-                    : m_prev_it(prev_it), m_count(0) { }
+                bucket_type() : m_super_it(), m_count(0) { }
             };
 
             unordered_set() : m_element_count(0), m_max_load_factor(1) {
@@ -357,8 +365,7 @@
                     local_iterator lit;
                     return lit;
                 } else {
-                    iterator it = m_buckets[n].m_prev_it;
-                    ++it;
+                    iterator it = m_buckets[n].m_super_it;
                     const size_type hash_value = it._get_hash_value();
                     const size_type count = bucket_count();
                     local_iterator lit(it, hash_value % count, count);
@@ -373,8 +380,7 @@
                     local_const_iterator lit;
                     return lit;
                 } else {
-                    const_iterator it = m_buckets[n].m_prev_it;
-                    ++it;
+                    const_iterator it = m_buckets[n].m_super_it;
                     const size_type hash_value = it._get_hash_value();
                     const size_type count = bucket_count();
                     local_const_iterator lit(it, hash_value % count, count);
@@ -473,30 +479,29 @@
             void rehash(size_type count) {
                 assert(count);
                 _init_buckets(count);
-                super_iterator prev_it = m_list.before_begin(), iend = m_list.end();
-                super_iterator it = prev_it;
-                ++it;
-                for (; it != iend; ++prev_it, ++it) {
-                    _add(prev_it, it.m_node);
+                super_iterator it = m_list.begin(), iend = m_list.end();
+                for (; it != iend; ++it) {
+                    _add(it, it.m_node);
                 }
             }
 
             void reserve(size_type count) {
-                rehash(std::ceil(count / max_load_factor()));
+                size_type c = size_type(std::ceil(count / max_load_factor()));
+                rehash(c);
             }
 
             void swap(self_type& other) {
+                swap(m_element_count, other.m_element_count);
+                swap(m_max_load_factor, other.m_max_load_factor);
+                swap(m_hasher, other.m_hasher);
+                swap(m_key_eq, other.m_list);
                 swap(m_list, other.m_list);
                 swap(m_buckets, other.m_buckets);
-                swap(m_element_count, other.m_element_count);
-                swap(m_hasher, other.m_hasher);
-                swap(m_max_load_factor, other.m_max_load_factor);
             }
 
             iterator find(const Key& key) {
                 const size_type i = bucket(key);
-                super_iterator it = m_buckets[i].m_prev_it, iend;
-                ++it;
+                super_iterator it = m_buckets[i].m_super_it, iend;
                 while (it != iend) {
                     const size_type hash_value = it->m_hash_value;
                     if (hash_value % bucket_count() != i) {
@@ -511,8 +516,7 @@
             }
             const_iterator find(const Key& key) const {
                 const size_type i = bucket(key);
-                super_const_iterator it = m_buckets[i].m_prev_it, iend;
-                ++it;
+                super_const_iterator it = m_buckets[i].m_super_it, iend;
                 while (it != iend) {
                     const size_type hash_value = it->m_hash_value;
                     if (hash_value % bucket_count() != i) {
@@ -536,7 +540,21 @@
             std::pair<iterator, bool>
             emplace() {
                 Key key();
-                return insert(key);
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                const size_type hash_value = hash_function()(key);
+                const size_type i = bucket(hash_value);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin());
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
+                return std::make_pair(it, true);
             }
             template <typename ARG1>
             std::pair<iterator, bool>
@@ -548,9 +566,14 @@
                 }
                 const size_type hash_value = hash_function()(key);
                 const size_type i = bucket(hash_value);
-                it = m_list.emplace_after(m_buckets[i].m_prev_it, arg1);
-                it._get_data()->m_hash_value = hash_value;
-                _add_2(m_buckets[i].m_prev_it, i);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin(), arg1);
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
                 return std::make_pair(it, true);
             }
             template <typename ARG1, typename ARG2>
@@ -563,9 +586,14 @@
                 }
                 const size_type hash_value = hash_function()(key);
                 const size_type i = bucket(hash_value);
-                it = m_list.emplace_after(m_buckets[i].m_prev_it, arg1, arg2);
-                it._get_data()->m_hash_value = hash_value;
-                _add_2(m_buckets[i].m_prev_it, i);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2);
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
                 return std::make_pair(it, true);
             }
             template <typename ARG1, typename ARG2, typename ARG3>
@@ -578,9 +606,14 @@
                 }
                 const size_type hash_value = hash_function()(key);
                 const size_type i = bucket(hash_value);
-                it = m_list.emplace_after(m_buckets[i].m_prev_it, arg1, arg2, arg3);
-                it._get_data()->m_hash_value = hash_value;
-                _add_2(m_buckets[i].m_prev_it, i);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3);
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
                 return std::make_pair(it, true);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
@@ -593,9 +626,14 @@
                 }
                 const size_type hash_value = hash_function()(key);
                 const size_type i = bucket(hash_value);
-                it = m_list.emplace_after(m_buckets[i].m_prev_it, arg1, arg2, arg3, arg4);
-                it._get_data()->m_hash_value = hash_value;
-                _add_2(m_buckets[i].m_prev_it, i);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3, arg4);
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3, arg4);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
                 return std::make_pair(it, true);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
@@ -608,9 +646,14 @@
                 }
                 const size_type hash_value = hash_function()(key);
                 const size_type i = bucket(hash_value);
-                it = m_list.emplace_after(m_buckets[i].m_prev_it, arg1, arg2, arg3, arg4, arg5);
-                it._get_data()->m_hash_value = hash_value;
-                _add_2(m_buckets[i].m_prev_it, i);
+                super_iterator super_it;
+                if (_is_bucket_empty(i))
+                    super_it = m_list.emplace_after(m_list.before_begin(), arg1, arg2, arg3, arg4, arg5);
+                else
+                    super_it = m_list.emplace_after(m_buckets[i].m_super_it, arg1, arg2, arg3, arg4, arg5);
+                it = super_it;
+                it._get_hash_value() = hash_value;
+                _add_2(super_it, i);
                 return std::make_pair(it, true);
             }
 
@@ -693,37 +736,38 @@
 
             void _init_buckets(size_type count) {
                 m_buckets.clear();
-                bucket_type value(m_list.before_begin());
-                m_buckets.resize(count, value);
+                m_buckets.resize(count);
             }
             bool _is_bucket_empty(size_type i) const {
                 assert(i < bucket_count());
                 return m_buckets[i].m_count == 0;
             }
-            void _add(super_iterator prev_it, node_type *node) {
+            void _add(super_iterator super_it, node_type *node) {
                 node_data *data = node->get();
                 assert(data);
                 size_type i = bucket(data->m_key);
-                if (_is_bucket_empty(i)) {
-                    m_buckets[i].m_prev_it = prev_it;
+                if (m_buckets[i].m_super_it == super_iterator()) {
+                    m_buckets[i].m_super_it = super_it;
                 }
                 ++(m_buckets[i].m_count);
             }
-            void _add_2(super_iterator prev_it, size_type i) {
+            void _add_2(super_iterator super_it, size_type i) {
                 assert(i < bucket_count());
-                m_buckets[i].m_prev_it = prev_it;
+                if (m_buckets[i].m_super_it == super_iterator()) {
+                    m_buckets[i].m_super_it = super_it;
+                }
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
             }
-            void _remove(super_iterator prev_it, size_type i) {
+            void _remove(super_iterator super_it, size_type i) {
                 assert(i < bucket_count());
                 assert(!_is_bucket_empty(i));
                 --(m_buckets[i].m_count);
                 if (m_buckets[i].m_count == 0) {
-                    bucket_type value(m_list.before_begin());
-                    m_buckets[i] = value;
-                } else if (m_buckets[i].m_prev_it == prev_it) {
-                    ++(m_buckets[i].m_prev_it);
+                    super_iterator sit;
+                    m_buckets[i].m_super_it = sit;
+                } else if (m_buckets[i].m_super_it == super_it) {
+                    ++(m_buckets[i].m_super_it);
                 }
             }
         }; // unordered_set<Key, Hash, KeyEq>
