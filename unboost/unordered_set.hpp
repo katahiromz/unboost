@@ -704,22 +704,26 @@
             void _add(super_iterator super_it, node_type *node) {
                 node_data *data = node->get();
                 assert(data);
-                size_type i = bucket(data->m_key);
+
+                const size_type i = bucket(data->m_key);
                 if (m_buckets[i].m_super_it == super_iterator()) {
                     m_buckets[i].m_super_it = super_it;
                 }
+
                 ++(m_buckets[i].m_count);
                 _rehash_if_case();
             }
             void _remove(super_const_iterator super_it, size_type i) {
                 assert(i < bucket_count());
                 assert(!_is_bucket_empty(i));
+
                 --(m_buckets[i].m_count);
                 if (m_buckets[i].m_count == 0) {
                     super_iterator sit;
                     m_buckets[i].m_super_it = sit;
                     return;
                 }
+
                 super_const_iterator bucket_it = m_buckets[i].m_super_it;
                 if (bucket_it == super_it) {
                     const Key& key = bucket_it->m_key;
@@ -738,6 +742,7 @@
                     return std::make_pair(it, false);
                 }
                 node->get()->m_hash_value = hash_function()(key);
+
                 const size_type i = bucket(node->get()->m_hash_value);
                 if (_is_bucket_empty(i)) {
                     m_list._add_node_after(m_list.before_begin(), node);
@@ -745,6 +750,7 @@
                 } else {
                     m_list._add_node_after(m_buckets[i].m_super_it, node);
                 }
+
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
                 _rehash_if_case();
