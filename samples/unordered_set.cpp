@@ -35,6 +35,11 @@ int main(void) {
     assert(us.count(1) == 1);
     assert(us.count(2) == 1);
     assert(us.count(3) == 0);
+    us.rehash(10);
+
+    assert(us.count(1) == 1);
+    assert(us.count(2) == 1);
+    assert(us.count(3) == 0);
 
     std::cout << "success" << std::endl;
 
