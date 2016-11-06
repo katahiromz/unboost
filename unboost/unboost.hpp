@@ -86,23 +86,7 @@
     #endif
 #endif
 
-// chrono depends on type_traits and ratio
-#ifdef UNBOOST_USE_CXX11_CHRONO
-    #ifndef UNBOOST_USE_CXX11_RATIO
-        #define UNBOOST_USE_CXX11_RATIO
-    #endif
-    #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
-        #define UNBOOST_USE_CXX11_TYPE_TRAITS
-    #endif
-#endif
-#ifdef UNBOOST_USE_BOOST_CHRONO
-    #ifndef UNBOOST_USE_BOOST_RATIO
-        #define UNBOOST_USE_BOOST_RATIO
-    #endif
-    #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
-        #define UNBOOST_USE_BOOST_TYPE_TRAITS
-    #endif
-#endif
+// Unboost's chrono depends on Unboost's type_traits and ratio
 #ifdef UNBOOST_USE_UNBOOST_CHRONO
     #ifndef UNBOOST_USE_UNBOOST_RATIO
         #define UNBOOST_USE_UNBOOST_RATIO
@@ -112,46 +96,21 @@
     #endif
 #endif
 
-// filesystem depends on smart_ptr
-#ifdef UNBOOST_USE_BOOST_FILESYSTEM
-    #ifndef UNBOOST_USE_BOOST_SMART_PTR
-        #define UNBOOST_USE_BOOST_SMART_PTR
-    #endif
-#endif
+// Unboost's filesystem depends on Unboost's smart_ptr
 #ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
     #ifndef UNBOOST_USE_UNBOOST_SMART_PTR
         #define UNBOOST_USE_UNBOOST_SMART_PTR
     #endif
 #endif
 
-// smart pointer depends on type traits
-#ifdef UNBOOST_USE_CXX11_SMART_PTR
-    #ifndef UNBOOST_USE_CXX11_TYPE_TRAITS
-        #define UNBOOST_USE_CXX11_TYPE_TRAITS
-    #endif
-#endif
-#ifdef UNBOOST_USE_BOOST_SMART_PTR
-    #ifndef UNBOOST_USE_BOOST_TYPE_TRAITS
-        #define UNBOOST_USE_BOOST_TYPE_TRAITS
-    #endif
-#endif
+// Unboost's smart_ptr depends on Unboost's type_traits
 #ifdef UNBOOST_USE_UNBOOST_SMART_PTR
     #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
         #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #endif
 #endif
 
-// ratio depends on static_assert
-#ifdef UNBOOST_USE_CXX11_RATIO
-    #ifndef UNBOOST_USE_CXX11_STATIC_ASSERT
-        #define UNBOOST_USE_CXX11_STATIC_ASSERT
-    #endif
-#endif
-#ifdef UNBOOST_USE_BOOST_RATIO
-    #ifndef UNBOOST_USE_BOOST_STATIC_ASSERT
-        #define UNBOOST_USE_BOOST_STATIC_ASSERT
-    #endif
-#endif
+// Unboost's ratio depends on Unboost's static_assert
 #ifdef UNBOOST_USE_UNBOOST_RATIO
     #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
         #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
