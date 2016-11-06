@@ -779,15 +779,15 @@
                 if (m_buckets[i].m_count == 0) {
                     super_iterator sit;
                     m_buckets[i].m_super_it = sit;
-                } else {
-                    super_const_iterator bucket_it = m_buckets[i].m_super_it;
-                    super_const_iterator iend;
-                    if (bucket_it == super_it) {
-                        const size_type hash_value = hash_function()(bucket_it->m_key);
-                        const size_type count = bucket_count();
-                        ++(m_buckets[i].m_super_it);
-                        m_buckets[i]._fix(hash_value % count, count);
-                    }
+                    return;
+                }
+                super_const_iterator bucket_it = m_buckets[i].m_super_it;
+                if (bucket_it == super_it) {
+                    const Key& key = bucket_it->m_key;
+                    const size_type hash_value = hash_function()(key);
+                    const size_type count = bucket_count();
+                    ++(m_buckets[i].m_super_it);
+                    m_buckets[i]._fix(hash_value % count, count);
                 }
             }
         }; // unordered_set<Key, Hash, KeyEq>
