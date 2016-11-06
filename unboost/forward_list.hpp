@@ -61,32 +61,6 @@
 
                   T *get()       { return reinterpret_cast<T *>(m_data); }
             const T *get() const { return reinterpret_cast<const T *>(m_data); }
-
-            self_type *_transfer_after(self_type *_begin, self_type *_end) {
-                self_type *save = _begin->m_next;
-                if (_end) {
-                    _begin->m_next = _end->m_next;
-                    _end->m_next = m_next;
-                } else {
-                    _begin->m_next = NULL;
-                }
-                m_next = save;
-                return _end;
-            }
-
-            void reverse_after() {
-                self_type *tail = m_next;
-                if (tail == NULL) {
-                    return;
-                }
-                self_type *temp;
-                while (temp = tail->m_next) {
-                    self_type *save = m_next;
-                    m_next = temp;
-                    tail->m_next = temp->m_next;
-                    m_next->m_next = save;
-                }
-            }
         }; // _forward_list_node<T>
 
         template <typename T>
@@ -813,45 +787,49 @@
                 return node;
             }
 
+            node_type *_add_node_after(node_type *pos, node_type *node) {
+                node_type *temp = pos->m_next;
+                pos->m_next = node;
+                node->m_next = temp;
+                return node;
+            }
+            node_type *_add_node_after(const_iterator pos, node_type *node) {
+                return _add_node_after(_node_from_cit(pos), node);
+            }
+
             node_type *_insert_after(const_iterator pos) {
                 node_type *node = _create_node();
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1) {
                 node_type *node = _create_node(arg1);
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2) {
                 node_type *node = _create_node(arg1, arg2);
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
                 node_type *node = _create_node(arg1, arg2, arg3);
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
                 node_type *node = _create_node(arg1, arg2, arg3, arg4);
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
                 node_type *node = _create_node(arg1, arg2, arg3, arg4, arg5);
-                node->m_next = pos.m_node->m_next;
-                _node_from_cit(pos)->m_next = node;
+                _add_node_after(pos, node);
                 return node;
             }
 
@@ -921,6 +899,9 @@
             void _destruct(T *ptr) {
                 ptr->~T();
             }
+
+            template <typename Key, typename Hash, typename KeyEq>
+            friend class unordered_set;
         }; // forward_list<T>
 
         template <typename T>
