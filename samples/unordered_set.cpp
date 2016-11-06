@@ -132,6 +132,21 @@ int main(void) {
         }
     }
 
+    usi1.clear();
+    for (int i = 0; i < 1000; ++i) {
+        usi1.emplace(i);
+    }
+    usi1.rehash(5);
+    assert(usi1.bucket_count() == 5);
+
+    {
+        unordered_set<int>::local_iterator lit = usi1.begin(1), lend = usi1.end(1);
+        while (lit != lend) {
+            std::cout << *lit << ", " << std::endl;
+            ++lit;
+        }
+    }
+
     std::cout << "success" << std::endl;
 
     return 0;
