@@ -72,15 +72,18 @@
     #ifndef UNBOOST_USE_CXX11_CHRONO
         #define UNBOOST_USE_CXX11_CHRONO
     #endif
-#elif defined(UNBOOST_USE_BOOST_THREAD)
+#endif
+#ifdef UNBOOST_USE_BOOST_THREAD
     #ifndef UNBOOST_USE_BOOST_CHRONO
         #define UNBOOST_USE_BOOST_CHRONO
     #endif
-#elif defined(UNBOOST_USE_WIN32_THREAD)
+#endif
+#ifdef UNBOOST_USE_WIN32_THREAD
     #ifndef UNBOOST_USE_WIN32_CHRONO
         #define UNBOOST_USE_WIN32_CHRONO
     #endif
-#elif defined(UNBOOST_USE_POSIX_THREAD)
+#endif
+#ifdef UNBOOST_USE_POSIX_THREAD
     #ifndef UNBOOST_USE_POSIX_CHRONO
         #define UNBOOST_USE_POSIX_CHRONO
     #endif
