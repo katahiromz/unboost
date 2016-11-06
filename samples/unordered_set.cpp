@@ -13,7 +13,7 @@
 #endif
 
 int main(void) {
-    std::cout << "unorderd set" << std::endl;
+    std::cout << "unorderd_set" << std::endl;
 
 #ifdef CXX11
     using std::unordered_set;
