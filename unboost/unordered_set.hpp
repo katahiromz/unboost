@@ -77,8 +77,8 @@
     #include <vector>   // for std::vector
     #include <cmath>    // for std::ceil
     #include <iterator> // for std::forward_iterator_tag
-    #include "forward_list.hpp"
-    #include "functional/hash.hpp"
+    #include "forward_list.hpp"     // for unboost::forward_list
+    #include "functional/hash.hpp"  // for unboost::hash
 
     namespace unboost {
         template <typename Key,
