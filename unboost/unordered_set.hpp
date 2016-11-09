@@ -107,13 +107,13 @@
                 template <typename ARG1>
                 node_data(ARG1 arg1) : m_key(arg1) { }
                 template <typename ARG1, typename ARG2>
-                node_data(ARG1 arg1, ARG2 arg2) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2)) { }
+                node_data(ARG1 arg1, ARG2 arg2) : m_key(arg1, arg2) { }
                 template <typename ARG1, typename ARG2, typename ARG3>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_key(arg1, arg2, arg3) { }
                 template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4)) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) : m_key(arg1, arg2, arg3, arg4) { }
                 template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5)) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) : m_key(arg1, arg2, arg3, arg4, arg5) { }
             };
             typedef forward_list<node_data>                 list_type;
             typedef typename list_type::node_type           node_type;
@@ -362,7 +362,7 @@
 
             template <typename InputIterator>
             unordered_set(InputIterator first, InputIterator last,
-                          size_type n = 5, const hasher& hash_fn = hasher(),
+                          size_type n = 20, const hasher& hash_fn = hasher(),
                           const key_equal& ke = key_equal())
                 : m_element_count(0), m_max_load_factor(1),
                   m_hasher(hash_fn), m_key_eq(ke)
@@ -458,19 +458,19 @@
             }
             template <typename ARG1, typename ARG2>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2) {
-                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2)).first;
+                return emplace(arg1, arg2).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)).first;
+                return emplace(arg1, arg2, arg3).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4)).first;
+                return emplace(arg1, arg2, arg3, arg4).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5)).first;
+                return emplace(arg1, arg2, arg3, arg4, arg5).first;
             }
 
             hasher hash_function() const {
@@ -586,57 +586,57 @@
             }
             template <typename ARG1>
             std::pair<iterator, bool>
-            emplace(UNBOOST_FWD_REF(ARG1) arg1) {
-                Key key(UNBOOST_FWD(arg1));
+            emplace(ARG1 arg1) {
+                Key key(arg1);
                 iterator it = find(key);
                 if (it != end()) {
                     return std::make_pair(it, false);
                 }
-                node_type *node = m_list._create_node(forward<ARG1>(arg1));
+                node_type *node = m_list._create_node(arg1);
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2>
             std::pair<iterator, bool>
-            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
-                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2));
+            emplace(ARG1 arg1, ARG2 arg2) {
+                Key key(arg1, arg2);
                 iterator it = find(key);
                 if (it != end()) {
                     return std::make_pair(it, false);
                 }
-                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2));
+                node_type *node = m_list._create_node(arg1, arg2);
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             std::pair<iterator, bool>
-            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
-                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3));
+            emplace(ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+                Key key(arg1, arg2, arg3);
                 iterator it = find(key);
                 if (it != end()) {
                     return std::make_pair(it, false);
                 }
-                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
+                node_type *node = m_list._create_node(arg1, arg2, arg3);
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             std::pair<iterator, bool>
-            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
-                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3), UNBOOST_FWD(arg4));
+            emplace(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
+                Key key(arg1, arg2, arg3, arg4);
                 iterator it = find(key);
                 if (it != end()) {
                     return std::make_pair(it, false);
                 }
-                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4));
+                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4);
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             std::pair<iterator, bool>
-            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
-                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3), UNBOOST_FWD(arg4), UNBOOST_FWD(arg5));
+            emplace(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
+                Key key(arg1, arg2, arg3, arg4, arg5);
                 iterator it = find(key);
                 if (it != end()) {
                     return std::make_pair(it, false);
                 }
-                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5));
+                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4, arg5);
                 return _emplace_key_node(key, node);
             }
 
@@ -718,6 +718,7 @@
                 m_list.swap(UNBOOST_RV(other).m_list);
                 m_buckets.swap(UNBOOST_RV(other).m_buckets);
             }
+
             self_type& operator=(UNBOOST_RV_REF(self_type) other) {
                 m_element_count = UNBOOST_RV(other).m_element_count;
                 m_max_load_factor = UNBOOST_RV(other).m_max_load_factor;
@@ -728,20 +729,10 @@
                 return *this;
             }
 
-            iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) {
-                return insert(move(key));
-            }
-
-            std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) {
-                Key key2 = UNBOOST_RV(key);
-                iterator it = find(key2);
-                if (it != end()) {
-                    return std::make_pair(it, false);
-                }
-                node_type *node = m_list._create_node(move(key));
-                return _emplace_key_node(key2, node);
-            }
-#endif
+            // NOTE: we don't support the next two methods:
+            //   iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) { ... }
+            //   std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) { ... }
+#endif  // def UNBOOST_RV_REF
 
         protected:
             size_type                   m_element_count;
