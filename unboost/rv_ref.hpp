@@ -1,11 +1,12 @@
 // rv.hpp --- Unboost rvalue reference
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef UNBOOST_RVREF_HPP_
-#define UNBOOST_RVREF_HPP_
+#ifndef UNBOOST_RV_REF_HPP_
+#define UNBOOST_RV_REF_HPP_
 
 #include "unboost.hpp"
 
+// This file defines:
 // move<T>
 // forward<T>
 // remove_reference<T>
@@ -14,27 +15,23 @@
 // add_lvalue_reference<T>
 // add_rvalue_reference<T>
 // UNBOOST_RV_REF(T)        --- rvalue reference type of T
-// UNBOOST_FWD_REF(T)       --- universal reference type of T (for forward)
+// UNBOOST_FWD_REF(T)       --- universal reference type of T (for forwarding)
 // UNBOOST_RV(value)        --- gets the real value from rvalue reference type
 // UNBOOST_FMD(value)       --- gets the real value from universal reference type
 
 // If not choosed, choose one
-#if ((defined(UNBOOST_USE_CXX11_RVREF) + defined(UNBOOST_USE_BOOST_RVREF) + defined(UNBOOST_USE_UNBOOST_RVREF)) == 0)
-    #ifdef UNBOOST_USE_CXX11
-        #define UNBOOST_USE_CXX11_RVREF
+#if ((defined(UNBOOST_USE_CXX11_RV_REF) + defined(UNBOOST_USE_BOOST_RV_REF) + defined(UNBOOST_USE_UNBOOST_RV_REF)) == 0)
+    #if (__cplusplus >= 201103L)
+        #define UNBOOST_USE_CXX11_RV_REF
     #elif defined(UNBOOST_USE_BOOST)
-        #define UNBOOST_USE_BOOST_RVREF
+        #define UNBOOST_USE_BOOST_RV_REF
     #else
-        #ifdef UNBOOST_CXX11
-            #define UNBOOST_USE_CXX11_RVREF
-        #else
-            #define UNBOOST_USE_UNBOOST_RVREF
-        #endif
+        #define UNBOOST_USE_UNBOOST_RV_REF
     #endif
 #endif
 
 // Adapt choosed one
-#ifdef UNBOOST_USE_CXX11_RVREF
+#ifdef UNBOOST_USE_CXX11_RV_REF
     #include <utility>          // for std::move, std::forward
     #include <type_traits>
     namespace unboost {
@@ -51,13 +48,13 @@
         };
     } // namespace unboost
 
-    #ifndef UNBOOST_NO_RVREF
+    #ifndef UNBOOST_NO_RV_REF
         #define UNBOOST_RV_REF(...)     __VA_ARGS__&&
         #define UNBOOST_RV(value)       value
         #define UNBOOST_FWD_REF(...)    __VA_ARGS__&&
         #define UNBOOST_FWD(value)      value
     #endif
-#elif defined(UNBOOST_USE_BOOST_RVREF)
+#elif defined(UNBOOST_USE_BOOST_RV_REF)
     #include <boost/move/core.hpp>      // for boost::move
     #include <boost/move/utility.hpp>   // for boost::forward
     #include <boost/type_traits.hpp>
@@ -79,25 +76,25 @@
             #define UNBOOST_RV(value)       value
             #define UNBOOST_FWD_REF(...)    __VA_ARGS__&&
             #define UNBOOST_FWD(value)      value
-        #else   // ndef UNBOOST_NO_RVREF
-            #ifndef UNBOOST_NEED_UNBOOST_RV_REF_IMPL
-                #define UNBOOST_NEED_UNBOOST_RV_REF_IMPL
+        #else   // ndef UNBOOST_NO_RV_REF
+            #ifndef UNBOOST_NEED_UNBOOST_RV_REF_EMU
+                #define UNBOOST_NEED_UNBOOST_RV_REF_EMU
             #endif
-        #endif  // ndef UNBOOST_NO_RVREF
+        #endif  // ndef UNBOOST_NO_RV_REF
     } // namespace unboost
-#elif defined(UNBOOST_USE_UNBOOST_RVREF)
+#elif defined(UNBOOST_USE_UNBOOST_RV_REF)
     #ifndef UNBOOST_NO_CXX11_RVALUE_REFERENCES
         #define UNBOOST_NO_CXX11_RVALUE_REFERENCES
     #endif
-    #ifndef UNBOOST_NEED_UNBOOST_RV_REF_IMPL
-        #define UNBOOST_NEED_UNBOOST_RV_REF_IMPL
+    #ifndef UNBOOST_NEED_UNBOOST_RV_REF_EMU
+        #define UNBOOST_NEED_UNBOOST_RV_REF_EMU
     #endif
 #else
     #error Your compiler is not supported yet. You lose.
 #endif
 
 // implement Unboost's rvalue reference, move, and forward
-#ifdef UNBOOST_NEED_UNBOOST_RV_REF_IMPL
+#ifdef UNBOOST_NEED_UNBOOST_RV_REF_EMU
     namespace unboost {
         struct enable_move_utility_emulation {
             enum { value = 1 };
@@ -105,46 +102,21 @@
 
         template <typename T>
         struct rv {
-            T& m_ref;
-            explicit rv(T& ref)      : m_ref(ref) { }
-            explicit rv(rv<T>& ref)  : m_ref(ref.m_ref) { }
+            T m_ref;
+            explicit rv(T ref) : m_ref(ref) { }
+            operator T&() { return m_ref; }
         };
+
         #ifdef UNBOOST_OLD_COMPILER
-            #define UNBOOST_RV_REF(type)    unboost::rv<type >
+            #define UNBOOST_RV_REF(type)    unboost::rv<type>
             #define UNBOOST_RV(value)       (value).m_ref
+            #define UNBOOST_FWD_REF(type)   type
+            #define UNBOOST_FWD(value)      (value)
         #else
-            #define UNBOOST_RV_REF(...)     unboost::rv<__VA_ARGS__>
+            #define UNBOOST_RV_REF(...)     const unboost::rv<__VA_ARGS__>&
             #define UNBOOST_RV(...)         (__VA_ARGS__).m_ref
-        #endif
-
-        template <typename T>
-        struct fwd {
-            union {
-                T* m_ptr;
-                const T* m_cptr;
-            };
-            bool m_is_lvalue_ref;
-
-            fwd(const T& ref)
-                : m_cptr(&ref), m_is_lvalue_ref(true) { }
-            fwd(const fwd<T>& ref) : m_cptr(ref.m_cptr),
-                m_is_lvalue_ref(ref.m_is_lvalue_ref) { }
-            fwd(rv<T>& ref)
-                : m_ptr(&ref.m_ref), m_is_lvalue_ref(false) { }
-
-                  T& _get_()       { return *m_ptr; }
-            const T& _get_() const { return *m_cptr; }
-
-            operator rv<T>() {
-                return rv<T>(*m_ptr);
-            }
-        }; // fwd<T>
-        #ifdef UNBOOST_OLD_COMPILER
-            #define UNBOOST_FWD_REF(type)    unboost::fwd<type >
-            #define UNBOOST_FWD(value)       (value)._get_()
-        #else
-            #define UNBOOST_FWD_REF(...)     unboost::fwd<__VA_ARGS__>
-            #define UNBOOST_FWD(...)         (__VA_ARGS__)._get_()
+            #define UNBOOST_FWD_REF(...)    __VA_ARGS__
+            #define UNBOOST_FWD(...)        (__VA_ARGS__)
         #endif
 
         template <typename T>
@@ -157,28 +129,26 @@
         struct remove_reference<rv<T>&>         { typedef T type; };
         template <typename T>
         struct remove_reference<const rv<T>&>   { typedef T type; };
-        template <typename T>
-        struct remove_reference<fwd<T> >        { typedef T type; };
-        template <typename T>
-        struct remove_reference<fwd<T>&>        { typedef T type; };
-        template <typename T>
-        struct remove_reference<const fwd<T>&>  { typedef T type; };
 
         template <typename T>
         inline rv<typename remove_reference<T>::type>
-        move(T& x) {
-            typedef typename remove_reference<T>::type type_;
-            return static_cast<rv<type_> >(x);
+        move(const T& t) {
+            return static_cast<rv<typename remove_reference<T>::type> >(t);
+        }
+        template <typename T>
+        inline rv<typename remove_reference<T>::type>
+        move(T t) {
+            return static_cast<rv<typename remove_reference<T>::type> >(t);
         }
 
         template <typename T>
-        inline const typename remove_reference<T>::type&
-        forward(const typename remove_reference<T>::type& t) {
+        inline T&
+        forward(T& t) {
             return t;
         }
         template <typename T>
-        inline rv<typename remove_reference<T>::type>&
-        forward(rv<typename remove_reference<T>::type> t) {
+        inline const T&
+        forward(const T& t) {
             return t;
         }
 
@@ -192,15 +162,11 @@
         struct is_reference<rv<T>&>         { enum { value = 1 }; };
         template <typename T>
         struct is_reference<const rv<T>&>   { enum { value = 1 }; };
-        template <typename T>
-        struct is_reference<fwd<T> >        { enum { value = 1 }; };
-        template <typename T>
-        struct is_reference<fwd<T>&>        { enum { value = 1 }; };
-        template <typename T>
-        struct is_reference<const fwd<T>&>  { enum { value = 1 }; };
 
         template <typename T>
-        struct is_rvalue_reference { enum { value = 0 }; };
+        struct is_rvalue_reference {
+            enum { value = 0 };
+        };
         template <typename T>
         struct is_rvalue_reference<rv<T> > {
             enum { value = 1 };
@@ -211,18 +177,6 @@
         };
         template <typename T>
         struct is_rvalue_reference<const rv<T>&> {
-            enum { value = 1 };
-        };
-        template <typename T>
-        struct is_rvalue_reference<fwd<T> > {
-            enum { value = 1 };
-        };
-        template <typename T>
-        struct is_rvalue_reference<fwd<T>&> {
-            enum { value = 1 };
-        };
-        template <typename T>
-        struct is_rvalue_reference<const fwd<T>&> {
             enum { value = 1 };
         };
 
@@ -246,22 +200,10 @@
         struct add_lvalue_reference<const rv<T>&> {
             typedef T& type;
         };
-        template <typename T>
-        struct add_lvalue_reference<fwd<T> > {
-            typedef T& type;
-        };
-        template <typename T>
-        struct add_lvalue_reference<fwd<T>&> {
-            typedef T& type;
-        };
-        template <typename T>
-        struct add_lvalue_reference<const fwd<T>&> {
-            typedef T& type;
-        };
 
         template <typename T>
         struct add_rvalue_reference {
-            typedef UNBOOST_RV_REF(T) type;
+            typedef rv<T> type;
         };
         template <typename T>
         struct add_rvalue_reference<T&> {
@@ -279,19 +221,7 @@
         struct add_rvalue_reference<const rv<T>&> {
             typedef rv<T> type;
         };
-        template <typename T>
-        struct add_rvalue_reference<fwd<T> > {
-            typedef rv<T> type;
-        };
-        template <typename T>
-        struct add_rvalue_reference<fwd<T>&> {
-            typedef rv<T> type;
-        };
-        template <typename T>
-        struct add_rvalue_reference<const fwd<T>&> {
-            typedef rv<T> type;
-        };
     } // namespace unboost
-#endif  // def UNBOOST_NEED_UNBOOST_RV_REF_IMPL
+#endif  // def UNBOOST_NEED_UNBOOST_RV_REF_EMU
 
-#endif  // ndef UNBOOST_RVREF_HPP_
+#endif  // ndef UNBOOST_RV_REF_HPP_
