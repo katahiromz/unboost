@@ -78,7 +78,6 @@
     namespace unboost {
         template <typename T, size_t N>
         struct array {
-        public:
             typedef T value_type;
             typedef size_t size_type;
             typedef ptrdiff_t difference_type;
@@ -90,6 +89,8 @@
             typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
             typedef value_type *pointer;
             typedef const value_type *const_pointer;
+
+            value_type m_data[N];
 
             reference at(size_type pos) {
                 if (!(pos < size()))
@@ -149,8 +150,6 @@
             friend void swap(array<T, N>& a1, array<T, N>& a2) {
                 a1.swap(a2);
             }
-        protected:
-            value_type m_data[N];
         }; // array<T, N>
 
         template <typename T, size_t N>
@@ -203,11 +202,19 @@
             return a.data()[I];
         }
         #ifdef UNBOOST_RV_REF
-            template <size_t I, typename T, size_t N>
-            inline UNBOOST_RV_REF(T)
-            get(UNBOOST_RV_REF(array<T, N>) a) {
-                return move(UNBOOST_RV(a).data()[I]);
-            }
+            #ifdef UNBOOST_OLD_COMPILER
+                template <size_t I, typename T, size_t N>
+                inline UNBOOST_RV_REF(T)
+                get(rv<array<T, N> > a) {
+                    return move(UNBOOST_RV(a).data()[I]);
+                }
+            #else
+                template <size_t I, typename T, size_t N>
+                inline UNBOOST_RV_REF(T)
+                get(UNBOOST_RV_REF(array<T, N>) a) {
+                    return move(UNBOOST_RV(a).data()[I]);
+                }
+            #endif
         #endif
     } // namespace unboost
 #else
