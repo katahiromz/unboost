@@ -761,8 +761,8 @@
             // NOTE: epoch is 1970.01.01
             #ifdef UNBOOST_USE_WIN32_CHRONO
                 typedef ratio<1, 10000000>  _nano100;
-                typedef chrono::duration<_int64_t, _nano100>     _system_duration;
-                typedef chrono::duration<_int64_t, nanoseconds> _steady_duration;
+                typedef chrono::duration<_int64_t, _nano100>    _system_duration;
+                typedef chrono::duration<_int64_t, nano>        _steady_duration;
                 inline _int64_t _get_system_clock_time(void) {
                     // in 100-nanoseconds
                     FILETIME ft;
@@ -786,8 +786,8 @@
                     return counter.QuadPart * (1000000000 / s_pfreq->QuadPart);
                 }
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                typedef chrono::duration<_int64_t, microseconds> _system_duration;
-                typedef chrono::duration<_int64_t, microseconds> _steady_duration;
+                typedef chrono::duration<_int64_t, micro>   _system_duration;
+                typedef chrono::duration<_int64_t, micro>   _steady_duration;
                 inline _int64_t _get_system_clock_time(void) {
                     // in microseconds
                     struct timeval tv;
