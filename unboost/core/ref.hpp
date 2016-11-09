@@ -43,6 +43,7 @@
         using boost::reference_wrapper;
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_REF)
+    #include "rv_ref.hpp"       // for UNBOOST_RV_REF
     namespace unboost {
         template <typename T>
         inline T* addressof(T& arg) {
