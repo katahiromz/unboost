@@ -73,9 +73,9 @@
 
 #ifdef UNBOOST_RVREF
         private:
-            reference_wrapper(UNBOOST_RVREF_TYPE(T))/* = delete*/;
-            void ref(UNBOOST_RVREF_TYPE(T))/* = delete*/;
-            void cref(UNBOOST_RVREF_TYPE(T))/* = delete*/;
+            reference_wrapper(UNBOOST_RV_REF(T))/* = delete*/;
+            void ref(UNBOOST_RV_REF(T))/* = delete*/;
+            void cref(UNBOOST_RV_REF(T))/* = delete*/;
 #endif  // def UNBOOST_RVREF
         }; // reference_wrapper<T>
 
