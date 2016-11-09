@@ -71,12 +71,12 @@
         protected:
             T *m_t;
 
-#ifdef UNBOOST_RVREF
+#ifdef UNBOOST_RV_REF
         private:
             reference_wrapper(UNBOOST_RV_REF(T))/* = delete*/;
             void ref(UNBOOST_RV_REF(T))/* = delete*/;
             void cref(UNBOOST_RV_REF(T))/* = delete*/;
-#endif  // def UNBOOST_RVREF
+#endif  // def UNBOOST_RV_REF
         }; // reference_wrapper<T>
 
         template <typename T>
