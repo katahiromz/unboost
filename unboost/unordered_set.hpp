@@ -5,6 +5,7 @@
 #define UNBOOST_UNORDERED_SET_HPP_
 
 #include "unboost.hpp"
+#include "rvref.hpp"    // for unboost::move, UNBOOST_RV_REF, ...
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_UNORDERED_SET) + defined(UNBOOST_USE_TR1_UNORDERED_SET) + defined(UNBOOST_USE_BOOST_UNORDERED_SET) + defined(UNBOOST_USE_UNBOOST_UNORDERED_SET)) == 0)
@@ -106,13 +107,13 @@
                 template <typename ARG1>
                 node_data(ARG1 arg1) : m_key(arg1) { }
                 template <typename ARG1, typename ARG2>
-                node_data(ARG1 arg1, ARG2 arg2) : m_key(arg1, arg2) { }
+                node_data(ARG1 arg1, ARG2 arg2) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2)) { }
                 template <typename ARG1, typename ARG2, typename ARG3>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_key(arg1, arg2, arg3) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)) { }
                 template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) : m_key(arg1, arg2, arg3, arg4) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4)) { }
                 template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) : m_key(arg1, arg2, arg3, arg4, arg5) { }
+                node_data(ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) : m_key(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5)) { }
             };
             typedef forward_list<node_data>                 list_type;
             typedef typename list_type::node_type           node_type;
@@ -457,19 +458,19 @@
             }
             template <typename ARG1, typename ARG2>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2) {
-                return emplace(arg1, arg2).first;
+                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2)).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                return emplace(arg1, arg2, arg3).first;
+                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                return emplace(arg1, arg2, arg3, arg4).first;
+                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4)).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                return emplace(arg1, arg2, arg3, arg4, arg5).first;
+                return emplace(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5)).first;
             }
 
             hasher hash_function() const {
@@ -492,7 +493,7 @@
                 return m_max_load_factor;
             }
 
-            void max_load_factor(float ml) const {
+            void max_load_factor(float ml) {
                 m_max_load_factor = ml;
             }
 
@@ -502,7 +503,11 @@
 
             void rehash(size_type count) {
                 assert(count);
-                if (count <= bucket_count() && size() > 0)
+                size_type proposal = size_type(size() / max_load_factor());
+                ++proposal;
+                if (count < proposal)
+                    count = proposal;
+                if (count == bucket_count())
                     return;
                 _init_buckets(count);
                 node_type *node = m_list.m_head.m_next;
@@ -513,6 +518,8 @@
                     _emplace_key_node_0(node->get()->m_key, node);
                     node = next;
                 }
+                assert(float(bucket_count()) > size() / max_load_factor());
+                assert(bucket_count() >= count);
             }
 
             void reserve(size_type count) {
@@ -569,43 +576,67 @@
 
             std::pair<iterator, bool>
             emplace() {
+                Key key();
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
                 node_type *node = m_list._create_node();
-                const Key& key = node->get()->m_key;
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1>
             std::pair<iterator, bool>
-            emplace(const ARG1& arg1) {
-                node_type *node = m_list._create_node(arg1);
-                const Key& key = node->get()->m_key;
+            emplace(UNBOOST_FWD_REF(ARG1) arg1) {
+                Key key(UNBOOST_FWD(arg1));
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(forward<ARG1>(arg1));
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2>
             std::pair<iterator, bool>
-            emplace(const ARG1& arg1, const ARG2& arg2) {
-                node_type *node = m_list._create_node(arg1, arg2);
-                const Key& key = node->get()->m_key;
+            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
+                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2));
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2));
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3>
             std::pair<iterator, bool>
-            emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                node_type *node = m_list._create_node(arg1, arg2, arg3);
-                const Key& key = node->get()->m_key;
+            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
+                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3));
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
             std::pair<iterator, bool>
-            emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4);
-                const Key& key = node->get()->m_key;
+            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
+                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3), UNBOOST_FWD(arg4));
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4));
                 return _emplace_key_node(key, node);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
             std::pair<iterator, bool>
-            emplace(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                node_type *node = m_list._create_node(arg1, arg2, arg3, arg4, arg5);
-                const Key& key = node->get()->m_key;
+            emplace(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
+                Key key(UNBOOST_FWD(arg1), UNBOOST_FWD(arg2), UNBOOST_FWD(arg3), UNBOOST_FWD(arg4), UNBOOST_FWD(arg5));
+                iterator it = find(key);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5));
                 return _emplace_key_node(key, node);
             }
 
@@ -678,15 +709,39 @@
                 return *this;
             }
 
-        #if 0
-            unordered_set(self_type&& other) {
-                ...
+#ifdef UNBOOST_RV_REF
+            unordered_set(UNBOOST_RV_REF(self_type) other) {
+                m_element_count = UNBOOST_RV(other).m_element_count;
+                m_max_load_factor = UNBOOST_RV(other).m_max_load_factor;
+                m_hasher = UNBOOST_RV(other).m_hasher;
+                m_key_eq = UNBOOST_RV(other).m_key_eq;
+                m_list.swap(UNBOOST_RV(other).m_list);
+                m_buckets.swap(UNBOOST_RV(other).m_buckets);
             }
-            self_type& operator=(self_type&& other) {
-                ...
+            self_type& operator=(UNBOOST_RV_REF(self_type) other) {
+                m_element_count = UNBOOST_RV(other).m_element_count;
+                m_max_load_factor = UNBOOST_RV(other).m_max_load_factor;
+                m_hasher = UNBOOST_RV(other).m_hasher;
+                m_key_eq = UNBOOST_RV(other).m_key_eq;
+                m_list.swap(UNBOOST_RV(other).m_list);
+                m_buckets.swap(UNBOOST_RV(other).m_buckets);
                 return *this;
             }
-        #endif
+
+            iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) {
+                return insert(move(key));
+            }
+
+            std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) {
+                Key key2 = UNBOOST_RV(key);
+                iterator it = find(key2);
+                if (it != end()) {
+                    return std::make_pair(it, false);
+                }
+                node_type *node = m_list._create_node(move(key));
+                return _emplace_key_node(key2, node);
+            }
+#endif
 
         protected:
             size_type                   m_element_count;
@@ -751,7 +806,6 @@
                 } else {
                     m_list._add_node_after(m_buckets[i].m_super_it, node);
                 }
-
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
                 return std::make_pair(node, true);
@@ -759,18 +813,47 @@
 
             std::pair<iterator, bool>
             _emplace_key_node(const Key& key, node_type *node) {
-                iterator it = find(key);
-                if (it != end()) {
-                    delete node;
-                    return std::make_pair(it, false);
-                }
                 node->get()->m_hash_value = hash_function()(key);
-
                 std::pair<iterator, bool> ret = _emplace_key_node_0(key, node);
                 _rehash_if_case();
                 return ret;
             }
         }; // unordered_set<Key, Hash, KeyEq>
+
+        template <typename Key, typename Hash, typename KeyEq>
+        inline void
+        swap(unordered_set<Key, Hash, KeyEq>& lhs,
+             unordered_set<Key, Hash, KeyEq>& rhs)
+        {
+            lhs.swap(rhs);
+        }
+
+        template <typename Key, typename Hash, typename KeyEq>
+        inline bool operator==(
+            const unordered_set<Key, Hash, KeyEq>& lhs,
+            const unordered_set<Key, Hash, KeyEq>& rhs)
+        {
+            typedef typename
+                unordered_set<Key, Hash, KeyEq>::const_iterator const_iterator;
+            if (&lhs == &rhs)
+                return true;
+            if (lhs.size() != rhs.size())
+                return false;
+            const_iterator it = lhs.begin(), end = lhs.end();
+            while (it != end) {
+                if (rhs.count(*it) == 0)
+                    return false;
+                ++it;
+            }
+            return true;
+        }
+        template <typename Key, typename Hash, typename KeyEq>
+        inline bool operator!=(
+            const unordered_set<Key, Hash, KeyEq>& lhs,
+            const unordered_set<Key, Hash, KeyEq>& rhs)
+        {
+            return !(lhs == rhs);
+        }
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.

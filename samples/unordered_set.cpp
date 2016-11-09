@@ -109,6 +109,7 @@ int main(void) {
     uss.insert("1");
     uss.insert("2");
     uss.insert("2");
+
     assert(uss.find("1") != uss.end());
     assert(uss.find("2") != uss.end());
     assert(uss.find("3") == uss.end());

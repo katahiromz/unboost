@@ -203,8 +203,8 @@
         }
         #ifdef UNBOOST_RVREF
             template <size_t I, typename T, size_t N>
-            inline UNBOOST_RVREF_TYPE(T)
-            get(UNBOOST_RVREF_TYPE(array<T, N>) a) {
+            inline UNBOOST_RV_REF(T)
+            get(UNBOOST_RV_REF(array<T, N>) a) {
                 return unboost::move(UNBOOST_RVREF(a).data()[I]);
             }
         #endif

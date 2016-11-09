@@ -31,22 +31,20 @@
             T   m_obj;
 
             _ctor_helper() : m_obj() { }
-
             template <typename ARG1>
-            _ctor_helper(const ARG1& arg1) : m_obj(arg1) { }
+            _ctor_helper(UNBOOST_FWD_REF(ARG1) arg1) : m_obj(forward<ARG1>(arg1)) { }
             template <typename ARG1, typename ARG2>
-            _ctor_helper(const ARG1& arg1, const ARG2& arg2) : m_obj(arg1, arg2) { }
+            _ctor_helper(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) : m_obj(forward<ARG1>(arg1), forward<ARG2>(arg2)) { }
             template <typename ARG1, typename ARG2, typename ARG3>
-            _ctor_helper(const ARG1& arg1, const ARG2& arg2, ARG2 arg3) : m_obj(arg1, arg2, arg3) { }
+            _ctor_helper(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, ARG2 arg3) : m_obj(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)) { }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            _ctor_helper(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) : m_obj(arg1, arg2, arg3, arg4) { }
+            _ctor_helper(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) : m_obj(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4)) { }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            _ctor_helper(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) : m_obj(arg1, arg2, arg3, arg4, arg5) { }
+            _ctor_helper(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) : m_obj(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5)) { }
 
             static void *operator new(size_t, void *ptr) {
                 return ptr;
             }
-
             static void operator delete(void *) { }
         }; // _ctor_helper<T>
 
@@ -265,52 +263,52 @@
                 return it;
             }
             template <typename ARG1>
-            iterator emplace_after(const_iterator pos, const ARG1& arg1) {
+            iterator emplace_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1) {
                 iterator it(_insert_after(pos, arg1));
                 return it;
             }
             template <typename ARG1, typename ARG2>
-            iterator emplace_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2) {
+            iterator emplace_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
                 iterator it(_insert_after(pos, arg1, arg2));
                 return it;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            iterator emplace_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                iterator it(_insert_after(pos, arg1, arg2, arg3));
+            iterator emplace_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
+                iterator it(_insert_after(pos, forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3)));
                 return it;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            iterator emplace_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                iterator it(_insert_after(pos, arg1, arg2, arg3, arg4));
+            iterator emplace_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
+                iterator it(_insert_after(pos, forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4));
                 return it;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            iterator emplace_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                iterator it(_insert_after(pos, arg1, arg2, arg3, arg4, arg5));
+            iterator emplace_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
+                iterator it(_insert_after(pos, forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4, arg5));
                 return it;
             }
             void emplace_front() {
                 _insert_after(before_cbegin());
             }
             template <typename ARG1>
-            void emplace_front(const ARG1& arg1) {
+            void emplace_front(UNBOOST_FWD_REF(ARG1) arg1) {
                 _insert_after(before_cbegin(), arg1);
             }
             template <typename ARG1, typename ARG2>
-            void emplace_front(const ARG1& arg1, const ARG2& arg2) {
+            void emplace_front(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
                 _insert_after(before_cbegin(), arg1, arg2);
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            void emplace_front(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                _insert_after(before_cbegin(), arg1, arg2, arg3);
+            void emplace_front(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
+                _insert_after(before_cbegin(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            void emplace_front(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                _insert_after(before_cbegin(), arg1, arg2, arg3, arg4);
+            void emplace_front(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
+                _insert_after(before_cbegin(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4);
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            void emplace_front(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                _insert_after(before_cbegin(), arg1, arg2, arg3, arg4, arg5);
+            void emplace_front(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
+                _insert_after(before_cbegin(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4, arg5);
             }
 
             iterator erase_after(const_iterator pos) {
@@ -636,31 +634,31 @@
                 }
             }
 
-        #ifdef UNBOOST_RVREF
-            forward_list(UNBOOST_RVREF_TYPE(self_type) other) {
-                m_head.m_next = UNBOOST_RVREF(other).m_head.m_next;
-                UNBOOST_RVREF(other).m_head.m_next = NULL;
+        #ifdef UNBOOST_RV_REF
+            forward_list(UNBOOST_RV_REF(self_type) other) {
+                m_head.m_next = UNBOOST_RV(other).m_head.m_next;
+                UNBOOST_RV(other).m_head.m_next = NULL;
             }
 
-            self_type& operator=(UNBOOST_RVREF_TYPE(self_type) other) {
+            self_type& operator=(UNBOOST_RV_REF(self_type) other) {
                 clear();
-                m_head.m_next = UNBOOST_RVREF(other).m_head.m_next;
-                UNBOOST_RVREF(other).m_head = NULL;
+                m_head.m_next = UNBOOST_RV(other).m_head.m_next;
+                UNBOOST_RV(other).m_head = NULL;
                 return *this;
             }
 
-            void push_front(UNBOOST_RVREF_TYPE(T) value) {
+            void push_front(UNBOOST_RV_REF(T) value) {
                 _insert_after(before_cbegin(), value);
             }
 
-            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other) {
+            void splice_after(const_iterator pos, UNBOOST_RV_REF(self_type) other) {
                 node_type *node1, *node2, *next1, *next2;
-                if (UNBOOST_RVREF(other).empty()) {
+                if (UNBOOST_RV(other).empty()) {
                     return;
                 }
-                UNBOOST_RVREF(other).reverse();
+                UNBOOST_RV(other).reverse();
                 node1 = _node_from_cit(pos);
-                node2 = UNBOOST_RVREF(other).m_head.m_next;
+                node2 = UNBOOST_RV(other).m_head.m_next;
                 do {
                     next1 = node1->m_next;
                     next2 = node2->m_next;
@@ -668,9 +666,9 @@
                     node2->m_next = next1;
                     node2 = next2;
                 } while (node2);
-                UNBOOST_RVREF(other).m_head.m_next = NULL;
+                UNBOOST_RV(other).m_head.m_next = NULL;
             }
-            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other,
+            void splice_after(const_iterator pos, UNBOOST_RV_REF(self_type) other,
                               const_iterator it)
             {
                 node_type *pos_node = pos.m_node;
@@ -688,10 +686,10 @@
                 node->m_next = (next ? next->m_next : NULL);
                 pos_node->m_next = node;
 
-                if (UNBOOST_RVREF(other).m_head.m_next == it_node)
-                    UNBOOST_RVREF(other).m_head.m_next = NULL;
+                if (UNBOOST_RV(other).m_head.m_next == it_node)
+                    UNBOOST_RV(other).m_head.m_next = NULL;
             }
-            void splice_after(const_iterator pos, UNBOOST_RVREF_TYPE(self_type) other,
+            void splice_after(const_iterator pos, UNBOOST_RV_REF(self_type) other,
                               const_iterator _before, const_iterator _end)
             {
                 node_type *list = NULL;
@@ -718,26 +716,26 @@
                 }
             }
 
-            iterator insert_after(const_iterator pos, UNBOOST_RVREF_TYPE(T) value) {
+            iterator insert_after(const_iterator pos, UNBOOST_RV_REF(T) value) {
                 iterator it(_insert_after(pos, move(value)));
                 return it;
             }
 
-            void merge(UNBOOST_RVREF_TYPE(self_type) other) {
+            void merge(UNBOOST_RV_REF(self_type) other) {
                 std::less<T> l;
                 merge(other, l);
             }
 
             template <class Compare>
-            void merge(UNBOOST_RVREF_TYPE(self_type) other, Compare comp) {
-                if (this == &UNBOOST_RVREF(other))
+            void merge(UNBOOST_RV_REF(self_type) other, Compare comp) {
+                if (this == &UNBOOST_RV(other))
                     return;
 
                 node_type *next;
                 node_type *node1 = &m_head;
-                node_type *node2 = &UNBOOST_RVREF(other).m_head;
+                node_type *node2 = &UNBOOST_RV(other).m_head;
                 m_head.m_next = NULL;
-                UNBOOST_RVREF(other).m_head.m_next = NULL;
+                UNBOOST_RV(other).m_head.m_next = NULL;
                 while (node1->m_next && node2->m_next) {
                     if (comp(*node1->get(), *node2->get())) {
                         node1->m_next = m_head.m_next;
@@ -754,9 +752,9 @@
                 if (node2->m_next) {
                     node1->m_next = node2;
                 }
-                UNBOOST_RVREF(other).m_head.m_next = NULL;
+                UNBOOST_RV(other).m_head.m_next = NULL;
             }
-        #endif  // def UNBOOST_RVREF
+        #endif  // def UNBOOST_RV_REF
 
         protected:
             node_type m_head;
@@ -767,33 +765,33 @@
                 return node;
             }
             template <typename ARG1>
-            node_type *_create_node(const ARG1& arg1) {
+            node_type *_create_node(UNBOOST_FWD_REF(ARG1) arg1) {
                 node_type *node = new node_type();
-                _construct_in_place(node->get(), arg1);
+                _construct_in_place(node->get(), forward<ARG1>(arg1));
                 return node;
             }
             template <typename ARG1, typename ARG2>
-            node_type *_create_node(const ARG1& arg1, const ARG2& arg2) {
+            node_type *_create_node(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
                 node_type *node = new node_type();
-                _construct_in_place(node->get(), arg1, arg2);
+                _construct_in_place(node->get(), forward<ARG1>(arg1), forward<ARG2>(arg2));
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            node_type *_create_node(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
+            node_type *_create_node(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
                 node_type *node = new node_type();
-                _construct_in_place(node->get(), arg1, arg2, arg3);
+                _construct_in_place(node->get(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            node_type *_create_node(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
+            node_type *_create_node(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
                 node_type *node = new node_type();
-                _construct_in_place(node->get(), arg1, arg2, arg3, arg4);
+                _construct_in_place(node->get(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            node_type *_create_node(const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
+            node_type *_create_node(UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
                 node_type *node = new node_type();
-                _construct_in_place(node->get(), arg1, arg2, arg3, arg4, arg5);
+                _construct_in_place(node->get(), forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), arg4, arg5);
                 return node;
             }
 
@@ -813,32 +811,32 @@
                 return node;
             }
             template <typename ARG1>
-            node_type *_insert_after(const_iterator pos, const ARG1& arg1) {
+            node_type *_insert_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1) {
                 node_type *node = _create_node(arg1);
                 _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2>
-            node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2) {
+            node_type *_insert_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
                 node_type *node = _create_node(arg1, arg2);
                 _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                node_type *node = _create_node(arg1, arg2, arg3);
+            node_type *_insert_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
+                node_type *node = _create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
                 _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                node_type *node = _create_node(arg1, arg2, arg3, arg4);
+            node_type *_insert_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
+                node_type *node = _create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4));
                 _add_node_after(pos, node);
                 return node;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            node_type *_insert_after(const_iterator pos, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                node_type *node = _create_node(arg1, arg2, arg3, arg4, arg5);
+            node_type *_insert_after(const_iterator pos, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
+                node_type *node = _create_node(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5));
                 _add_node_after(pos, node);
                 return node;
             }
@@ -887,25 +885,26 @@
                 new (ptr) _ctor_helper<T>();
             }
             template <typename ARG1>
-            void _construct_in_place(void *ptr, const ARG1& arg1) {
-                new (ptr) _ctor_helper<T>(arg1);
+            void _construct_in_place(void *ptr, UNBOOST_FWD_REF(ARG1) arg1) {
+                new (ptr) _ctor_helper<T>(forward<ARG1>(arg1));
             }
             template <typename ARG1, typename ARG2>
-            void _construct_in_place(void *ptr, const ARG1& arg1, const ARG2& arg2) {
-                new (ptr) _ctor_helper<T>(arg1, arg2);
+            void _construct_in_place(void *ptr, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2) {
+                new (ptr) _ctor_helper<T>(forward<ARG1>(arg1), forward<ARG2>(arg2));
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            void _construct_in_place(void *ptr, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
-                new (ptr) _ctor_helper<T>(arg1, arg2, arg3);
+            void _construct_in_place(void *ptr, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3) {
+                new (ptr) _ctor_helper<T>(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3));
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            void _construct_in_place(void *ptr, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
-                new (ptr) _ctor_helper<T>(arg1, arg2, arg3, arg4);
+            void _construct_in_place(void *ptr, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4) {
+                new (ptr) _ctor_helper<T>(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4));
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            void _construct_in_place(void *ptr, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
-                new (ptr) _ctor_helper<T>(arg1, arg2, arg3, arg4, arg5);
+            void _construct_in_place(void *ptr, UNBOOST_FWD_REF(ARG1) arg1, UNBOOST_FWD_REF(ARG2) arg2, UNBOOST_FWD_REF(ARG3) arg3, UNBOOST_FWD_REF(ARG4) arg4, UNBOOST_FWD_REF(ARG5) arg5) {
+                new (ptr) _ctor_helper<T>(forward<ARG1>(arg1), forward<ARG2>(arg2), forward<ARG3>(arg3), forward<ARG4>(arg4), forward<ARG5>(arg5));
             }
+
             void _destruct(T *ptr) {
                 ptr->~T();
             }

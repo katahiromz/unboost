@@ -43,6 +43,7 @@
         using std::integral_constant;
         using std::true_type;
         using std::false_type;
+        using std::enable_if;
         using std::is_void;
         using std::is_integral;
         using std::is_floating_point;
@@ -119,7 +120,6 @@
         using std::aligned_storage;
         using std::aligned_storage;
         using std::decay;
-        using std::enable_if;
         using std::conditional;
         using std::common_type;
         using std::underlying_type;
@@ -131,6 +131,7 @@
         using boost::integral_constant;
         using boost::true_type;
         using boost::false_type;
+        using boost::enable_if;
         using boost::is_void;
         using boost::is_integral;
         using boost::is_floating_point;
@@ -187,7 +188,6 @@
         using boost::aligned_storage;
         using boost::aligned_storage;
         using boost::decay;
-        using boost::enable_if;
         using boost::conditional;
         using boost::common_type;
     } // namespace unboost
@@ -350,6 +350,12 @@
         template <typename T>
         struct is_volatile<volatile T> : true_type { };
 #endif
+
+        template<bool B, typename T = void>
+        struct enable_if { };
+
+        template <typename T>
+        struct enable_if<true, T> { typedef T type; };
 
         // FIXME: is_trivial, is_trivially_copyable
         // FIXME: is_standard_layout, is_pod, is_literal_type
@@ -526,12 +532,6 @@
 #endif
 
         // FIXME: transformations
-
-        template<bool B, typename T = void>
-        struct enable_if { };
-
-        template <typename T>
-        struct enable_if<true, T> { typedef T type; };
 
         template <bool B, typename T, typename F>
         struct conditional { typedef T type; };
