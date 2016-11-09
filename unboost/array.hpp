@@ -5,6 +5,7 @@
 #define UNBOOST_ARRAY_HPP_
 
 #include "unboost.hpp"
+#include "rv_ref.hpp"
 #undef max
 #undef min
 
@@ -201,11 +202,11 @@
         inline const T& get(const array<T, N>& a) {
             return a.data()[I];
         }
-        #ifdef UNBOOST_RVREF
+        #ifdef UNBOOST_RV_REF
             template <size_t I, typename T, size_t N>
             inline UNBOOST_RV_REF(T)
             get(UNBOOST_RV_REF(array<T, N>) a) {
-                return unboost::move(UNBOOST_RVREF(a).data()[I]);
+                return move(UNBOOST_RV(a).data()[I]);
             }
         #endif
     } // namespace unboost
