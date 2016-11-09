@@ -13,16 +13,11 @@
 #endif
 
 #ifdef CXX11
-    #define UNBOOST_RVALREF_TYPE(type)  type&&
+    #define UNBOOST_RV_REF(type)  type&&
 #elif defined(BOOST)
-    #if __cplusplus >= 201103L
-        #define UNBOOST_RVALREF_TYPE(type)  type&&
-    #else
-        template <typename T>
-        struct dummy_struct { typedef T type; }
-        #define UNBOOST_RVALREF_TYPE(type)  dummy_struct<T>&
-    #endif
+    #define UNBOOST_RV_REF(type)  type&&
 #else   // Unboost
+    //
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -111,26 +106,26 @@ int main(void) {
     {
         assert(!is_lvalue_reference<A>::value);
         assert(is_lvalue_reference<A&>::value);
-        assert(!is_lvalue_reference<UNBOOST_RVALREF_TYPE(A) >::value);
+        assert(!is_lvalue_reference<UNBOOST_RV_REF(A) >::value);
         assert(!is_lvalue_reference<int>::value);
         assert(is_lvalue_reference<int&>::value);
-        assert(!is_lvalue_reference<UNBOOST_RVALREF_TYPE(int) >::value);
+        assert(!is_lvalue_reference<UNBOOST_RV_REF(int) >::value);
     }
     {
         assert(!is_rvalue_reference<A>::value);
         assert(!is_rvalue_reference<A&>::value);
-        assert(is_rvalue_reference<UNBOOST_RVALREF_TYPE(A) >::value);
+        assert(is_rvalue_reference<UNBOOST_RV_REF(A) >::value);
         assert(!is_rvalue_reference<int>::value);
         assert(!is_rvalue_reference<int&>::value);
-        assert(is_rvalue_reference<UNBOOST_RVALREF_TYPE(int) >::value);
+        assert(is_rvalue_reference<UNBOOST_RV_REF(int) >::value);
     }
     {
         assert(!is_reference<A>::value);
         assert(is_reference<A&>::value);
-        assert(is_reference<UNBOOST_RVALREF_TYPE(A) >::value);
+        assert(is_reference<UNBOOST_RV_REF(A) >::value);
         assert(!is_reference<int>::value);
         assert(is_reference<int&>::value);
-        assert(is_reference<UNBOOST_RVALREF_TYPE(int) >::value);
+        assert(is_reference<UNBOOST_RV_REF(int) >::value);
     }
 #ifndef UNBOOST_NO_CV_INFO
     {
@@ -195,7 +190,7 @@ int main(void) {
     {
         assert((is_same<remove_reference<int&>::type, int>::value));
         assert((is_same<add_lvalue_reference<int>::type, int&>::value));
-        assert((is_same<add_rvalue_reference<int>::type, UNBOOST_RVALREF_TYPE(int) >::value));
+        assert((is_same<add_rvalue_reference<int>::type, UNBOOST_RV_REF(int) >::value));
         assert((is_same<remove_pointer<int*>::type, int>::value));
         assert((is_same<add_pointer<int>::type, int*>::value));
     }
