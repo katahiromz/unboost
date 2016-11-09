@@ -25,34 +25,26 @@
     #define UNBOOST_MOVE        unboost::move
     #define UNBOOST_FORWARD     unboost::forward
 #else
-    template <typename T>
-    struct rv {
-        T m_ref;
-        explicit rv(T ref) : m_ref(ref) { }
-    };
-
-    template <typename T>
-    struct fwd {
-        const T *m_ptr;
-        bool m_is_lvalue_ref;
-        fwd(const T& ref) : m_ptr(&ref), m_is_lvalue_ref(true) { }
-        fwd(const rv<T>& ref) : m_ptr(&ref.m_ref), m_is_lvalue_ref(false) { }
-        fwd(const fwd<T>& ref) : m_ptr(ref.m_ptr), m_is_lvalue_ref(ref.m_is_lvalue_ref) { }
-    };
-
-    #ifdef OLD_COMPILER
-        #define UNBOOST_RV_REF(type)    rv<type>
-        #define UNBOOST_RV(value)       (value).m_ref
-        #define UNBOOST_FWD_REF(type)   fwd<type>
-        #define UNBOOST_FWD(value)      *(value).m_ptr
-    #else
-        #define UNBOOST_RV_REF(...)     const rv<__VA_ARGS__>&
-        #define UNBOOST_RV(...)         (__VA_ARGS__).m_ref
-        #define UNBOOST_FWD_REF(...)    fwd<__VA_ARGS__>
-        #define UNBOOST_FWD(...)        *(__VA_ARGS__).m_ptr
-    #endif
-
     namespace unboost {
+        template <typename T>
+        struct rv {
+            T m_ref;
+            explicit rv(T ref) : m_ref(ref) { }
+            operator T&() { return m_ref; }
+        };
+
+        #ifdef OLD_COMPILER
+            #define UNBOOST_RV_REF(type)    unboost::rv<type>
+            #define UNBOOST_RV(value)       (value).m_ref
+            #define UNBOOST_FWD_REF(type)   type
+            #define UNBOOST_FWD(value)      (value)
+        #else
+            #define UNBOOST_RV_REF(...)     const unboost::rv<__VA_ARGS__>&
+            #define UNBOOST_RV(...)         (__VA_ARGS__).m_ref
+            #define UNBOOST_FWD_REF(...)    __VA_ARGS__
+            #define UNBOOST_FWD(...)        (__VA_ARGS__)
+        #endif
+
         //
         // remove_reference<T>
         //
@@ -95,6 +87,20 @@
             return static_cast<rv<typename remove_reference<T>::type> >(t);
         }
 
+        //
+        // forward<T>
+        //
+        template <typename T>
+        inline T&
+        forward(T& t) {
+            return t;
+        }
+        template <typename T>
+        inline const T&
+        forward(const T& t) {
+            return t;
+        }
+
         #define UNBOOST_MOVE        unboost::move
         #define UNBOOST_FORWARD(f)  unboost::forward
     } // namespace unboost
@@ -114,8 +120,16 @@ void emplace(UNBOOST_RV_REF(ARG1) arg1) {
     std::cout << UNBOOST_RV(arg1) << std::endl;
 }
 
+// (3)
+template <typename ARG1>
+void insert(UNBOOST_FWD_REF(ARG1) arg1) {
+    std::cout << "(3)" << std::endl;
+    std::cout << UNBOOST_FWD(arg1) << std::endl;
+}
+
 int main(void) {
     emplace("test1");
     emplace(UNBOOST_MOVE(std::string("test2")));
+    insert("11");
     return 0;
 }
