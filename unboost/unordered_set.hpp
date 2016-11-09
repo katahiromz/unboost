@@ -656,7 +656,7 @@
                 size_type i = bucket(key);
                 super_const_iterator prev_it;
                 if (key_eq()(key, m_buckets[i].m_super_it->m_key)) {
-                    prev_it = m_list.before_cbegin();
+                    prev_it = m_list.cbefore_begin();
                 } else {
                     prev_it = m_buckets[i].m_super_it;
                 }
