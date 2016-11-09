@@ -144,8 +144,8 @@
 
 // Unboost's type_traits depends on Unboost's rvref
 #ifdef UNBOOST_USE_UNBOOST_TYPE_TRAITS
-    #ifndef UNBOOST_USE_UNBOOST_RVREF
-        #define UNBOOST_USE_UNBOOST_RVREF
+    #ifndef UNBOOST_USE_UNBOOST_RV_REF
+        #define UNBOOST_USE_UNBOOST_RV_REF
     #endif
 #endif
 
