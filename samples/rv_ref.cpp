@@ -42,8 +42,8 @@ struct X {
     X(const X& x) : m_px(new int(*x.m_px)) {
         std::cout << "copy ctor" << std::endl;
     }
-    X(UNBOOST_RV_REF(X) x) : m_px(x.m_px) {
-        x.m_px = NULL;
+    X(UNBOOST_RV_REF(X) x) : m_px(UNBOOST_RV(x).m_px) {
+        UNBOOST_RV(x).m_px = NULL;
         std::cout << "move ctor" << std::endl;
     }
 
@@ -57,10 +57,10 @@ struct X {
     }
     X& operator=(UNBOOST_RV_REF(X) x) {
         std::cout << "move assignment" << std::endl;
-        if (this != &x) {
+        if (this != &UNBOOST_RV(x)) {
             delete m_px;
-            m_px = x.m_px;
-            x.m_px = NULL;
+            m_px = UNBOOST_RV(x).m_px;
+            UNBOOST_RV(x).m_px = NULL;
         }
         return *this;
     }
