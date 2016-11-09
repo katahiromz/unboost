@@ -251,34 +251,33 @@
 
             _ptr_base() : _m_ptr(NULL), _m_rep(NULL) { }
 
-#ifdef UNBOOST_RVREF
-            _ptr_base(UNBOOST_RV(self_type) r) :
-                _m_ptr(NULL), _m_rep(NULL)
+#ifdef UNBOOST_RV_REF
+            _ptr_base(UNBOOST_RV_REF(self_type) r)
+                : _m_ptr(NULL), _m_rep(NULL)
             {
-                _assign_rv(forward(UNBOOST_RVREF(r)));
+                _assign_rv(forward(UNBOOST_RV(r)));
             }
 
             template <typename T2>
-            _ptr_base(UNBOOST_RV(_ptr_base<T2> ) r) :
-                _m_ptr(UNBOOST_RVREF(r)._m_ptr),
-                _m_rep(UNBOOST_RVREF(r)._m_rep)
+            _ptr_base(UNBOOST_RV_REF(_ptr_base<T2> ) r) :
+                _m_ptr(UNBOOST_RV(r)._m_ptr),
+                _m_rep(UNBOOST_RV(r)._m_rep)
             {
-                UNBOOST_RVREF(r)._m_ptr = NULL;
-                UNBOOST_RVREF(r)._m_rep = NULL;
+                UNBOOST_RV(r)._m_ptr = NULL;
+                UNBOOST_RV(r)._m_rep = NULL;
             }
 
-            self_type& operator=(UNBOOST_RV(self_type) r)
-            {
-                _assign_rv(forward(UNBOOST_RVREF(r)));
+            self_type& operator=(UNBOOST_RV_REF(self_type) r) {
+                _assign_rv(forward(UNBOOST_RV(r)));
                 return *this;
             }
 
             void _assign_rv(UNBOOST_RV(self_type) r) {
-                if (this != &UNBOOST_RVREF(r)) {
-                    _swap(UNBOOST_RVREF(r));
+                if (this != &UNBOOST_RV(r)) {
+                    _swap(UNBOOST_RV(r));
                 }
             }
-#endif  // def UNBOOST_RVREF
+#endif  // def UNBOOST_RV_REF
 
             long _use_count() const {
                 return (_m_rep ? _m_rep->_use_count() : 0);
@@ -454,41 +453,41 @@
                 this->_reset(other, tag);
             }
 
-#ifdef UNBOOST_RVREF
-            shared_ptr(UNBOOST_RV(self_type) r) :
-                super_type(forward(UNBOOST_RVREF(r))) { }
+#ifdef UNBOOST_RV_REF
+            shared_ptr(UNBOOST_RV_REF(self_type) r) :
+                super_type(forward(UNBOOST_RV(r))) { }
 
-            self_type& operator=(UNBOOST_RV(self_type) r) {
-                self_type(UNBOOST_RVREF(r)).swap(*this);
+            self_type& operator=(UNBOOST_RV_REF(self_type) r) {
+                self_type(UNBOOST_RV(r)).swap(*this);
                 return *this;
             }
             template <typename T2>
-            shared_ptr(UNBOOST_RV(shared_ptr<T2>) r) :
-                super_type(forward(UNBOOST_RVREF(r))) { }
+            shared_ptr(UNBOOST_RV_REF(shared_ptr<T2>) r) :
+                super_type(forward(UNBOOST_RV(r))) { }
 
             template <typename T2>
-            self_type& operator=(UNBOOST_RV(shared_ptr<T2>) r) {
-                self_type(UNBOOST_RVREF(r)).swap(*this);
+            self_type& operator=(UNBOOST_RV_REF(shared_ptr<T2>) r) {
+                self_type(UNBOOST_RV(r)).swap(*this);
                 return *this;
             }
-            #ifdef UNBOOST_OLD_BORLAND
+            #ifdef UNBOOST_OLD_COMPILER
                 template <typename T2, typename DELETER>
-                self_type& operator=(rvalue_ref<unique_ptr<T2, DELETER> > r) {
-                    self_type(move(UNBOOST_RVREF(r))).swap(*this);
+                self_type& operator=(rv<unique_ptr<T2, DELETER> > r) {
+                    self_type(move(UNBOOST_RV(r))).swap(*this);
                     return *this;
                 }
             #else
                 template <typename T2, typename DELETER>
-                self_type& operator=(UNBOOST_RV(unique_ptr<T2, DELETER>) r) {
-                    self_type(move(UNBOOST_RVREF(r))).swap(*this);
+                self_type& operator=(UNBOOST_RV_REF(unique_ptr<T2, DELETER>) r) {
+                    self_type(move(UNBOOST_RV(r))).swap(*this);
                     return *this;
                 }
             #endif
 
-            void swap(UNBOOST_RV(self_type) r) {
-                super_type::swap(UNBOOST_RVREF(r));
+            void swap(UNBOOST_RV_REF(self_type) r) {
+                super_type::swap(UNBOOST_RV(r));
             }
-#endif
+#endif  // def UNBOOST_RV_REF
 
             ~shared_ptr() {
                 this->_dec_ref();
@@ -793,49 +792,49 @@ namespace unboost {
 
             unique_ptr(pointer ptr, DELETER d) : m_ptr(ptr), m_d(d) { }
 
-#ifdef UNBOOST_RVREF
-            unique_ptr(UNBOOST_RV(self_type)& u) :
-                m_ptr(UNBOOST_RVREF(u).m_ptr)
+#ifdef UNBOOST_RV_REF
+            unique_ptr(UNBOOST_RV_REF(self_type)& u) :
+                m_ptr(UNBOOST_RV(u).m_ptr)
             {
-                UNBOOST_RVREF(u).m_ptr = NULL;
+                UNBOOST_RV(u).m_ptr = NULL;
             }
 
-            self_type& operator=(UNBOOST_RV(self_type) r) {
-                m_ptr = UNBOOST_RVREF(r).m_ptr;
-                UNBOOST_RVREF(r).m_ptr = NULL;
+            self_type& operator=(UNBOOST_RV_REF(self_type) r) {
+                m_ptr = UNBOOST_RV(r).m_ptr;
+                UNBOOST_RV(r).m_ptr = NULL;
                 return *this;
             }
 
-            #ifdef UNBOOST_OLD_BORLAND
+            #ifdef UNBOOST_OLD_COMPILER
                 template <typename T2, typename D2>
-                unique_ptr(rvalue_ref<unique_ptr<T2, D2> > u) :
-                    m_ptr(UNBOOST_RVREF(u).m_ptr)
+                unique_ptr(rv<unique_ptr<T2, D2> > u) :
+                    m_ptr(UNBOOST_RV(u).m_ptr)
                 {
-                    UNBOOST_RVREF(u).m_ptr = NULL;
+                    UNBOOST_RV(u).m_ptr = NULL;
                 }
 
                 template <typename T2, typename D2>
-                self_type& operator=(rvalue_ref<unique_ptr<T2, D2> > u) {
-                    m_ptr = UNBOOST_RVREF(u).m_ptr;
-                    UNBOOST_RVREF(u).m_ptr = NULL;
+                self_type& operator=(rv<unique_ptr<T2, D2> > u) {
+                    m_ptr = UNBOOST_RV(u).m_ptr;
+                    UNBOOST_RV(u).m_ptr = NULL;
                     return *this;
                 }
             #else
                 template <typename T2, typename D2>
-                unique_ptr(UNBOOST_RV(unique_ptr<T2, D2>) u) :
-                    m_ptr(UNBOOST_RVREF(u).m_ptr)
+                unique_ptr(UNBOOST_RV_REF(unique_ptr<T2, D2>) u) :
+                    m_ptr(UNBOOST_RV(u).m_ptr)
                 {
-                    UNBOOST_RVREF(u).m_ptr = NULL;
+                    UNBOOST_RV(u).m_ptr = NULL;
                 }
 
                 template <typename T2, typename D2>
-                self_type& operator=(UNBOOST_RV(unique_ptr<T2, D2>) u) {
-                    m_ptr = UNBOOST_RVREF(u).m_ptr;
-                    UNBOOST_RVREF(u).m_ptr = NULL;
+                self_type& operator=(UNBOOST_RV_REF(unique_ptr<T2, D2>) u) {
+                    m_ptr = UNBOOST_RV(u).m_ptr;
+                    UNBOOST_RV(u).m_ptr = NULL;
                     return *this;
                 }
             #endif
-#endif  // def UNBOOST_RVREF
+#endif  // def UNBOOST_RV_REF
 
             ~unique_ptr() {
                 pointer ptr = get();
@@ -932,11 +931,11 @@ namespace unboost {
 
         unique_array() { }
         unique_array(pointer ptr) : super_type(ptr) { }
-#ifdef UNBOOST_RVREF
-        unique_array(UNBOOST_RV(super_type) r) :
-            super_type(UNBOOST_RVREF(r)) { }
-        self_type& operator=(UNBOOST_RV(self_type) r) {
-            super_type::operator=(UNBOOST_RVREF(r));
+#ifdef UNBOOST_RV_REF
+        unique_array(UNBOOST_RV_REF(super_type) r) :
+            super_type(UNBOOST_RV(r)) { }
+        self_type& operator=(UNBOOST_RV_REF(self_type) r) {
+            super_type::operator=(UNBOOST_RV(r));
             return *this;
         }
 #endif
