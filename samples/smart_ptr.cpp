@@ -59,9 +59,14 @@ void output(const std::string& msg, int* pInt)
 #ifdef BOOST
     template <typename T>
     struct array_deleter {
-        void operator()(T *ptr) const {
-            delete[] ptr;
+        typedef array_deleter<T> self_type;
+        void operator()(T *ptr) {
+            if (sizeof(T) > 0) {
+                delete[] ptr;
+            }
         }
+        template <typename T2>
+        void operator()(T2 *ptr) { }
     };
 #endif
 
@@ -175,7 +180,7 @@ int main(void) {
     }
 #else   // Unboost
     {
-        unboost::unique_array<int> a(new int[32], array_deleter());
+        unboost::unique_array<int> a(new int[32]);
         a[0] = 1;
         assert(a[0] == 1);
     }

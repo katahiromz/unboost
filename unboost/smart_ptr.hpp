@@ -921,8 +921,8 @@ namespace unboost {
         void operator()(T2 *ptr) { }
     };
 
-    template <typename T>
-    class unique_array : public unique_ptr<T, _default_array_delete<T> > {
+    template <typename T, typename DELETER = _default_array_delete<T> >
+    class unique_array : public unique_ptr<T, DELETER> {
     public:
         typedef unique_array<T> self_type;
         typedef unique_ptr<T, _default_array_delete<T> > super_type;
