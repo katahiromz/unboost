@@ -140,6 +140,7 @@ void test_unordered_set(void) {
         usi1.insert(i);
     }
 
+    std::cout << "##" << usi1.bucket_count() << std::endl;
     {
         unordered_set<int>::local_iterator lit = usi1.begin(1), lend = usi1.end(1);
         while (lit != lend) {
@@ -298,8 +299,9 @@ void test_unordered_multiset(void) {
         usi1.insert(i);
     }
 
-    {
-        unordered_multiset<int>::local_iterator lit = usi1.begin(1), lend = usi1.end(1);
+    std::cout << "##" << usi1.bucket_count() << std::endl;
+    for (size_t i = 0; i < 5; ++i) {
+        unordered_multiset<int>::local_iterator lit = usi1.begin(i), lend = usi1.end(i);
         while (lit != lend) {
             std::cout << *lit << ", ";
             ++lit;

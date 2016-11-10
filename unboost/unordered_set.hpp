@@ -1002,8 +1002,9 @@
 
                 void _fix() {
                     if (m_super_it.m_node) {
-                        if (_get_hash_value() % m_b_count != m_b_index)
+                        if (_get_hash_value() % m_b_count != m_b_index) {
                             m_super_it.m_node = NULL;
+                        }
                     }
                 }
 
@@ -1059,8 +1060,9 @@
 
                 void _fix() {
                     if (m_super_it.m_node) {
-                        if (_get_hash_value() % m_b_count != m_b_index)
+                        if (_get_hash_value() % m_b_count != m_b_index) {
                             m_super_it.m_node = NULL;
+                        }
                     }
                 }
 
@@ -1547,7 +1549,18 @@
                     m_list._add_node_after(m_list.before_begin(), node);
                     m_buckets[i].m_super_it = node;
                 } else {
-                    m_list._add_node_after(m_buckets[i].m_super_it, node);
+                    super_iterator prev_sit = m_buckets[i].m_super_it;
+                    super_iterator sit = prev_sit, send;
+                    ++sit;
+                    while (sit != send) {
+                        if ((sit->m_hash_value % bucket_count()) != i)
+                            break;
+                        if (key_eq()(key, prev_sit->m_key))
+                            break;
+                        ++sit;
+                        ++prev_sit;
+                    }
+                    m_list._add_node_after(prev_sit, node);
                 }
                 ++(m_buckets[i].m_count);
                 ++m_element_count;
