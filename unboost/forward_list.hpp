@@ -912,6 +912,8 @@
 
             template <typename Key, typename Hash, typename KeyEq>
             friend class unordered_set;
+            template <typename Key, typename Hash, typename KeyEq>
+            friend class unordered_multiset;
         }; // forward_list<T>
 
         template <typename T>
