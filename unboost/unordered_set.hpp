@@ -5,7 +5,6 @@
 #define UNBOOST_UNORDERED_SET_HPP_
 
 #include "unboost.hpp"
-#include "rv_ref.hpp"   // for unboost::move, UNBOOST_RV_REF, ...
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_UNORDERED_SET) + defined(UNBOOST_USE_TR1_UNORDERED_SET) + defined(UNBOOST_USE_BOOST_UNORDERED_SET) + defined(UNBOOST_USE_UNBOOST_UNORDERED_SET)) == 0)
@@ -78,6 +77,7 @@
     #include <vector>   // for std::vector
     #include <cmath>    // for std::ceil
     #include <iterator> // for std::forward_iterator_tag
+    #include <functional>   // for std::equal_to
     #include "forward_list.hpp"     // for unboost::forward_list
     #include "functional/hash.hpp"  // for unboost::hash
 
@@ -378,6 +378,10 @@
                 insert(other.begin(), other.end());
             }
 
+            ~unordered_set() {
+                clear();
+            }
+
                   iterator  begin()       { return m_list.begin(); }
             const_iterator  begin() const { return cbegin(); }
             const_iterator cbegin() const { return m_list.cbegin(); }
@@ -453,23 +457,23 @@
                 return emplace().first;
             }
             template <typename ARG1>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1) {
                 return emplace(arg1).first;
             }
             template <typename ARG1, typename ARG2>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2) {
                 return emplace(arg1, arg2).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
                 return emplace(arg1, arg2, arg3).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
                 return emplace(arg1, arg2, arg3, arg4).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
                 return emplace(arg1, arg2, arg3, arg4, arg5).first;
             }
 
@@ -515,7 +519,7 @@
                 m_list.m_head.m_next = NULL;
                 while (node) {
                     next = node->m_next;
-                    _emplace_key_node_0(node->get()->m_key, node);
+                    _emplace_node_0(node);
                     node = next;
                 }
                 assert(float(bucket_count()) > size() / max_load_factor());
@@ -729,8 +733,8 @@
             }
 
             // NOTE: we don't support the next two methods:
-            //   iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) { ... }
             //   std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) { ... }
+            //   iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) { ... }
 #endif  // def UNBOOST_RV_REF
 
         protected:
@@ -776,7 +780,7 @@
             }
 
             std::pair<iterator, bool>
-            _emplace_key_node_0(const Key& key, node_type *node) {
+            _emplace_node_0(node_type *node) {
                 const size_type i = node->get()->m_hash_value % bucket_count();
                 if (_is_bucket_empty(i)) {
                     m_list._add_node_after(m_list.before_begin(), node);
@@ -792,7 +796,7 @@
             std::pair<iterator, bool>
             _emplace_key_node(const Key& key, node_type *node) {
                 node->get()->m_hash_value = hash_function()(key);
-                std::pair<iterator, bool> ret = _emplace_key_node_0(key, node);
+                std::pair<iterator, bool> ret = _emplace_node_0(node);
                 _rehash_if_case();
                 return ret;
             }
@@ -1208,23 +1212,23 @@
                 return emplace().first;
             }
             template <typename ARG1>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1) {
                 return emplace(arg1).first;
             }
             template <typename ARG1, typename ARG2>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2) {
                 return emplace(arg1, arg2).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
                 return emplace(arg1, arg2, arg3).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
                 return emplace(arg1, arg2, arg3, arg4).first;
             }
             template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
-            iterator emplace_hint(const_iterator it, const ARG1& arg1, const ARG2& arg2, const ARG3& arg3, const ARG4& arg4, const ARG5& arg5) {
+            iterator emplace_hint(const_iterator it, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
                 return emplace(arg1, arg2, arg3, arg4, arg5).first;
             }
 
@@ -1270,7 +1274,7 @@
                 m_list.m_head.m_next = NULL;
                 while (node) {
                     next = node->m_next;
-                    _emplace_key_node_0(node->get()->m_key, node);
+                    _emplace_node_0(node->get()->m_key, node);
                     node = next;
                 }
                 assert(float(bucket_count()) > size() / max_load_factor());
@@ -1543,7 +1547,7 @@
                 }
             }
 
-            iterator _emplace_key_node_0(const Key& key, node_type *node) {
+            iterator _emplace_node_0(const Key& key, node_type *node) {
                 const size_type i = node->get()->m_hash_value % bucket_count();
                 if (_is_bucket_empty(i)) {
                     m_list._add_node_after(m_list.before_begin(), node);
@@ -1569,7 +1573,7 @@
 
             iterator _emplace_key_node(const Key& key, node_type *node) {
                 node->get()->m_hash_value = hash_function()(key);
-                iterator ret = _emplace_key_node_0(key, node);
+                iterator ret = _emplace_node_0(key, node);
                 _rehash_if_case();
                 return ret;
             }
