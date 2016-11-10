@@ -25,6 +25,7 @@
 #elif defined(UNBOOST_USE_UNBOOST_FORWARD_LIST)
     #include <iterator>     // for std::forward_iterator_tag
     #include <functional>   // for std::less
+    #include "swap.hpp"     // for unboost::swap
     namespace unboost {
         template <typename T>
         struct _ctor_helper {
@@ -537,7 +538,7 @@
             }
 
             void swap(self_type& other) {
-                swap(m_head, other.m_head);
+                unboost::swap(m_head.m_next, other.m_head.m_next);
             }
 
             iterator insert_after(const_iterator pos, const T& value) {
@@ -914,6 +915,8 @@
             friend class unordered_set;
             template <typename Key, typename Hash, typename KeyEq>
             friend class unordered_multiset;
+            template <typename Key, typename Mapped, typename Hash, typename KeyEq>
+            friend class unordered_map;
         }; // forward_list<T>
 
         template <typename T>

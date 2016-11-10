@@ -23,20 +23,67 @@ int main(void) {
     using unboost::unordered_map;
 #endif
 
-    unordered_map<int, int> um;
-    um.insert(std::make_pair(2, 3));
-    um.insert(std::make_pair(4, 5));
+    unordered_map<int, int> um1, um2;
+
+    assert(um1.empty());
+    assert(um1.size() == 0);
+
+    um1.insert(std::make_pair(2, 3));
+    assert(!um1.empty());
+    assert(um1.size() == 1);
+    assert(um1.at(2) == 3);
+    assert(um1.count(2) == 1);
+    assert(um1.count(4) == 0);
+    assert(um1.count(5) == 0);
+
+    um1.insert(std::make_pair(4, 5));
+    assert(!um1.empty());
+    assert(um1.size() == 2);
+    assert(um1.at(2) == 3);
+    assert(um1.at(4) == 5);
+    assert(um1.count(2) == 1);
+    assert(um1.count(4) == 1);
+    assert(um1.count(5) == 0);
+
+    um1.emplace(4, 6);
+    assert(!um1.empty());
+    assert(um1.size() == 2);
+    assert(um1.at(2) == 3);
+    assert(um1.at(4) == 5);
+    assert(um1.count(2) == 1);
+    assert(um1.count(4) == 1);
+    assert(um1.count(5) == 0);
+
+    assert(um2.empty());
+
+    um2 = um1;
+    um1.clear();
+    assert(um1.empty());
+    assert(um1.size() == 0);
+
+    assert(!um2.empty());
+    assert(um2.size() == 2);
+    assert(um2.at(2) == 3);
+    assert(um2.at(4) == 5);
+    assert(um2.count(2) == 1);
+    assert(um2.count(4) == 1);
+    assert(um2.count(5) == 0);
+
+    um1.swap(um2);
+    assert(um1.size() == 2);
+    assert(um1.find(2) != um1.end());
+    assert(um1.find(3) == um1.end());
+    assert(um1.find(4) != um1.end());
+    assert(um2.empty());
+
     {
-        unordered_map<int, int>::iterator it, end = um.end();
-        for (it = um.begin(); it != end; ++it) {
+        unordered_map<int, int>::iterator it, end = um1.end();
+        for (it = um1.begin(); it != end; ++it) {
             std::cout << it->first << ", " << it->second << std::endl;
         }
     }
-    assert(um.count(2) == 1);
-    assert(um.count(4) == 1);
-    assert(um.count(5) == 0);
 
     std::cout << "success" << std::endl;
 
     return 0;
-}
+} // main

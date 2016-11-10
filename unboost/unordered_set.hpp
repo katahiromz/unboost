@@ -532,12 +532,12 @@
             }
 
             void swap(self_type& other) {
-                swap(m_element_count, other.m_element_count);
-                swap(m_max_load_factor, other.m_max_load_factor);
-                swap(m_hasher, other.m_hasher);
-                swap(m_key_eq, other.m_list);
-                swap(m_list, other.m_list);
-                swap(m_buckets, other.m_buckets);
+                unboost::swap(m_element_count, other.m_element_count);
+                unboost::swap(m_max_load_factor, other.m_max_load_factor);
+                unboost::swap(m_hasher, other.m_hasher);
+                unboost::swap(m_key_eq, other.m_key_eq);
+                unboost::swap(m_list, other.m_list);
+                unboost::swap(m_buckets, other.m_buckets);
             }
 
             iterator find(const Key& key) {
@@ -1287,12 +1287,12 @@
             }
 
             void swap(self_type& other) {
-                swap(m_element_count, other.m_element_count);
-                swap(m_max_load_factor, other.m_max_load_factor);
-                swap(m_hasher, other.m_hasher);
-                swap(m_key_eq, other.m_list);
-                swap(m_list, other.m_list);
-                swap(m_buckets, other.m_buckets);
+                unboost::swap(m_element_count, other.m_element_count);
+                unboost::swap(m_max_load_factor, other.m_max_load_factor);
+                unboost::swap(m_hasher, other.m_hasher);
+                unboost::swap(m_key_eq, other.m_key_eq);
+                unboost::swap(m_list, other.m_list);
+                unboost::swap(m_buckets, other.m_buckets);
             }
 
             iterator find(const Key& key) {

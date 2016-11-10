@@ -74,7 +74,7 @@
 #elif defined(UNBOOST_USE_UNBOOST_ARRAY)
     #include <stdexcept>
     #include <iterator>     // for std::reverse_iterator
-    #include <limits>
+    #include "swap.hpp"     // for unboost::swap
     namespace unboost {
         template <typename T, size_t N>
         struct array {
@@ -117,7 +117,7 @@
 
             bool empty() const { return N == 0; }
             size_type size() const { return N; }
-            size_t max_size() const { return  std::numeric_limits<size_type>::max(); }
+            size_t max_size() const { return size_type(-1) / sizeof(T); }
 
                   iterator begin()          { return &m_data[0]; }
             const_iterator begin() const    { return &m_data[0]; }

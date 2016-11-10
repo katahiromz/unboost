@@ -134,6 +134,7 @@
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_SMART_PTR)
     #include <memory>       // for std::shared_ptr, ...
+    #include "swap.hpp"     // for unboost::swap
     namespace unboost {
         struct _static_tag { };
         struct _const_tag { };
@@ -857,8 +858,8 @@ namespace unboost {
             }
 
             void swap(self_type& ptr) {
-                swap(m_ptr, ptr.m_ptr);
-                swap(m_d, ptr.m_d);
+                unboost::swap(m_ptr, ptr.m_ptr);
+                unboost::swap(m_d, ptr.m_d);
             }
 
             pointer get() const { return m_ptr; }

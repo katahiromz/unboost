@@ -79,6 +79,7 @@
         #endif
         #include <windows.h>
     #endif
+    #include "swap.hpp"     // for unboost::swap
     #define UNBOOST_DEFINE_LOCK_EXTRA
 
     namespace unboost {
@@ -573,7 +574,7 @@
             }
 
             void swap(thread& other) {
-                swap(m_id, other.m_id);
+                unboost::swap(m_id, other.m_id);
             }
             friend void swap(thread& x, thread& y) {
                 x.swap(y);
@@ -775,8 +776,8 @@
                 return m;
             }
             void swap(unique_lock<Mutex>& other) {
-                swap(m_pmutex, other.m_pmutex);
-                swap(m_locked, other.m_locked);
+                unboost::swap(m_pmutex, other.m_pmutex);
+                unboost::swap(m_locked, other.m_locked);
             }
             template <class Mutex2>
             friend void swap(unique_lock<Mutex2>& ul1,
