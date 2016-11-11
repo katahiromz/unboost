@@ -797,8 +797,8 @@
         template <class Mutex>
         class lock_guard {
         public:
-            typedef Mutex mutex_type;
-            typedef lock_guard<Mutex> self_type;
+            typedef Mutex               mutex_type;
+            typedef lock_guard<Mutex>   self_type;
             explicit lock_guard(mutex_type& m) : m_mutex(m) {
                 m_mutex.lock();
             }
