@@ -234,11 +234,11 @@
                 local_iterator(super_iterator si, size_type index, size_type count)
                     : m_super_it(si), m_b_index(index), m_b_count(count) { }
 
-                reference _get_key() {
-                    return m_super_it.m_node->get()->m_value.first;
+                reference _get_value() {
+                    return m_super_it.m_node->get()->m_value;
                 }
-                const_reference _get_key() const {
-                    return m_super_it.m_node->get()->m_value.first;
+                const_reference _get_value() const {
+                    return m_super_it.m_node->get()->m_value;
                 }
                 size_type& _get_hash_value() {
                     return m_super_it.m_node->get()->m_hash_value;
@@ -247,10 +247,9 @@
                     return m_super_it.m_node->get()->m_hash_value;
                 }
 
-                      reference operator*()       { return _get_key(); }
-                const_reference operator*() const { return _get_key(); }
-                      pointer operator->()        { return &_get_key(); }
-                const_pointer operator->() const  { return &_get_key(); }
+                      reference operator*()       { return _get_value(); }
+                const_reference operator*() const { return _get_value(); }
+                const_pointer operator->() const  { return &_get_value(); }
 
                 void _fix() {
                     if (m_super_it.m_node) {
@@ -299,14 +298,14 @@
                 local_const_iterator(super_const_iterator si, size_type index, size_type count)
                     : m_super_it(si), m_b_index(index), m_b_count(count) { }
 
-                const_reference _get_key() const {
+                const Key& _get_key() const {
                     return m_super_it.m_node->get()->key;
                 }
                 const size_type& _get_hash_value() const {
                     return m_super_it.m_node->get()->hash_value;
                 }
 
-                reference operator*() const { return _get_key(); }
+                Key&operator*() const { return _get_key(); }
                 pointer operator->() const { return &_get_key(); }
 
                 void _fix() {
@@ -978,11 +977,11 @@
                 local_iterator(super_iterator si, size_type index, size_type count)
                     : m_super_it(si), m_b_index(index), m_b_count(count) { }
 
-                reference _get_key() {
-                    return m_super_it.m_node->get()->m_value.first;
+                reference _get_value() {
+                    return m_super_it.m_node->get()->m_value;
                 }
-                const_reference _get_key() const {
-                    return m_super_it.m_node->get()->m_value.first;
+                const_reference _get_value() const {
+                    return m_super_it.m_node->get()->m_value;
                 }
                 size_type& _get_hash_value() {
                     return m_super_it.m_node->get()->m_hash_value;
@@ -991,10 +990,10 @@
                     return m_super_it.m_node->get()->m_hash_value;
                 }
 
-                      reference operator*()       { return _get_key(); }
-                const_reference operator*() const { return _get_key(); }
-                      pointer operator->()        { return &_get_key(); }
-                const_pointer operator->() const  { return &_get_key(); }
+                      reference operator*()       { return _get_value(); }
+                const_reference operator*() const { return _get_value(); }
+                      pointer operator->()        { return &_get_value(); }
+                const_pointer operator->() const  { return &_get_value(); }
 
                 void _fix() {
                     if (m_super_it.m_node) {

@@ -76,11 +76,33 @@ void test_unordered_map(void) {
     assert(um1.find(4) != um1.end());
     assert(um2.empty());
 
+    um1[10] = 10;
+    assert(um1.size() == 3);
+    assert(um1.find(10) != um1.end());
+    assert(um1[10] == 10);
+
     {
         unordered_map<int, int>::iterator it, end = um1.end();
         for (it = um1.begin(); it != end; ++it) {
             std::cout << it->first << ", " << it->second << std::endl;
         }
+    }
+
+    um1.clear();
+    um1.max_load_factor(10000);
+    um1.rehash(5);
+    for (int i = 0; i < 100; ++i) {
+        um1.emplace(i, i + 1);
+    }
+
+    std::cout << "##" << um1.bucket_count() << std::endl;
+    for (size_t i = 0; i < 5; ++i) {
+        unordered_map<int, int>::local_iterator lit = um1.begin(i), lend = um1.end(i);
+        while (lit != lend) {
+            std::cout << "(" << lit->first << ", " << lit->second << "), ";
+            ++lit;
+        }
+        std::cout << std::endl;
     }
 
     std::cout << "success" << std::endl;
@@ -155,6 +177,23 @@ void test_unordered_multimap(void) {
         for (it = um1.begin(); it != end; ++it) {
             std::cout << it->first << ", " << it->second << std::endl;
         }
+    }
+
+    um1.clear();
+    um1.max_load_factor(10000);
+    um1.rehash(5);
+    for (int i = 0; i < 100; ++i) {
+        um1.emplace(i, i + 1);
+    }
+
+    std::cout << "##" << um1.bucket_count() << std::endl;
+    for (size_t i = 0; i < 5; ++i) {
+        unordered_multimap<int, int>::local_iterator lit = um1.begin(i), lend = um1.end(i);
+        while (lit != lend) {
+            std::cout << "(" << lit->first << ", " << lit->second << "), ";
+            ++lit;
+        }
+        std::cout << std::endl;
     }
 
     std::cout << "success" << std::endl;
