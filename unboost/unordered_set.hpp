@@ -732,7 +732,7 @@
                 return *this;
             }
 
-            // NOTE: we don't support the next two methods:
+            // NOTE: we don't support the following two methods:
             //   std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) { ... }
             //   iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) { ... }
 #endif  // def UNBOOST_RV_REF
@@ -1409,7 +1409,7 @@
 
                 super_const_iterator si = first.m_super_it, send;
                 while (si != send) {
-                    if (!key_eq()(*si, key))
+                    if (!key_eq()(si->m_key, key))
                         break;
                     ++si;
                 }
@@ -1500,7 +1500,7 @@
                 return *this;
             }
 
-            // NOTE: we don't support the next two methods:
+            // NOTE: we don't support the following two methods:
             //   iterator insert(const_iterator hint, UNBOOST_RV_REF(Key) key) { ... }
             //   std::pair<iterator, bool> insert(UNBOOST_RV_REF(Key) key) { ... }
 #endif  // def UNBOOST_RV_REF
