@@ -801,10 +801,12 @@
         public:
             typedef Mutex               mutex_type;
             typedef lock_guard<Mutex>   self_type;
+
             explicit lock_guard(mutex_type& m) : m_mutex(m) {
                 m_mutex.lock();
             }
             lock_guard(mutex_type& m, adopt_lock_t) : m_mutex(m) { }
+
             ~lock_guard() {
                 m_mutex.unlock();
             }
