@@ -53,6 +53,7 @@
 #ifdef UNBOOST_USE_CXX11_UNORDERED_MAP
     #include <unordered_map>            // for std::unordered_map, ...
     namespace unboost {
+        using std::pair;
         using std::unordered_map;
         using std::unordered_multimap;
     }
@@ -63,12 +64,14 @@
         #include <tr1/unordered_map>    // for std::tr1::unordered_map, ...
     #endif
     namespace unboost {
+        using std::pair;
         using std::tr1::unordered_map;
         using std::tr1::unordered_multimap;
     }
 #elif defined(UNBOOST_USE_BOOST_UNORDERED_MAP)
     #include <boost/unordered_map.hpp>  // for boost::unordered_map, ...
     namespace unboost {
+        using std::pair;
         using boost::unordered_map;
         using boost::unordered_multimap;
     }
@@ -82,6 +85,8 @@
     #include "functional/hash.hpp"  // for unboost::hash
 
     namespace unboost {
+        using std::pair;
+
         template <typename Key,
                   typename Mapped,
                   typename Hash = unboost::hash<Key>,
@@ -691,6 +696,10 @@
 
             Mapped& operator[](const Key& key) {
                 iterator it = find(key);
+                if (it == end()) {
+                    Mapped mapped;
+                    it = emplace(key, mapped).first;
+                }
                 return it->second;
             }
             const Mapped& operator[](const Key& key) const {

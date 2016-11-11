@@ -54,6 +54,7 @@
 #ifdef UNBOOST_USE_CXX11_UNORDERED_SET
     #include <unordered_set>            // for std::unordered_set, ...
     namespace unboost {
+        using std::pair;
         using std::unordered_set;
         using std::unordered_multiset;
     }
@@ -64,12 +65,14 @@
         #include <tr1/unordered_set>    // for std::tr1::unordered_set, ...
     #endif
     namespace unboost {
+        using std::pair;
         using std::tr1::unordered_set;
         using std::tr1::unordered_multiset;
     }
 #elif defined(UNBOOST_USE_BOOST_UNORDERED_SET)
     #include <boost/unordered_set.hpp>  // for boost::unordered_set, ...
     namespace unboost {
+        using std::pair;
         using boost::unordered_set;
         using boost::unordered_multiset;
     }
@@ -82,6 +85,8 @@
     #include "functional/hash.hpp"  // for unboost::hash
 
     namespace unboost {
+        using std::pair;
+
         template <typename Key,
                   typename Hash = unboost::hash<Key>,
                   typename KeyEq = std::equal_to<Key> >
