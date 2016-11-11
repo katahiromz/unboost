@@ -438,7 +438,7 @@
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
-        }; // class timed_mutex
+        }; // timed_mutex
     } // namespace unboost
 #elif defined(UNBOOST_USE_POSIX_THREAD)
     #include <stdexcept>
