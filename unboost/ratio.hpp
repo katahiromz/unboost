@@ -7,11 +7,42 @@
 #include "unboost.hpp"
 #include "static_assert.hpp"
 
+// If not choosed, choose one
+#if ((defined(UNBOOST_USE_CXX11_RATIO) + defined(UNBOOST_USE_BOOST_RATIO) + defined(UNBOOST_USE_UNBOOST_RATIO)) == 0)
+    #ifdef UNBOOST_USE_CXX11
+        #define UNBOOST_USE_CXX11_RATIO
+    #elif defined(UNBOOST_USE_BOOST)
+        #define UNBOOST_USE_BOOST_RATIO
+    #else
+        #ifdef UNBOOST_CXX11
+            #define UNBOOST_USE_CXX11_RATIO
+        #elif defined(_MSC_VER)
+            #if (_MSC_VER >= 1700)
+                // Visual C++ 2012 and later
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_RATIO
+                #else
+                    #define UNBOOST_USE_UNBOOST_RATIO
+                #endif
+            #else
+                #define UNBOOST_USE_UNBOOST_RATIO
+            #endif
+        #else
+            #define UNBOOST_USE_UNBOOST_RATIO
+        #endif
+    #endif
+#endif
+
 // NOTE: Unboost's unboost::ratio uses 32-bit integers (_ratio_intmax_t).
 
 namespace unboost {
-    typedef int _ratio_intmax_t;
-    typedef unsigned int _ratio_uintmax_t;
+    #if defined(UNBOOST_USE_CXX11_RATIO) || defined(UNBOOST_USE_BOOST_RATIO)
+        typedef _int64_t _ratio_intmax_t;
+        typedef _uint64_t _ratio_uintmax_t;
+    #else
+        typedef int _ratio_intmax_t;
+        typedef unsigned int _ratio_uintmax_t;
+    #endif
 
     template <_ratio_intmax_t N>
     struct _SIGN {
@@ -57,49 +88,25 @@ namespace unboost {
         return _abs(_gcd0(x, y));
     }
 
-    inline _int64_t _sign(_int64_t x) {
-        return (x < 0 ? -1 : 1);
-    }
-    inline _int64_t _abs(_int64_t x) {
-        return (x < 0 ? -x : x);
-    }
-    inline _int64_t _gcd0(_int64_t x, _int64_t y) {
-        if (x == 0)
-            return y;
-        if (y == 0)
-            return x;
-        return _gcd0(y, x % y);
-    }
-    inline _int64_t _gcd(_int64_t x, _int64_t y) {
-        return _abs(_gcd0(x, y));
-    }
-} // namespace unboost
-
-// If not choosed, choose one
-#if ((defined(UNBOOST_USE_CXX11_RATIO) + defined(UNBOOST_USE_BOOST_RATIO) + defined(UNBOOST_USE_UNBOOST_RATIO)) == 0)
-    #ifdef UNBOOST_USE_CXX11
-        #define UNBOOST_USE_CXX11_RATIO
-    #elif defined(UNBOOST_USE_BOOST)
-        #define UNBOOST_USE_BOOST_RATIO
-    #else
-        #ifdef UNBOOST_CXX11
-            #define UNBOOST_USE_CXX11_RATIO
-        #elif defined(_MSC_VER)
-            #if (_MSC_VER >= 1700)
-                // Visual C++ 2012 and later
-                #ifndef UNBOOST_NO_CXX11
-                    #define UNBOOST_USE_CXX11_RATIO
-                #else
-                    #define UNBOOST_USE_UNBOOST_RATIO
-                #endif
-            #else
-                #define UNBOOST_USE_UNBOOST_RATIO
-            #endif
-        #else
-            #define UNBOOST_USE_UNBOOST_RATIO
-        #endif
+    #if !defined(UNBOOST_USE_CXX11_RATIO) && !defined(UNBOOST_USE_BOOST_RATIO)
+        inline _int64_t _sign(_int64_t x) {
+            return (x < 0 ? -1 : 1);
+        }
+        inline _int64_t _abs(_int64_t x) {
+            return (x < 0 ? -x : x);
+        }
+        inline _int64_t _gcd0(_int64_t x, _int64_t y) {
+            if (x == 0)
+                return y;
+            if (y == 0)
+                return x;
+            return _gcd0(y, x % y);
+        }
+        inline _int64_t _gcd(_int64_t x, _int64_t y) {
+            return _abs(_gcd0(x, y));
+        }
     #endif
-#endif
+} // namespace unboost
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_RATIO
@@ -321,130 +328,132 @@ namespace unboost {
         //typedef ratio<1000000000000000000LL, 1> exa;
         //typedef ratio<1000000000000000000000LL, 1> zetta;
         //typedef ratio<1000000000000000000000000LL, 1> yotta;
-
-        struct auto_ratio {
-            typedef auto_ratio type;
-            _int64_t num;
-            _int64_t den;
-
-            auto_ratio() : num(0), den(1) { }
-            auto_ratio(_int64_t N, _int64_t D) {
-                num = _sign(N) * _sign(D) * _abs(N) / _gcd(N, D);
-                den = _abs(D) / _gcd(N, D);
-            }
-            auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
-
-            template <_ratio_intmax_t Num, _ratio_intmax_t Den>
-            auto_ratio(const ratio<Num, Den>&) {
-                num = ratio<Num, Den>::num;
-                den = ratio<Num, Den>::den;
-            }
-            template <class R1, class R2>
-            auto_ratio(const ratio_add<R1, R2>&) {
-                num = ratio_add<R1, R2>::num;
-                den = ratio_add<R1, R2>::den;
-            }
-            template <class R1, class R2>
-            auto_ratio(const ratio_subtract<R1, R2>&) {
-                num = ratio_subtract<R1, R2>::num;
-                den = ratio_subtract<R1, R2>::den;
-            }
-            template <class R1, class R2>
-            auto_ratio(const ratio_multiply<R1, R2>&) {
-                num = ratio_multiply<R1, R2>::num;
-                den = ratio_multiply<R1, R2>::den;
-            }
-            template <class R1, class R2>
-            auto_ratio(const ratio_divide<R1, R2>&) {
-                num = ratio_divide<R1, R2>::num;
-                den = ratio_divide<R1, R2>::den;
-            }
-
-            auto_ratio& operator=(const auto_ratio& ar) {
-                num = ar.num;
-                den = ar.den;
-                return *this;
-            }
-            template <_ratio_intmax_t Num, _ratio_intmax_t Den>
-            auto_ratio& operator=(const ratio<Num, Den>&) {
-                num = ratio<Num, Den>::num;
-                den = ratio<Num, Den>::den;
-                return *this;
-            }
-            template <class R1, class R2>
-            auto_ratio& operator=(const ratio_add<R1, R2>&) {
-                num = ratio_add<R1, R2>::num;
-                den = ratio_add<R1, R2>::den;
-                return *this;
-            }
-            template <class R1, class R2>
-            auto_ratio& operator=(const ratio_subtract<R1, R2>&) {
-                num = ratio_subtract<R1, R2>::num;
-                den = ratio_subtract<R1, R2>::den;
-                return *this;
-            }
-            template <class R1, class R2>
-            auto_ratio& operator=(const ratio_multiply<R1, R2>&) {
-                num = ratio_multiply<R1, R2>::num;
-                den = ratio_multiply<R1, R2>::den;
-                return *this;
-            }
-            template <class R1, class R2>
-            auto_ratio& operator=(const ratio_divide<R1, R2>&) {
-                num = ratio_divide<R1, R2>::num;
-                den = ratio_divide<R1, R2>::den;
-                return *this;
-            }
-        }; // struct auto_ratio
-
-        inline auto_ratio
-        operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _int64_t _Num = ar1.num * ar2.den + ar2.num * ar1.den;
-            _int64_t _Den = ar1.den * ar2.den;
-            _int64_t num = _sign(_Num) * _sign(_Den) *
-                                  _abs(_Num) / _gcd(_Num, _Den);
-            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
-            return auto_ratio(num, den);
-        }
-        inline auto_ratio
-        operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _int64_t _Num = ar1.num * ar2.den - ar2.num * ar1.den;
-            _int64_t _Den = ar1.den * ar2.den;
-            _int64_t num = _sign(_Num) * _sign(_Den) *
-                                  _abs(_Num) / _gcd(_Num, _Den);
-            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
-            return auto_ratio(num, den);
-        }
-        inline auto_ratio
-        operator*(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _int64_t _Num = ar1.num * ar2.num;
-            _int64_t _Den = ar1.den * ar2.den;
-            _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
-                                  _gcd(_Num, _Den);
-            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
-            return auto_ratio(num, den);
-        }
-        inline auto_ratio
-        operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
-            _int64_t _Num = ar1.num * ar2.den;
-            _int64_t _Den = ar1.den * ar2.num;
-            _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
-                                  _gcd(_Num, _Den);
-            _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
-            return auto_ratio(num, den);
-        }
-        inline bool
-        operator==(const auto_ratio& ar1, const auto_ratio& ar2) {
-            return ar1.num == ar2.num && ar1.den == ar2.den;
-        }
-        inline bool
-        operator!=(const auto_ratio& ar1, const auto_ratio& ar2) {
-            return ar1.num == ar2.num && ar1.den == ar2.den;
-        }
     } // namespace unboost
     #define unboost_auto_ratio unboost::auto_ratio
 #else
     #error Your compiler is not supported yet. You lose.
 #endif
+
+namespace unboost {
+    struct auto_ratio {
+        typedef auto_ratio type;
+        _int64_t num;
+        _int64_t den;
+
+        auto_ratio() : num(0), den(1) { }
+        auto_ratio(_int64_t N, _int64_t D) {
+            num = _sign(N) * _sign(D) * _abs(N) / _gcd(N, D);
+            den = _abs(D) / _gcd(N, D);
+        }
+        auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
+
+        template <_ratio_intmax_t Num, _ratio_intmax_t Den>
+        auto_ratio(const ratio<Num, Den>& r) {
+            num = ratio<Num, Den>::num;
+            den = ratio<Num, Den>::den;
+        }
+        template <class R1, class R2>
+        auto_ratio(const ratio_add<R1, R2>& r) {
+            num = ratio_add<R1, R2>::num;
+            den = ratio_add<R1, R2>::den;
+        }
+        template <class R1, class R2>
+        auto_ratio(const ratio_subtract<R1, R2>& r) {
+            num = ratio_subtract<R1, R2>::num;
+            den = ratio_subtract<R1, R2>::den;
+        }
+        template <class R1, class R2>
+        auto_ratio(const ratio_multiply<R1, R2>& r) {
+            num = ratio_multiply<R1, R2>::num;
+            den = ratio_multiply<R1, R2>::den;
+        }
+        template <class R1, class R2>
+        auto_ratio(const ratio_divide<R1, R2>& r) {
+            num = ratio_divide<R1, R2>::num;
+            den = ratio_divide<R1, R2>::den;
+        }
+
+        auto_ratio& operator=(const auto_ratio& ar) {
+            num = ar.num;
+            den = ar.den;
+            return *this;
+        }
+        template <_ratio_intmax_t Num, _ratio_intmax_t Den>
+        auto_ratio& operator=(const ratio<Num, Den>& r) {
+            num = ratio<Num, Den>::num;
+            den = ratio<Num, Den>::den;
+            return *this;
+        }
+        template <class R1, class R2>
+        auto_ratio& operator=(const ratio_add<R1, R2>& r) {
+            num = ratio_add<R1, R2>::num;
+            den = ratio_add<R1, R2>::den;
+            return *this;
+        }
+        template <class R1, class R2>
+        auto_ratio& operator=(const ratio_subtract<R1, R2>& r) {
+            num = ratio_subtract<R1, R2>::num;
+            den = ratio_subtract<R1, R2>::den;
+            return *this;
+        }
+        template <class R1, class R2>
+        auto_ratio& operator=(const ratio_multiply<R1, R2>& r) {
+            num = ratio_multiply<R1, R2>::num;
+            den = ratio_multiply<R1, R2>::den;
+            return *this;
+        }
+        template <class R1, class R2>
+        auto_ratio& operator=(const ratio_divide<R1, R2>& r) {
+            num = ratio_divide<R1, R2>::num;
+            den = ratio_divide<R1, R2>::den;
+            return *this;
+        }
+    }; // struct auto_ratio
+
+    inline auto_ratio
+    operator+(const auto_ratio& ar1, const auto_ratio& ar2) {
+        _int64_t _Num = ar1.num * ar2.den + ar2.num * ar1.den;
+        _int64_t _Den = ar1.den * ar2.den;
+        _int64_t num = _sign(_Num) * _sign(_Den) *
+                              _abs(_Num) / _gcd(_Num, _Den);
+        _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
+        return auto_ratio(num, den);
+    }
+    inline auto_ratio
+    operator-(const auto_ratio& ar1, const auto_ratio& ar2) {
+        _int64_t _Num = ar1.num * ar2.den - ar2.num * ar1.den;
+        _int64_t _Den = ar1.den * ar2.den;
+        _int64_t num = _sign(_Num) * _sign(_Den) *
+                              _abs(_Num) / _gcd(_Num, _Den);
+        _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
+        return auto_ratio(num, den);
+    }
+    inline auto_ratio
+    operator*(const auto_ratio& ar1, const auto_ratio& ar2) {
+        _int64_t _Num = ar1.num * ar2.num;
+        _int64_t _Den = ar1.den * ar2.den;
+        _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+                              _gcd(_Num, _Den);
+        _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
+        return auto_ratio(num, den);
+    }
+    inline auto_ratio
+    operator/(const auto_ratio& ar1, const auto_ratio& ar2) {
+        _int64_t _Num = ar1.num * ar2.den;
+        _int64_t _Den = ar1.den * ar2.num;
+        _int64_t num = _sign(_Num) * _sign(_Den) * _abs(_Num) /
+                              _gcd(_Num, _Den);
+        _int64_t den = _abs(_Den) / _gcd(_Num, _Den);
+        return auto_ratio(num, den);
+    }
+    inline bool
+    operator==(const auto_ratio& ar1, const auto_ratio& ar2) {
+        return ar1.num == ar2.num && ar1.den == ar2.den;
+    }
+    inline bool
+    operator!=(const auto_ratio& ar1, const auto_ratio& ar2) {
+        return ar1.num == ar2.num && ar1.den == ar2.den;
+    }
+} // namespace unboost
 
 #endif  // ndef UNBOOST_RATIO_HPP_

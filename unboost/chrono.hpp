@@ -198,9 +198,9 @@
             typedef long double     _auto_duration_rep;
             class auto_duration {
             public:
-                typedef _auto_duration_rep  rep;
-                typedef auto_ratio          period;
-                typedef auto_duration       type;
+                typedef _auto_duration_rep      rep;
+                typedef auto_ratio              period;
+                typedef auto_duration           type;
 
                 auto_duration() : rep_(), period_(1, 1), is_floating_(false) { }
 
@@ -789,18 +789,16 @@
                 typedef chrono::duration<_int64_t, micro>   _system_duration;
                 typedef chrono::duration<_int64_t, micro>   _steady_duration;
                 inline _int64_t _get_system_clock_time(void) {
-                    // in microseconds
-                    struct timeval tv;
-                    struct timezone tz;
-                    gettimeofday(&tv);
-                    return tv.tv_sec * 1000000 + tv.tv_usec;
+                    // in nanoseconds
+                    struct timespec ts;
+                    clock_gettime(CLOCK_REALTIME, &ts);
+                    return ts.tv_sec * 1000000000 + ts.tv_nsec;
                 }
                 inline _int64_t _get_steady_clock_time(void) {
-                    // in microseconds
-                    struct timeval tv;
-                    struct timezone tz;
-                    gettimeofday(&tv);
-                    return tv.tv_sec * 1000000 + tv.tv_usec;
+                    // in nanoseconds
+                    struct timespec ts;
+                    clock_gettime(CLOCK_REALTIME, &ts);
+                    return ts.tv_sec * 1000000000 + ts.tv_nsec;
                 }
             #else
                 #error You lose.

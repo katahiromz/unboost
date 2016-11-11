@@ -362,12 +362,14 @@
 
         class mutex {
         public:
-            typedef HANDLE native_handle_type;
-            mutex() : m_hMutex(::CreateMutexA(NULL, FALSE, NULL)) {
+            typedef HANDLE  native_handle_type;
+            mutex() : m_hMutex(::CreateMutex(NULL, FALSE, NULL)) {
                 if (m_hMutex == NULL)
                     throw system_error(::GetLastError());
             }
-            virtual ~mutex() { ::CloseHandle(m_hMutex); }
+            virtual ~mutex() {
+                ::CloseHandle(m_hMutex);
+            }
             native_handle_type native_handle() { return m_hMutex; }
             void lock() {
                 ::WaitForSingleObject(m_hMutex, INFINITE);
@@ -385,35 +387,59 @@
             mutex& operator=(const mutex&)/* = delete*/;
         }; // class mutex
 
-        class timed_mutex : public mutex {
+        class timed_mutex {
         public:
-            timed_mutex() { }
-            virtual ~timed_mutex() { }
+            typedef HANDLE  native_handle_type;
+            timed_mutex() : m_hMutex(::CreateMutex(NULL, FALSE, NULL)) {
+                if (m_hMutex == NULL)
+                    throw system_error(::GetLastError());
+            }
+            virtual ~timed_mutex() {
+                ::CloseHandle(m_hMutex);
+            }
+            native_handle_type native_handle() { return m_hMutex; }
+            void lock() {
+                ::WaitForSingleObject(m_hMutex, INFINITE);
+            }
+            void unlock() {
+                ::ReleaseMutex(m_hMutex);
+            }
+            bool try_lock() {
+                return (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0);
+            }
             template <class Rep, class Period>
-            bool try_lock_for(const unboost::chrono::duration<Rep, Period>&
-                              timeout_duration)
+            bool try_lock_for(
+                const unboost::chrono::duration<Rep, Period>& timeout_duration)
             {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
             }
-            //template <class Clock, class Duration>
-            //bool try_lock_until(
-            //    const unboost::chrono::time_point<Clock, Duration>&
-            //    timeout_time)
-            //{
-            //    // FIXME
-            //}
-            //bool try_lock_until(
-            //    const unboost::chrono::auto_time_point& timeout_time)
-            //{
-            //    // FIXME
-            //}
+            template <class Rep, class Period>
+            bool try_lock_for(const auto_duration& timeout_duration) {
+                using namespace unboost::chrono;
+                milliseconds ms = duration_cast<milliseconds>(timeout_duration);
+                return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+            }
+            template <class Clock, class Duration>
+            bool try_lock_until(
+                const unboost::chrono::time_point<Clock, Duration>& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+            bool try_lock_until(
+                const unboost::chrono::auto_time_point& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+        protected:
+            native_handle_type  m_hMutex;
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
         }; // class timed_mutex
-
     } // namespace unboost
 #elif defined(UNBOOST_USE_POSIX_THREAD)
     #include <stdexcept>
@@ -644,7 +670,7 @@
             template <class Clock, class Duration>
             inline void sleep_until(const chrono::auto_time_point& sleep_time) {
                 using namespace unboost::chrono;
-                auto_duration ad = sleep_time - chrono::auto_time_point::now();
+                auto_duration ad = sleep_time - chrono::system_clock::now();
                 milliseconds ms = duration_cast<milliseconds>(ad);
                 #ifdef _WIN32
                     ::Sleep(DWORD(ms.count()));
@@ -662,7 +688,8 @@
 
         class mutex {
         public:
-            typedef pthread_mutex_t native_handle_type;
+            typedef pthread_mutex_t     native_handle_type;
+
             mutex()         { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
             ~mutex()        { pthread_mutex_destroy(&m_mutex); }
             native_handle_type native_handle() { return m_mutex; }
@@ -680,35 +707,48 @@
 
         class timed_mutex : public mutex {
         public:
-            timed_mutex() { }
-            virtual ~timed_mutex() { }
-            //template <class Rep, class Period>
-            //bool try_lock_for(const unboost::chrono::duration<Rep, Period>&
-            //                  timeout_duration)
-            //{
-            //    using namespace unboost::chrono;
-            //    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
-            //    // FIXME
-            //}
-            //bool try_lock_for(const unboost::chrono::auto_duration&
-            //                  timeout_duration)
-            //{
-            //    using namespace unboost::chrono;
-            //    auto_duration ms = duration_cast<milliseconds>(timeout_duration);
-            //    // FIXME
-            //}
-            //template <class Clock, class Duration>
-            //bool try_lock_until(
-            //    const unboost::chrono::time_point<Clock, Duration>&
-            //    timeout_time)
-            //{
-            //    // FIXME
-            //}
-            //bool try_lock_until(
-            //    const unboost::chrono::auto_time_point& timeout_time)
-            //{
-            //    // FIXME
-            //}
+            typedef pthread_mutex_t     native_handle_type;
+
+            timed_mutex()   { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
+            ~timed_mutex()  { pthread_mutex_destroy(&m_mutex); }
+            native_handle_type native_handle() { return m_mutex; }
+            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void unlock()   { pthread_mutex_unlock(&m_mutex); }
+            bool try_lock() {
+                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+            }
+            template <class Rep, class Period>
+            bool try_lock_for(
+                const unboost::chrono::duration<Rep, Period>& timeout_duration)
+            {
+                using namespace unboost::chrono;
+                auto_duration ns = duration_cast<nanoseconds>(timeout_duration);
+                struct timespec ts;
+                ts.tv_sec = _uint64_t(ns.count()) / 1000000000;
+                ts.tv_nsec = _uint64_t(ns.count()) % 1000000000;
+                return !pthread_mutex_timedlock(&m_mutex, &ts);
+            }
+            bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
+                using namespace unboost::chrono;
+                auto_duration ns = duration_cast<nanoseconds>(timeout_duration);
+                struct timespec ts;
+                ts.tv_sec = _uint64_t(ns.count()) / 1000000000;
+                ts.tv_nsec = _uint64_t(ns.count()) % 1000000000;
+                return !pthread_mutex_timedlock(&m_mutex, &ts);
+            }
+            template <class Clock, class Duration>
+            bool try_lock_until(
+                const unboost::chrono::time_point<Clock, Duration>& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+            bool try_lock_until(
+                const unboost::chrono::auto_time_point& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
