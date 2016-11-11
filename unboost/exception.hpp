@@ -13,8 +13,9 @@
     #include <system_error>
     #include <memory>
 #elif defined(UNBOOST_USE_BOOST)
-    #include <boost/system/system_error.hpp>
-    #include <boost/smart_ptr/bad_weak_ptr.hpp>
+    #include <boost/system/system_error.hpp>    // for boost::system::system_error
+    #include <boost/lexical_cast.hpp>           // for boost::bad_lexical_cast
+    #include <boost/smart_ptr/bad_weak_ptr.hpp> // for boost::bad_weak_ptr
 #endif
 
 namespace unboost {
@@ -51,7 +52,7 @@ namespace unboost {
     using unboost::system::system_error;
 
     #ifdef UNBOOST_USE_BOOST
-        using boost::lexical_cast;
+        using boost::bad_lexical_cast;
     #else
         class bad_lexical_cast : public exception {
         public:

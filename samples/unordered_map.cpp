@@ -92,7 +92,7 @@ void test_unordered_map(void) {
     um1.max_load_factor(10000);
     um1.rehash(5);
     for (int i = 0; i < 100; ++i) {
-        um1.emplace(i, i + 1);
+        um1.insert(std::make_pair(i, i + 1));
     }
 
     std::cout << "##" << um1.bucket_count() << std::endl;
@@ -183,7 +183,7 @@ void test_unordered_multimap(void) {
     um1.max_load_factor(10000);
     um1.rehash(5);
     for (int i = 0; i < 100; ++i) {
-        um1.emplace(i, i + 1);
+        um1.insert(std::make_pair(i, i + 1));
     }
 
     std::cout << "##" << um1.bucket_count() << std::endl;
