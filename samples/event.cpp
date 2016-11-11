@@ -38,5 +38,7 @@ int main(void) {
     unboost::chrono::seconds sec10(10);
     unboost::this_thread::sleep_for(sec10);
 
+    std::cout << "success" << std::endl;
+
     return 0;
 }

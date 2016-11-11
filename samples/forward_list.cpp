@@ -316,5 +316,7 @@ int main(void) {
     creatures.clear();
     assert(creature::s_count == 0);
 
+    std::cout << "success" << std::endl;
+
     return 0;
 } // main
