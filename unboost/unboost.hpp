@@ -4,8 +4,8 @@
 #ifndef UNBOOST_CORE_HPP_
 #define UNBOOST_CORE_HPP_
 
-#define UNBOOST_VERSION             31
-#define UNBOOST_VERSION_STRING      "Unboost 31 by Katayama Hirofumi MZ"
+#define UNBOOST_VERSION             32
+#define UNBOOST_VERSION_STRING      "Unboost 32 by Katayama Hirofumi MZ"
 
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
