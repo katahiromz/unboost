@@ -86,7 +86,7 @@
         #include <windows.h>
     #endif
     #include "swap.hpp"     // for unboost::swap
-    #define UNBOOST_DEFINE_LOCK_EXTRA
+    #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
         class thread {
@@ -429,7 +429,7 @@
     #else
         #include <time.h>     // for nanosleep
     #endif
-    #define UNBOOST_DEFINE_LOCK_EXTRA
+    #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
         class thread {
@@ -718,7 +718,7 @@
     #error Your compiler is not supported yet. You lose.
 #endif
 
-#ifdef UNBOOST_DEFINE_LOCK_EXTRA
+#ifdef UNBOOST_NEED_LOCK_EXTRA
     namespace unboost {
         struct defer_lock_t { };
         struct try_to_lock_t { };
@@ -817,6 +817,6 @@
             self_type& operator=(const self_type&)/* = delete*/;
         }; // class lock_guard
     } // namespace unboost
-#endif  // def UNBOOST_DEFINE_LOCK_EXTRA
+#endif  // def UNBOOST_NEED_LOCK_EXTRA
 
 #endif  // ndef UNBOOST_THREAD_HPP
