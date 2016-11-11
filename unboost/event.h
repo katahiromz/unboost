@@ -334,8 +334,8 @@ namespace unboost {
 
     private:
         // NOTE: event cannot be copyed.
-        event(const event&);
-        event& operator=(const event&);
+        event(const event&)/* = delete*/;
+        event& operator=(const event&)/* = delete*/;
     };
 } // namespace unboost
 #endif  // def __cplusplus

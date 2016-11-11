@@ -313,8 +313,8 @@
             HANDLE  m_hThread;
             id      m_id;
         private:
-            thread(const thread&);
-            thread& operator=(const thread&);
+            thread(const thread&)/* = delete*/;
+            thread& operator=(const thread&)/* = delete*/;
         }; // class thread
 
         namespace this_thread {
@@ -375,8 +375,8 @@
         protected:
             native_handle_type  m_hMutex;
         private:
-            mutex(const mutex&);
-            mutex& operator=(const mutex&);
+            mutex(const mutex&)/* = delete*/;
+            mutex& operator=(const mutex&)/* = delete*/;
         }; // class mutex
 
         class timed_mutex : public mutex {
@@ -404,8 +404,8 @@
             //    // FIXME
             //}
         private:
-            timed_mutex(const timed_mutex&);
-            timed_mutex& operator=(const timed_mutex&);
+            timed_mutex(const timed_mutex&)/* = delete*/;
+            timed_mutex& operator=(const timed_mutex&)/* = delete*/;
         }; // class timed_mutex
 
     } // namespace unboost
@@ -586,8 +586,8 @@
         protected:
             pthread_t   m_id;
         private:
-            thread(const thread&);
-            thread& operator=(const thread&);
+            thread(const thread&)/* = delete*/;
+            thread& operator=(const thread&)/* = delete*/;
         }; // class thread
 
         namespace this_thread {
@@ -668,8 +668,8 @@
         protected:
             native_handle_type m_mutex;
         private:
-            mutex(const mutex&);
-            mutex& operator=(const mutex&);
+            mutex(const mutex&)/* = delete*/;
+            mutex& operator=(const mutex&)/* = delete*/;
         }; // class mutex
 
         class timed_mutex : public mutex {
@@ -704,8 +704,8 @@
             //    // FIXME
             //}
         private:
-            timed_mutex(const timed_mutex&);
-            timed_mutex& operator=(const timed_mutex&);
+            timed_mutex(const timed_mutex&)/* = delete*/;
+            timed_mutex& operator=(const timed_mutex&)/* = delete*/;
         }; // class timed_mutex
     } // namespace unboost
 #else
