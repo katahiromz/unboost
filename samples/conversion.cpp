@@ -16,11 +16,11 @@ int main(void) {
     std::cout << "conversion" << std::endl;
 
 #ifdef CXX11
-    assert(std::to_string("2016") == "2016");
+    assert(std::to_string(2016) == "2016");
 #elif defined(BOOST)
-    assert(boost::to_string("2016") == "2016");
+    assert(boost::to_string(2016) == "2016");
 #else
-    assert(unboost::to_string("2016") == "2016");
+    assert(unboost::to_string(2016) == "2016");
 #endif
 
     std::cout << "success" << std::endl;

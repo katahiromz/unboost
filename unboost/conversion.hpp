@@ -5,7 +5,7 @@
 #define UNBOOST_CONVERSION_HPP_
 
 #include <cstdlib>
-#include <string>       // for std::string, std::wstring
+#include <string>       // for std::string, std::wstring, std::to_string
 #include <sstream>      // for std::stringstream
 #include "unboost.hpp"
 #include "exception.hpp"
