@@ -311,7 +311,7 @@ int main(void) {
             unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
 #endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
-            assert(abs(long(ms) - long(elapsed.count())) < threshold);
+            assert(labs(long(ms) - long(elapsed.count())) < threshold);
         }
     }
     // steady_clock
@@ -344,7 +344,7 @@ int main(void) {
             unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
 #endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
-            assert(abs(long(ms) - long(elapsed.count())) < threshold);
+            assert(labs(long(ms) - long(elapsed.count())) < threshold);
         }
     }
     // system_clock
@@ -377,7 +377,7 @@ int main(void) {
             unboost_auto_duration elapsed = duration_cast<milliseconds>(span);
 #endif
             std::cout << "elapsed.count(): " << elapsed.count() << std::endl;
-            assert(abs(long(ms) - long(elapsed.count())) < threshold);
+            assert(labs(long(ms) - long(elapsed.count())) < threshold);
         }
     }
     {
