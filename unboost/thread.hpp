@@ -701,7 +701,7 @@
         private:
             mutex(const mutex&)/* = delete*/;
             mutex& operator=(const mutex&)/* = delete*/;
-        }; // class mutex
+        }; // mutex
 
         class timed_mutex : public mutex {
         public:
@@ -750,7 +750,7 @@
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
-        }; // class timed_mutex
+        }; // timed_mutex
 
         class recursive_mutex {
         public:
@@ -771,7 +771,62 @@
         private:
             recursive_mutex(const recursive_mutex&)/* = delete*/;
             recursive_mutex& operator=(const recursive_mutex&)/* = delete*/;
-        }; // class mutex
+        }; // recursive_mutex
+
+        class recursive_timed_mutex {
+        public:
+            typedef pthread_mutex_t     native_handle_type;
+
+            recursive_timed_mutex()   {
+                m_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+            }
+            ~recursive_timed_mutex()  {
+                pthread_mutex_destroy(&m_mutex);
+            }
+            native_handle_type native_handle() { return m_mutex; }
+            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void unlock()   { pthread_mutex_unlock(&m_mutex); }
+            bool try_lock() {
+                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+            }
+            template <class Rep, class Period>
+            bool try_lock_for(
+                const unboost::chrono::duration<Rep, Period>& timeout_duration)
+            {
+                using namespace unboost::chrono;
+                auto_duration ns = duration_cast<nanoseconds>(timeout_duration);
+                struct timespec ts;
+                ts.tv_sec = _uint64_t(ns.count()) / 1000000000;
+                ts.tv_nsec = _uint64_t(ns.count()) % 1000000000;
+                return !pthread_mutex_timedlock(&m_mutex, &ts);
+            }
+            bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
+                using namespace unboost::chrono;
+                auto_duration ns = duration_cast<nanoseconds>(timeout_duration);
+                struct timespec ts;
+                ts.tv_sec = _uint64_t(ns.count()) / 1000000000;
+                ts.tv_nsec = _uint64_t(ns.count()) % 1000000000;
+                return !pthread_mutex_timedlock(&m_mutex, &ts);
+            }
+            template <class Clock, class Duration>
+            bool try_lock_until(
+                const unboost::chrono::time_point<Clock, Duration>& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+            bool try_lock_until(
+                const unboost::chrono::auto_time_point& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+        protected:
+            native_handle_type m_mutex;
+        private:
+            recursive_timed_mutex(const recursive_timed_mutex&)/* = delete*/;
+            recursive_timed_mutex& operator=(const recursive_timed_mutex&)/* = delete*/;
+        }; // recursive_timed_mutex
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
