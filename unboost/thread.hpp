@@ -348,7 +348,6 @@
                 milliseconds ms = duration_cast<milliseconds>(ad);
                 ::Sleep(DWORD(ms.count()));
             }
-            template <class Clock, class Duration>
             inline void sleep_until(const chrono::auto_time_point& sleep_time) {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::system_clock::now();
@@ -667,7 +666,6 @@
                     nanosleep(&spec, NULL);
                 #endif
             }
-            template <class Clock, class Duration>
             inline void sleep_until(const chrono::auto_time_point& sleep_time) {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::system_clock::now();

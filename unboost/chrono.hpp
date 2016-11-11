@@ -786,19 +786,19 @@
                     return counter.QuadPart * (1000000000 / s_pfreq->QuadPart);
                 }
             #elif defined(UNBOOST_USE_POSIX_CHRONO)
-                typedef chrono::duration<_int64_t, micro>   _system_duration;
-                typedef chrono::duration<_int64_t, micro>   _steady_duration;
+                typedef chrono::duration<_int64_t, nano>   _system_duration;
+                typedef chrono::duration<_int64_t, nano>   _steady_duration;
                 inline _int64_t _get_system_clock_time(void) {
                     // in nanoseconds
                     struct timespec ts;
                     clock_gettime(CLOCK_REALTIME, &ts);
-                    return ts.tv_sec * 1000000000 + ts.tv_nsec;
+                    return _int64_t(ts.tv_sec) * 1000000000 + ts.tv_nsec;
                 }
                 inline _int64_t _get_steady_clock_time(void) {
                     // in nanoseconds
                     struct timespec ts;
                     clock_gettime(CLOCK_REALTIME, &ts);
-                    return ts.tv_sec * 1000000000 + ts.tv_nsec;
+                    return _int64_t(ts.tv_sec) * 1000000000 + ts.tv_nsec;
                 }
             #else
                 #error You lose.

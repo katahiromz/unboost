@@ -73,7 +73,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // dependencies
 
-// thread depends on chrono
+// thread and chrono depends on each other
 #ifdef UNBOOST_USE_CXX11_THREAD
     #ifndef UNBOOST_USE_CXX11_CHRONO
         #define UNBOOST_USE_CXX11_CHRONO
@@ -92,6 +92,26 @@
 #ifdef UNBOOST_USE_POSIX_THREAD
     #ifndef UNBOOST_USE_POSIX_CHRONO
         #define UNBOOST_USE_POSIX_CHRONO
+    #endif
+#endif
+#ifdef UNBOOST_USE_CXX11_CHRONO
+    #ifndef UNBOOST_USE_CXX11_THREAD
+        #define UNBOOST_USE_CXX11_THREAD
+    #endif
+#endif
+#ifdef UNBOOST_USE_BOOST_CHRONO
+    #ifndef UNBOOST_USE_BOOST_THREAD
+        #define UNBOOST_USE_BOOST_THREAD
+    #endif
+#endif
+#ifdef UNBOOST_USE_WIN32_CHRONO
+    #ifndef UNBOOST_USE_WIN32_THREAD
+        #define UNBOOST_USE_WIN32_THREAD
+    #endif
+#endif
+#ifdef UNBOOST_USE_POSIX_CHRONO
+    #ifndef UNBOOST_USE_POSIX_THREAD
+        #define UNBOOST_USE_POSIX_THREAD
     #endif
 #endif
 
