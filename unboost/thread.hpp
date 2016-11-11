@@ -753,6 +753,27 @@
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
         }; // class timed_mutex
+
+        class recursive_mutex {
+        public:
+            typedef pthread_mutex_t     native_handle_type;
+
+            recursive_mutex()   {
+                m_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+            }
+            ~recursive_mutex()  { pthread_mutex_destroy(&m_mutex); }
+            native_handle_type native_handle() { return m_mutex; }
+            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void unlock()   { pthread_mutex_unlock(&m_mutex); }
+            bool try_lock() {
+                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+            }
+        protected:
+            native_handle_type m_mutex;
+        private:
+            recursive_mutex(const recursive_mutex&)/* = delete*/;
+            recursive_mutex& operator=(const recursive_mutex&)/* = delete*/;
+        }; // class mutex
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
