@@ -52,6 +52,7 @@
         using std::recursive_timed_mutex;
         using std::unique_lock;
         using std::lock_guard;
+        using std::adopt_lock_t;
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_THREAD)
     #include <boost/thread.hpp>
@@ -69,6 +70,7 @@
         using boost::recursive_timed_mutex;
         using boost::unique_lock;
         using boost::lock_guard;
+        using boost::adopt_lock_t;
     } // namespace unboost
 #elif defined(UNBOOST_USE_WIN32_THREAD)
     #include <stdexcept>
@@ -790,18 +792,26 @@
             bool m_locked;
         }; // class unique_lock
 
-        // FIXME:
-        //template <class Mutex>
-        //class lock_guard {
-        //public:
-        //    typedef Mutex mutex_type;
-        //    explicit lock_guard(mutex_type& m) {
-        //    }
-        //    lock_guard(mutex_type& m, adopt_lock_t) {
-        //    }
-        //    ~lock_guard() {
-        //    }
-        //}; // class lock_guard
+        struct adopt_lock_t { };
+
+        template <class Mutex>
+        class lock_guard {
+        public:
+            typedef Mutex mutex_type;
+            typedef lock_guard<Mutex> self_type;
+            explicit lock_guard(mutex_type& m) : m_mutex(m) {
+                m_mutex.lock();
+            }
+            lock_guard(mutex_type& m, adopt_lock_t) : m_mutex(m) { }
+            ~lock_guard() {
+                m_mutex.unlock();
+            }
+        protected:
+            Mutex&      m_mutex;
+        private:
+            lock_guard(const self_type&)/* = delete*/;
+            self_type& operator=(const self_type&)/* = delete*/;
+        }; // class lock_guard
     } // namespace unboost
 #endif  // def UNBOOST_DEFINE_LOCK_EXTRA
 
