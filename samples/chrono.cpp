@@ -280,7 +280,7 @@ int main(void) {
         seconds_f y = x;
         assert(1.1 <= y.count() && y.count() <= 1.3);
     }
-    const unsigned threshold = 100;
+    const long threshold = 100;
     // high_resolution_clock
     std::cout << "high_resolution_clock" << std::endl;
     {

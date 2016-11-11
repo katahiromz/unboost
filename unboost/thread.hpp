@@ -382,12 +382,13 @@
         private:
             mutex(const mutex&)/* = delete*/;
             mutex& operator=(const mutex&)/* = delete*/;
-        }; // class mutex
+        }; // mutex
 
         class timed_mutex {
         public:
             typedef HANDLE  native_handle_type;
-            timed_mutex() : m_hMutex(::CreateMutex(NULL, FALSE, NULL)) {
+            timed_mutex() {
+                m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
                 if (m_hMutex == NULL)
                     throw system_error(::GetLastError());
             }
@@ -412,8 +413,7 @@
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
             }
-            template <class Rep, class Period>
-            bool try_lock_for(const auto_duration& timeout_duration) {
+            bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;

@@ -348,27 +348,27 @@ namespace unboost {
         auto_ratio(const auto_ratio& ar) : num(ar.num), den(ar.den) { }
 
         template <_ratio_intmax_t Num, _ratio_intmax_t Den>
-        auto_ratio(const ratio<Num, Den>& r) {
+        auto_ratio(const ratio<Num, Den>&) {
             num = ratio<Num, Den>::num;
             den = ratio<Num, Den>::den;
         }
         template <class R1, class R2>
-        auto_ratio(const ratio_add<R1, R2>& r) {
+        auto_ratio(const ratio_add<R1, R2>&) {
             num = ratio_add<R1, R2>::num;
             den = ratio_add<R1, R2>::den;
         }
         template <class R1, class R2>
-        auto_ratio(const ratio_subtract<R1, R2>& r) {
+        auto_ratio(const ratio_subtract<R1, R2>&) {
             num = ratio_subtract<R1, R2>::num;
             den = ratio_subtract<R1, R2>::den;
         }
         template <class R1, class R2>
-        auto_ratio(const ratio_multiply<R1, R2>& r) {
+        auto_ratio(const ratio_multiply<R1, R2>&) {
             num = ratio_multiply<R1, R2>::num;
             den = ratio_multiply<R1, R2>::den;
         }
         template <class R1, class R2>
-        auto_ratio(const ratio_divide<R1, R2>& r) {
+        auto_ratio(const ratio_divide<R1, R2>&) {
             num = ratio_divide<R1, R2>::num;
             den = ratio_divide<R1, R2>::den;
         }
@@ -379,31 +379,31 @@ namespace unboost {
             return *this;
         }
         template <_ratio_intmax_t Num, _ratio_intmax_t Den>
-        auto_ratio& operator=(const ratio<Num, Den>& r) {
+        auto_ratio& operator=(const ratio<Num, Den>&) {
             num = ratio<Num, Den>::num;
             den = ratio<Num, Den>::den;
             return *this;
         }
         template <class R1, class R2>
-        auto_ratio& operator=(const ratio_add<R1, R2>& r) {
+        auto_ratio& operator=(const ratio_add<R1, R2>&) {
             num = ratio_add<R1, R2>::num;
             den = ratio_add<R1, R2>::den;
             return *this;
         }
         template <class R1, class R2>
-        auto_ratio& operator=(const ratio_subtract<R1, R2>& r) {
+        auto_ratio& operator=(const ratio_subtract<R1, R2>&) {
             num = ratio_subtract<R1, R2>::num;
             den = ratio_subtract<R1, R2>::den;
             return *this;
         }
         template <class R1, class R2>
-        auto_ratio& operator=(const ratio_multiply<R1, R2>& r) {
+        auto_ratio& operator=(const ratio_multiply<R1, R2>&) {
             num = ratio_multiply<R1, R2>::num;
             den = ratio_multiply<R1, R2>::den;
             return *this;
         }
         template <class R1, class R2>
-        auto_ratio& operator=(const ratio_divide<R1, R2>& r) {
+        auto_ratio& operator=(const ratio_divide<R1, R2>&) {
             num = ratio_divide<R1, R2>::num;
             den = ratio_divide<R1, R2>::den;
             return *this;
