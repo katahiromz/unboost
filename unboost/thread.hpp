@@ -52,6 +52,8 @@
         using std::recursive_timed_mutex;
         using std::unique_lock;
         using std::lock_guard;
+        using std::defer_lock_t;
+        using std::try_to_lock_t;
         using std::adopt_lock_t;
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_THREAD)
@@ -70,6 +72,8 @@
         using boost::recursive_timed_mutex;
         using boost::unique_lock;
         using boost::lock_guard;
+        using boost::defer_lock_t;
+        using boost::try_to_lock_t;
         using boost::adopt_lock_t;
     } // namespace unboost
 #elif defined(UNBOOST_USE_WIN32_THREAD)
@@ -791,8 +795,6 @@
         swap(unique_lock<Mutex2>& ul1, unique_lock<Mutex2>& ul2) {
             ul1.swap(ul2);
         }
-
-        struct adopt_lock_t { };
 
         template <class Mutex>
         class lock_guard {
