@@ -101,6 +101,7 @@
     // NOTE: Unboost Filesystem doesn't support conversion.
     #include <string>           // for std::string and std::wstring
     #include <algorithm>        // for std::replace
+    #include "exception.hpp"    // for unboost::runtime_error
     namespace unboost {
         namespace filesystem {
             class path;
@@ -366,7 +367,7 @@
             inline void copy_file(const path& from, const path& to) {
                 #ifdef _WIN32
                     if (!::CopyFileW(from.c_str(), to.c_str(), TRUE)) {
-                        throw std::runtime_error("unboost::filesystem::copy_file");
+                        throw runtime_error("unboost::filesystem::copy_file");
                     }
                 #else
                     bool ok = false;
@@ -391,7 +392,7 @@
                     }
                     if (!ok) {
                         unlink(to.c_str());
-                        throw std::runtime_error("unboost::filesystem::copy_file");
+                        throw runtime_error("unboost::filesystem::copy_file");
                     }
                 #endif
             } // copy_file
@@ -435,11 +436,11 @@
             inline void current_path(const path& p) {
                 #ifdef _WIN32
                     if (!::SetCurrentDirectoryW(p.c_str())) {
-                        throw std::runtime_error("unboost::filesystem::current_path");
+                        throw runtime_error("unboost::filesystem::current_path");
                     }
                 #else
                     if (chdir(p.c_str()) != 0) {
-                        throw std::runtime_error("unboost::filesystem::current_path");
+                        throw runtime_error("unboost::filesystem::current_path");
                     }
                 #endif
             }
@@ -495,14 +496,14 @@
             inline void copy_directory(const path& from, const path& to) {
                 #ifdef _WIN32
                     if (!::CreateDirectoryExW(from.c_str(), to.c_str(), NULL)) {
-                        throw std::runtime_error("unboost::filesystem::copy_directory");
+                        throw runtime_error("unboost::filesystem::copy_directory");
                     }
                 #else
                     struct stat st;
                     if (stat(from.c_str(), &st) != 0 ||
                         mkdir(to.c_str(), st.st_mode) != 0)
                     {
-                        throw std::runtime_error("unboost::filesystem::copy_directory");
+                        throw runtime_error("unboost::filesystem::copy_directory");
                     }
                 #endif
             } // copy_directory
@@ -630,11 +631,11 @@
                 #ifdef _WIN32
                     if (!::MoveFileExW(old_p.c_str(), new_p.c_str(),
                                        MOVEFILE_REPLACE_EXISTING)) {
-                        throw std::runtime_error("unboost::filesystem::rename");
+                        throw runtime_error("unboost::filesystem::rename");
                     }
                 #else
                     if (rename(old_p.c_str(), new_p.c_str()) != 0) {
-                        throw std::runtime_error("unboost::filesystem::rename");
+                        throw runtime_error("unboost::filesystem::rename");
                     }
                 #endif
             }

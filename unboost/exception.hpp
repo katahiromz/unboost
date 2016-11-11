@@ -5,64 +5,73 @@
 #define UNBOOST_EXCEPTION_HPP_
 
 #include "unboost.hpp"
+#include <exception>
+#include <stdexcept>
 #include <cstdio>
 
+#ifdef UNBOOST_USE_CXX11
+    #include <system_error>
+    #include <memory>
+#elif defined(UNBOOST_USE_BOOST)
+    #include <boost/system/system_error.hpp>
+    #include <boost/smart_ptr/bad_weak_ptr.hpp>
+#endif
+
 namespace unboost {
-    class exception {
-    public:
-        exception() { }
-        exception(const exception& other) { }
-        virtual ~exception() { }
-        exception& operator=(const exception& other) {
-            return *this;
+    using std::exception;
+    using std::invalid_argument;
+    using std::out_of_range;
+    using std::runtime_error;
+
+    #ifdef UNBOOST_USE_CXX11
+        namespace system {
+            using std::system_error;
         }
-        virtual const char *what() const { return "exception"; }
-    };
-
-    class bad_lexical_cast : public exception {
-    public:
-        bad_lexical_cast() { }
-        virtual const char *what() const { return "lexical_cast"; }
-    };
-
-    class invalid_argument : public exception {
-    public:
-        explicit invalid_argument(const std::string& str) : m_str(str) { }
-        explicit invalid_argument(const char *str) : m_str(str) { }
-        virtual const char *what() const { return m_str.c_str(); }
-    protected:
-        std::string m_str;
-    };
-
-    class out_of_range : public exception {
-    public:
-        explicit out_of_range(const std::string& str) : m_str(str) { }
-        explicit out_of_range(const char *str) : m_str(str) { }
-        virtual const char *what() const { return m_str.c_str(); }
-    protected:
-        std::string m_str;
-    };
-
-    class system_error : public exception {
-    public:
-        typedef long error_code;
-        system_error(error_code ec) : m_code(ec) { }
-        const error_code code() const { return m_code; }
-        virtual const char *what() const {
-            static char buf[32];
-            std::sprintf(buf, "%d", code());
-            return buf;
+    #elif defined(UNBOOST_USE_BOOST)
+        namespace system {
+            using boost::system::system_error;
         }
-    protected:
-        int m_code;
-    };
+    #else   // Unboost
+        namespace system {
+            class system_error : public exception {
+            public:
+                typedef long error_code;
+                system_error(error_code ec) : m_code(ec) { }
+                const error_code code() const { return m_code; }
+                virtual const char *what() const {
+                    static char buf[64];
+                    std::sprintf(buf, "Error Code: %d", code());
+                    return buf;
+                }
+            protected:
+                int m_code;
+            };
+        } // namespace system
+    #endif  // Unboost
+    using unboost::system::system_error;
 
-    class bad_weak_ptr : public exception {
-    public:
-        bad_weak_ptr() { }
-        virtual ~bad_weak_ptr() { }
-        virtual const char *what() const { return "unboost::bad_weak_ptr"; }
-    };
+    #ifdef UNBOOST_USE_BOOST
+        using boost::lexical_cast;
+    #else
+        class bad_lexical_cast : public exception {
+        public:
+            bad_lexical_cast() { }
+            virtual const char *what() const { return "lexical_cast"; }
+        };
+    #endif
+
+    #ifdef UNBOOST_USE_CXX11
+        using std::bad_weak_ptr;
+    #elif defined(UNBOOST_USE_BOOST)
+        using boost::bad_weak_ptr;
+    #else
+        class bad_weak_ptr : public exception {
+        public:
+            bad_weak_ptr() { }
+            virtual ~bad_weak_ptr() { }
+            virtual const char *what() const { return "unboost::bad_weak_ptr"; }
+        };
+    #endif
 } // namespace unboost
 
 #endif  // ndef UNBOOST_EXCEPTION_HPP_

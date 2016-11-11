@@ -76,11 +76,12 @@
         using boost::unordered_multimap;
     }
 #elif defined(UNBOOST_USE_UNBOOST_UNORDERED_MAP)
-    #include <vector>   // for std::vector
-    #include <cmath>    // for std::ceil
-    #include <iterator> // for std::forward_iterator_tag
-    #include <functional>   // for std::equal_to
-    #include <algorithm>    // for std::is_permutation
+    #include <vector>               // for std::vector
+    #include <cmath>                // for std::ceil
+    #include <iterator>             // for std::forward_iterator_tag
+    #include <functional>           // for std::equal_to
+    #include <algorithm>            // for std::is_permutation
+    #include "exception.hpp"        // for unboost::out_of_range
     #include "forward_list.hpp"     // for unboost::forward_list
     #include "functional/hash.hpp"  // for unboost::hash
 
@@ -710,14 +711,14 @@
             Mapped& at(const Key& key) {
                 iterator it = find(key);
                 if (it == end()) {
-                    throw std::out_of_range("unordered_map::at");
+                    throw out_of_range("unordered_map::at");
                 }
                 return it->second;
             }
             const Mapped& at(const Key& key) const {
                 const_iterator it = find(key);
                 if (it == end()) {
-                    throw std::out_of_range("unordered_map::at");
+                    throw out_of_range("unordered_map::at");
                 }
                 return it->second;
             }

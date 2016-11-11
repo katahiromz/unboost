@@ -38,7 +38,7 @@
 
 // Adapt choosed one
 #ifdef UNBOOST_USE_CXX11_CONVERSION
-    #include <exception>    // for std::exception
+    #include "exception.hpp"    // for unboost::exception
     namespace unboost {
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {
@@ -206,9 +206,9 @@
 #elif defined(UNBOOST_USE_UNBOOST_CONVERSION)
     #include <climits>      // for INT_MAX, INT_MIN, ...
     #include <cfloat>       // for FLT_MAX, ...
-    #include <stdexcept>    // for std::invalid_argument, ...
     #include <iostream>
     #include <sstream>    // for std::strstream
+    #include "exception.hpp"
     namespace unboost {
         template <typename T, typename U>
         inline T lexical_cast(const U& value) {

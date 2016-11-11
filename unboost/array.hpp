@@ -73,8 +73,9 @@
     }
 #elif defined(UNBOOST_USE_UNBOOST_ARRAY)
     #include <stdexcept>
-    #include <iterator>     // for std::reverse_iterator
-    #include "swap.hpp"     // for unboost::swap
+    #include <iterator>         // for std::reverse_iterator
+    #include "exception.hpp"    // for unboost::out_of_range
+    #include "swap.hpp"         // for unboost::swap
     namespace unboost {
         template <typename T, size_t N>
         struct array {

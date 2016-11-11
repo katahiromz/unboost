@@ -206,7 +206,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1>
@@ -218,7 +218,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2>
@@ -230,7 +230,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -244,7 +244,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
@@ -258,7 +258,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
@@ -272,7 +272,7 @@
                                    data, 0, (unsigned *)&m_id));
                 if (m_hThread == NULL) {
                     delete data;
-                    throw unboost::system_error(::GetLastError());
+                    throw system_error(::GetLastError());
                 }
             }
 
@@ -514,7 +514,7 @@
                                thread_function_arg0<FUNC>, data);
                 if (m_id == 0) {
                     delete data;
-                    throw unboost::system_error(-1);
+                    throw system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1>
@@ -526,7 +526,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw unboost::system_error(-1);
+                    throw system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2>
@@ -538,7 +538,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw unboost::system_error(-1);
+                    throw system_error(-1);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -551,7 +551,7 @@
                                data);
                 if (m_id == 0) {
                     delete data;
-                    throw unboost::system_error(-1);
+                    throw system_error(-1);
                 }
             }
 
