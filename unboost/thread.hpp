@@ -336,7 +336,7 @@
             }
             inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
                 using namespace unboost::chrono;
-                unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                milliseconds ms = duration_cast<milliseconds>(sleep_duration);
                 ::Sleep(DWORD(ms.count()));
             }
             template <class Clock, class Duration>
@@ -345,14 +345,12 @@
             {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::time_point<Clock, Duration>::now();
-                milliseconds ms = duration_cast<milliseconds>(ad);
-                ::Sleep(DWORD(ms.count()));
+                sleep_for(ad);
             }
             inline void sleep_until(const chrono::auto_time_point& sleep_time) {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::system_clock::now();
-                milliseconds ms = duration_cast<milliseconds>(ad);
-                ::Sleep(DWORD(ms.count()));
+                sleep_for(ad);
             }
             inline void yield() {
                 ::Sleep(0);
@@ -628,7 +626,7 @@
             template <class Rep, class Period>
             inline void sleep_for(const unboost::chrono::duration<Rep, Period>& sleep_duration) {
                 using namespace unboost::chrono;
-                unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                milliseconds ms = duration_cast<milliseconds>(sleep_duration);
                 #ifdef _WIN32
                     ::Sleep(DWORD(ms.count()));
                 #else
@@ -640,7 +638,7 @@
             }
             inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
                 using namespace unboost::chrono;
-                unboost_auto_duration ms = duration_cast<milliseconds>(sleep_duration);
+                milliseconds ms = duration_cast<milliseconds>(sleep_duration);
                 #ifdef _WIN32
                     ::Sleep(DWORD(ms.count()));
                 #else
@@ -656,28 +654,12 @@
             {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::time_point<Clock, Duration>::now();
-                milliseconds ms = duration_cast<milliseconds>(ad);
-                #ifdef _WIN32
-                    ::Sleep(DWORD(ms.count()));
-                #else
-                    time_spec spec;
-                    spec.tv_sec = ms.count() / 1000;
-                    spec.tv_nsec = (ms.count() % 1000) * 1000000;
-                    nanosleep(&spec, NULL);
-                #endif
+                sleep_for(ad);
             }
             inline void sleep_until(const chrono::auto_time_point& sleep_time) {
                 using namespace unboost::chrono;
                 auto_duration ad = sleep_time - chrono::system_clock::now();
-                milliseconds ms = duration_cast<milliseconds>(ad);
-                #ifdef _WIN32
-                    ::Sleep(DWORD(ms.count()));
-                #else
-                    time_spec spec;
-                    spec.tv_sec = ms.count() / 1000;
-                    spec.tv_nsec = (ms.count() % 1000) * 1000000;
-                    nanosleep(&spec, NULL);
-                #endif
+                sleep_for(ad);
             }
             inline void yield() {
                 sched_yield();
