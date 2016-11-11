@@ -277,6 +277,7 @@
 #endif
 
 #ifdef __cplusplus
+#include "rv_ref.hpp"   // for UNBOOST_RV_REF, ...
 namespace unboost {
     class event {
     public:
@@ -284,16 +285,16 @@ namespace unboost {
         event(bool manual_reset, bool initial_state)
             : m_handle(unboost::create_event(manual_reset, initial_state)) { }
 
-        #ifdef UNBOOST_RVALREF
-            event(UNBOOST_RVALREF_TYPE(event) e)
-                : m_handle(UNBOOST_RVALREF(e).m_handle)
+        #ifdef UNBOOST_RV_REF
+            event(UNBOOST_RV_REF(event) e)
+                : m_handle(UNBOOST_RV(e).m_handle)
             {
-                UNBOOST_RVALREF(e).m_handle = NULL;
+                UNBOOST_RV(e).m_handle = NULL;
             }
-            event& operator=(UNBOOST_RVALREF_TYPE(event) e)
+            event& operator=(UNBOOST_RV_REF(event) e)
             {
-                m_handle = UNBOOST_RVALREF(e).m_handle;
-                UNBOOST_RVALREF(e).m_handle = NULL;
+                m_handle = UNBOOST_RV(e).m_handle;
+                UNBOOST_RV(e).m_handle = NULL;
                 return *this;
             }
         #endif
