@@ -38,7 +38,7 @@ namespace unboost {
                 typedef long error_code;
                 system_error(error_code ec) : m_code(ec) { }
                 const error_code code() const { return m_code; }
-                virtual const char *what() const {
+                virtual const char *what() const UNBOOST_NOEXCEPT {
                     static char buf[64];
                     std::sprintf(buf, "Error Code: %d", code());
                     return buf;
@@ -56,7 +56,9 @@ namespace unboost {
         class bad_lexical_cast : public exception {
         public:
             bad_lexical_cast() { }
-            virtual const char *what() const { return "lexical_cast"; }
+            virtual const char *what() const UNBOOST_NOEXCEPT{
+                return "lexical_cast";
+            }
         };
     #endif
 
@@ -69,7 +71,9 @@ namespace unboost {
         public:
             bad_weak_ptr() { }
             virtual ~bad_weak_ptr() { }
-            virtual const char *what() const { return "unboost::bad_weak_ptr"; }
+            virtual const char *what() const UNBOOST_NOEXCEPT {
+                return "unboost::bad_weak_ptr";
+            }
         };
     #endif
 } // namespace unboost
