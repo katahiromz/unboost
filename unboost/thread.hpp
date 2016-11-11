@@ -781,16 +781,16 @@
                 unboost::swap(m_pmutex, other.m_pmutex);
                 unboost::swap(m_locked, other.m_locked);
             }
-            template <class Mutex2>
-            friend void swap(unique_lock<Mutex2>& ul1,
-                             unique_lock<Mutex2>& ul2)
-            {
-                ul1.swap(ul2);
-            }
         protected:
             mutex_type *m_pmutex;
             bool m_locked;
         }; // class unique_lock
+
+        template <class Mutex2>
+        inline void
+        swap(unique_lock<Mutex2>& ul1, unique_lock<Mutex2>& ul2) {
+            ul1.swap(ul2);
+        }
 
         struct adopt_lock_t { };
 
