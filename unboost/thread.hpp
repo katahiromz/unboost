@@ -551,7 +551,7 @@
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 DWORD dwWait = WAIT_TIMEOUT;
                 if (ms.count() > 0) {
-                    if (m_thread_id == ::GetCurrentThreadId()) {
+                    if (m_thread_id != ::GetCurrentThreadId()) {
                         dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
                     }
                 } else {
@@ -572,7 +572,7 @@
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 DWORD dwWait = WAIT_TIMEOUT;
                 if (ms.count() > 0) {
-                    if (m_thread_id == ::GetCurrentThreadId()) {
+                    if (m_thread_id != ::GetCurrentThreadId()) {
                         dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
                     }
                 } else {
