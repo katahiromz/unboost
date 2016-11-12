@@ -994,7 +994,7 @@
 
             id get_id() const { return id(m_id); }
             native_handle_type native_handle() { return m_id.m_value; }
-            bool joinable() { return m_id != id(); }
+            bool joinable() { return m_id.m_value != id().m_value; }
 
             void join() {
                 if (joinable()) {
