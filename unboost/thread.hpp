@@ -108,6 +108,7 @@
             once_flag(const once_flag&)/* = delete*/;
             once_flag& operator=(const once_flag&)/* = delete*/;
         };
+
         template <typename Callable>
         inline void call_once(once_flag& flag, Callable fn) {
             if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
@@ -144,6 +145,7 @@
                 fn(arg1, arg2, arg3, arg4, arg5);
             }
         }
+
         class thread {
         public:
             struct id {
@@ -1174,8 +1176,9 @@
         struct defer_lock_t { };
         struct try_to_lock_t { };
         struct adopt_lock_t { };
-        static const defer_lock_t defer_lock;
-        static const adopt_lock_t adopt_lock;
+        static const defer_lock_t   defer_lock;
+        static const try_to_lock_t  try_to_lock;
+        static const adopt_lock_t   adopt_lock;
 
         template <class Mutex>
         class unique_lock {
