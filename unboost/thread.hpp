@@ -369,6 +369,8 @@
                     ::CloseHandle(m_hThread);
                     m_hThread = NULL;
                     m_id = id();
+                } else {
+                    throw system_error(ERROR_INVALID_PARAMETER);
                 }
             }
 
@@ -951,7 +953,7 @@
                                thread_function_arg0<FUNC>, data);
                 if (m_id.m_value == 0) {
                     delete data;
-                    throw system_error(-1);
+                    throw system_error(EAGAIN);
                 }
             }
             template <typename FUNC, typename ARG1>
@@ -963,7 +965,7 @@
                                data);
                 if (m_id.m_value == 0) {
                     delete data;
-                    throw system_error(-1);
+                    throw system_error(EAGAIN);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2>
@@ -975,7 +977,7 @@
                                data);
                 if (m_id.m_value == 0) {
                     delete data;
-                    throw system_error(-1);
+                    throw system_error(EAGAIN);
                 }
             }
             template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>
@@ -988,7 +990,7 @@
                                data);
                 if (m_id.m_value == 0) {
                     delete data;
-                    throw system_error(-1);
+                    throw system_error(EAGAIN);
                 }
             }
 
@@ -1007,6 +1009,8 @@
                 if (m_id.m_value) {
                     pthread_detach(m_id.m_value);
                     m_id = id();
+                } else {
+                    throw system_error(EINVAL);
                 }
             }
 
