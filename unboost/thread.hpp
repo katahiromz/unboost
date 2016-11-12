@@ -1383,21 +1383,28 @@
             operator bool() const { return owns_lock(); }
 
             void lock() {
-                if (m_pmutex == NULL || m_locked)
-                    throw system_error(-1);
+                if (m_pmutex == NULL)
+                    throw system_error(EPERM);
+                if (m_locked)
+                    throw system_error(EDEADLK);
                 m_pmutex->lock();
                 m_locked = true;
             }
             bool try_lock() {
-                if (m_pmutex == NULL || m_locked)
-                    throw system_error(-1);
-                return mutex()->try_lock();
+                if (m_pmutex == NULL)
+                    throw system_error(EPERM);
+                if (m_locked)
+                    throw system_error(EDEADLK);
+                m_locked = mutex()->try_lock();
+                return m_locked;
             }
             void unlock() {
-                if (m_pmutex == NULL || !m_locked)
-                    throw system_error(-1);
-                mutex()->unlock();
-                m_locked = false;
+                if (m_pmutex) {
+                    if (!m_locked)
+                        throw system_error(EPERM);
+                    mutex()->unlock();
+                    m_locked = false;
+                }
             }
             mutex_type *release() {
                 mutex_type *m = m_pmutex;
