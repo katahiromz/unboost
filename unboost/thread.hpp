@@ -61,6 +61,8 @@
         using std::adopt_lock;
         using std::call_once;
         using std::once_flag;
+        using std::lock;
+        using std::try_lock;
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_THREAD)
     #include <boost/thread.hpp>
@@ -86,6 +88,8 @@
         using boost::adopt_lock;
         using boost::call_once;
         using boost::once_flag;
+        using boost::lock;
+        using boost::try_lock;
     } // namespace unboost
 #elif defined(UNBOOST_USE_WIN32_THREAD)
     #include <stdexcept>
@@ -1337,6 +1341,225 @@
             lock_guard(const self_type&)/* = delete*/;
             self_type& operator=(const self_type&)/* = delete*/;
         }; // class lock_guard
+
+        template <typename L1, typename L2>
+        inline void lock(L1& l1, L2& l2) {
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        lock2.release();
+                        lock1.release();
+                        return;
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+        } // lock
+        template <typename L1, typename L2, typename L3>
+        inline void lock(L1& l1, L2& l2, L3& l3) {
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            lock3.release();
+                            lock2.release();
+                            lock1.release();
+                            return;
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+        } // lock
+        template <typename L1, typename L2, typename L3, typename L4>
+        inline void lock(L1& l1, L2& l2, L3& l3, L4& l4) {
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            unique_lock<L4> lock4(l4, try_to_lock);
+                            if (lock4.owns_lock()) {
+                                lock4.release();
+                                lock3.release();
+                                lock2.release();
+                                lock1.release();
+                                return;
+                            }
+                            lock3.unlock();
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+        } // lock
+        template <typename L1, typename L2, typename L3, typename L4, typename L5>
+        inline void lock(L1& l1, L2& l2, L3& l3, L4& l4, L5& l5) {
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            unique_lock<L4> lock4(l4, try_to_lock);
+                            if (lock4.owns_lock()) {
+                                unique_lock<L5> lock5(l5, try_to_lock);
+                                if (lock5.owns_lock()) {
+                                    lock5.release();
+                                    lock4.release();
+                                    lock3.release();
+                                    lock2.release();
+                                    lock1.release();
+                                    return;
+                                }
+                                lock4.unlock();
+                            }
+                            lock3.unlock();
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+        } // lock
+        template <typename L1, typename L2>
+        inline int try_lock(L1& l1, L2& l2) {
+            int i = 0;
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        ++i;
+                        lock2.release();
+                        lock1.release();
+                        return -1;
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+            return i;
+        } // try_lock
+        template <typename L1, typename L2, typename L3>
+        inline int try_lock(L1& l1, L2& l2, L3& l3) {
+            int i = 0;
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            ++i;
+                            lock3.release();
+                            lock2.release();
+                            lock1.release();
+                            return -1;
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+            return i;
+        } // try_lock
+        template <typename L1, typename L2, typename L3, typename L4>
+        inline int try_lock(L1& l1, L2& l2, L3& l3, L4& l4) {
+            int i = 0;
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            ++i;
+                            unique_lock<L4> lock4(l4, try_to_lock);
+                            if (lock4.owns_lock()) {
+                                ++i;
+                                lock4.release();
+                                lock3.release();
+                                lock2.release();
+                                lock1.release();
+                                return -1;
+                            }
+                            lock3.unlock();
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+            return i;
+        } // try_lock
+        template <typename L1, typename L2, typename L3, typename L4, typename L5>
+        inline int try_lock(L1& l1, L2& l2, L3& l3, L4& l4, L5& l5) {
+            int i = 0;
+            try {
+                unique_lock<L1> lock1(l1, try_to_lock);
+                if (lock1.owns_lock()) {
+                    ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
+                    if (lock2.owns_lock()) {
+                        ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
+                        if (lock3.owns_lock()) {
+                            ++i;
+                            unique_lock<L4> lock4(l4, try_to_lock);
+                            if (lock4.owns_lock()) {
+                                ++i;
+                                unique_lock<L5> lock5(l5, try_to_lock);
+                                if (lock5.owns_lock()) {
+                                    ++i;
+                                    lock5.release();
+                                    lock4.release();
+                                    lock3.release();
+                                    lock2.release();
+                                    lock1.release();
+                                    return -1;
+                                }
+                                lock4.unlock();
+                            }
+                            lock3.unlock();
+                        }
+                        lock2.unlock();
+                    }
+                    lock1.unlock();
+                }
+            } catch (...) {
+                throw;
+            }
+            return i;
+        } // try_lock
     } // namespace unboost
 #endif  // def UNBOOST_NEED_LOCK_EXTRA
 
