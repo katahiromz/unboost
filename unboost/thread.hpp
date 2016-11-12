@@ -54,8 +54,13 @@
         using std::unique_lock;
         using std::lock_guard;
         using std::defer_lock_t;
+        using std::defer_lock;
         using std::try_to_lock_t;
+        using std::try_to_lock;
         using std::adopt_lock_t;
+        using std::adopt_lock;
+        using std::call_once;
+        using std::once_flag;
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_THREAD)
     #include <boost/thread.hpp>
@@ -74,8 +79,13 @@
         using boost::unique_lock;
         using boost::lock_guard;
         using boost::defer_lock_t;
+        using boost::defer_lock;
         using boost::try_to_lock_t;
+        using boost::try_to_lock;
         using boost::adopt_lock_t;
+        using boost::adopt_lock;
+        using boost::call_once;
+        using boost::once_flag;
     } // namespace unboost
 #elif defined(UNBOOST_USE_WIN32_THREAD)
     #include <stdexcept>
@@ -91,6 +101,49 @@
     #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
+        struct once_flag {
+            once_flag() : m_flag(0) { }
+            LONG    m_flag;
+        private:
+            once_flag(const once_flag&)/* = delete*/;
+            once_flag& operator=(const once_flag&)/* = delete*/;
+        };
+        template <typename Callable>
+        inline void call_once(once_flag& flag, Callable fn) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn();
+            }
+        }
+        template <typename Callable, typename ARG1>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn(arg1);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3, arg4);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
+            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3, arg4, arg5);
+            }
+        }
         class thread {
         public:
             struct id {
@@ -1121,6 +1174,8 @@
         struct defer_lock_t { };
         struct try_to_lock_t { };
         struct adopt_lock_t { };
+        static const defer_lock_t defer_lock;
+        static const adopt_lock_t adopt_lock;
 
         template <class Mutex>
         class unique_lock {
