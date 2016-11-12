@@ -20,7 +20,7 @@
         "test3"
     };
 #else   // Unboost
-    UNBOOST_ILIST_DEFINE(const char*, strs_contents) = {
+    UNBOOST_ILIST_DEFINE(std::string, strs_contents) = {
         "test1",
         "test2",
         "test3"
@@ -42,7 +42,7 @@ int main(void) {
         "new_value1", "new_value2"
     };
 #else   // Unboost
-    UNBOOST_ILIST_DEFINE(const char *, strs_new_contents) = {
+    UNBOOST_ILIST_DEFINE(std::string, strs_new_contents) = {
         "new_value1", "new_value2"
     };
     UNBOOST_ILIST_ASSIGN(strs, strs_new_contents);

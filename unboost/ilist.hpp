@@ -28,9 +28,9 @@
             }
         };
     } // namespace unboost
-    #define UNBOOST_ILIST_DEFINE(type,name)         unboost::initializer_list<type> name
-    #define UNBOOST_ILIST_INIT(obj,ilist_name)      unboost::initializer initializer_##__LINE__((obj), (ilist_name))
-    #define UNBOOST_ILIST_ASSIGN(obj,ilist_name)    ((obj) = (ilist_name))
+    #define UNBOOST_ILIST_DEFINE(type,name)     unboost::initializer_list<type> name
+    #define UNBOOST_ILIST_INIT(obj,name)        unboost::initializer initializer_##__LINE__((obj), (name))
+    #define UNBOOST_ILIST_ASSIGN(obj,name)      ((obj) = (name))
 #elif defined(UNBOOST_USE_UNBOOST_ILIST)
     #include <vector>
     #include <list>
