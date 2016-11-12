@@ -5,9 +5,9 @@
 #define UNBOOST_THREAD_HPP
 
 #include "unboost.hpp"
-#include "chrono.hpp"
-#include "exception.hpp"
-#include "rv_ref.hpp"
+#include "chrono.hpp"       // for unboost::chrono
+#include "exception.hpp"    // for unboost::system_error
+#include "rv_ref.hpp"       // for UNBOOST_RV_REF, ...
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) + defined(UNBOOST_USE_POSIX_THREAD) == 0)
@@ -1332,7 +1332,9 @@
         template <class Mutex>
         class unique_lock {
         public:
-            typedef Mutex mutex_type;
+            typedef Mutex               mutex_type;
+            typedef unique_lock<Mutex>  self_type;
+
             unique_lock() : m_pmutex(NULL), m_locked(false) { }
             explicit unique_lock(mutex_type& m)
                 : m_pmutex(&m), m_locked(true)
@@ -1348,8 +1350,25 @@
                 m_locked = m_pmutex->try_lock();
             }
 
-            unique_lock(mutex_type& m, adopt_lock_t) :
-                m_pmutex(&m), m_locked(true) { }
+            unique_lock(mutex_type& m, adopt_lock_t)
+                : m_pmutex(&m), m_locked(true) { }
+
+            template <typename Clock, typename Duration>
+            unique_lock(mutex_type& m,
+                        const chrono::time_point<Clock, Duration>& abs_time) 
+                : m_pmutex(&m), m_locked(false)
+            {
+                m_locked = m_pmutex->try_lock_until(abs_time);
+            }
+
+            template <typename Rep, typename Period>
+            unique_lock(mutex_type& m,
+                        const chrono::duration<Rep, Period>& rel_time)
+                : m_pmutex(&m), m_locked(false)
+            {
+                m_locked = m_pmutex->try_lock_for(rel_time);
+            }
+
             ~unique_lock() {
                 if (m_locked && m_pmutex)
                     m_pmutex->unlock();
@@ -1358,15 +1377,6 @@
             bool owns_lock() const { return m_locked; }
             mutex_type *mutex() const { return m_pmutex; }
             operator bool() const { return owns_lock(); }
-
-            void move_assignment(unique_lock& other) {
-                if (m_pmutex && m_locked)
-                    m_pmutex->lock();
-                m_pmutex = other->m_pmutex;
-                m_locked = other->m_locked;
-                other->m_pmutex = NULL;
-                other->m_locked = false;
-            }
 
             void lock() {
                 if (m_pmutex == NULL || m_locked)
@@ -1395,9 +1405,28 @@
                 unboost::swap(m_pmutex, other.m_pmutex);
                 unboost::swap(m_locked, other.m_locked);
             }
+
+#ifdef UNBOOST_RV_REF
+            unique_lock(UNBOOST_RV_REF(self_type) other) {
+                m_pmutex = UNBOOST_RV(other).m_pmutex;
+                m_locked = UNBOOST_RV(other).m_locked;
+                UNBOOST_RV(other).m_pmutex = NULL;
+                UNBOOST_RV(other).m_locked = false;
+            }
+            unique_lock& operator=(UNBOOST_RV_REF(self_type) other) {
+                m_pmutex = UNBOOST_RV(other).m_pmutex;
+                m_locked = UNBOOST_RV(other).m_locked;
+                UNBOOST_RV(other).m_pmutex = NULL;
+                UNBOOST_RV(other).m_locked = false;
+                return *this;
+            }
+#endif
         protected:
             mutex_type *m_pmutex;
             bool m_locked;
+        private:
+            unique_lock(const self_type&)/* = delete*/;
+            unique_lock& operator=(const self_type&)/* = delete*/;
         }; // class unique_lock
 
         template <class Mutex2>
