@@ -411,12 +411,20 @@
             {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
-                return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                if (ms.count() > 0) {
+                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                } else {
+                    return try_lock();
+                }
             }
             bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
-                return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                if (ms.count() > 0) {
+                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                } else {
+                    return try_lock();
+                }
             }
             template <class Clock, class Duration>
             bool try_lock_until(
@@ -437,6 +445,162 @@
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
         }; // timed_mutex
+
+        class recursive_mutex {
+        public:
+            typedef HANDLE      native_handle_type;
+
+            recursive_mutex()   {
+                m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
+                m_thread_id = DWORD(-1);
+                m_lock_count = 0;
+            }
+            ~recursive_mutex()  {
+                ::CloseHandle(m_hMutex);
+            }
+            native_handle_type native_handle() { return m_hMutex; }
+            void lock()     {
+                if (m_thread_id != ::GetCurrentThreadId()) {
+                    ::WaitForSingleObject(m_hMutex, INFINITE);
+                }
+                m_thread_id = ::GetCurrentThreadId();
+                ::InterlockedIncrement(&m_lock_count);
+            }
+            void unlock() {
+                assert(m_lock_count > 0);
+                assert(m_thread_id == ::GetCurrentThreadId());
+                if (::InterlockedDecrement(&m_lock_count) == 0) {
+                    m_thread_id = DWORD(-1);
+                    ::ReleaseMutex(m_hMutex);
+                }
+            }
+            bool try_lock() {
+                DWORD dwWait;
+                if (m_thread_id != ::GetCurrentThreadId()) {
+                    dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                } else {
+                    dwWait = WAIT_OBJECT_0;
+                }
+                if (dwWait == WAIT_OBJECT_0) {
+                    m_thread_id = ::GetCurrentThreadId();
+                    ::InterlockedIncrement(&m_lock_count);
+                    return true;
+                }
+                return false;
+            }
+        protected:
+            native_handle_type  m_hMutex;
+            DWORD               m_thread_id;
+            LONG                m_lock_count;
+        private:
+            recursive_mutex(const recursive_mutex&)/* = delete*/;
+            recursive_mutex& operator=(const recursive_mutex&)/* = delete*/;
+        }; // recursive_mutex
+
+        class recursive_timed_mutex {
+        public:
+            typedef HANDLE      native_handle_type;
+
+            recursive_timed_mutex()   {
+                m_hMutex = ::CreateMutex(NULL, FALSE, NULL);
+                m_thread_id = DWORD(-1);
+                m_lock_count = 0;
+            }
+            ~recursive_timed_mutex()  {
+                ::CloseHandle(m_hMutex);
+            }
+            native_handle_type native_handle() { return m_hMutex; }
+            void lock() {
+                if (m_thread_id != ::GetCurrentThreadId()) {
+                    ::WaitForSingleObject(m_hMutex, INFINITE);
+                }
+                m_thread_id = ::GetCurrentThreadId();
+                ::InterlockedIncrement(&m_lock_count);
+            }
+            void unlock() {
+                assert(m_lock_count > 0);
+                assert(m_thread_id == ::GetCurrentThreadId());
+                if (::InterlockedDecrement(&m_lock_count) == 0) {
+                    m_thread_id = DWORD(-1);
+                    ::ReleaseMutex(m_hMutex);
+                }
+            }
+            bool try_lock() {
+                DWORD dwWait;
+                if (m_thread_id != ::GetCurrentThreadId()) {
+                    dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                } else {
+                    dwWait = WAIT_OBJECT_0;
+                }
+                if (dwWait == WAIT_OBJECT_0) {
+                    m_thread_id = ::GetCurrentThreadId();
+                    ::InterlockedIncrement(&m_lock_count);
+                    return true;
+                }
+                return false;
+            }
+            template <class Rep, class Period>
+            bool try_lock_for(
+                const unboost::chrono::duration<Rep, Period>& timeout_duration)
+            {
+                using namespace unboost::chrono;
+                milliseconds ms = duration_cast<milliseconds>(timeout_duration);
+                if (ms.count() > 0) {
+                    if (m_thread_id == ::GetCurrentThreadId() &&
+                        ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0)
+                    {
+                        m_thread_id = ::GetCurrentThreadId();
+                        ::InterlockedIncrement(&m_lock_count);
+                        return true;
+                    }
+                } else {
+                    if (m_thread_id != ::GetCurrentThreadId()) {
+                        return try_lock();
+                    }
+                    ::InterlockedIncrement(&m_lock_count);
+                    return true;
+                }
+            }
+            bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
+                using namespace unboost::chrono;
+                milliseconds ms = duration_cast<milliseconds>(timeout_duration);
+                if (ms.count() > 0) {
+                    if (m_thread_id == ::GetCurrentThreadId() &&
+                        ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0)
+                    {
+                        m_thread_id = ::GetCurrentThreadId();
+                        ::InterlockedIncrement(&m_lock_count);
+                        return true;
+                    }
+                } else {
+                    if (m_thread_id != ::GetCurrentThreadId()) {
+                        return try_lock();
+                    }
+                    ::InterlockedIncrement(&m_lock_count);
+                    return true;
+                }
+            }
+            template <class Clock, class Duration>
+            bool try_lock_until(
+                const unboost::chrono::time_point<Clock, Duration>& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+            bool try_lock_until(
+                const unboost::chrono::auto_time_point& timeout_time)
+            {
+                using namespace unboost::chrono;
+                return try_lock_for(timeout_time - system_clock::now());
+            }
+        protected:
+            native_handle_type  m_hMutex;
+            DWORD               m_thread_id;
+            LONG                m_lock_count;
+        private:
+            recursive_timed_mutex(const recursive_timed_mutex&)/* = delete*/;
+            recursive_timed_mutex& operator=(const recursive_timed_mutex&)/* = delete*/;
+        }; // recursive_timed_mutex
     } // namespace unboost
 #elif defined(UNBOOST_USE_POSIX_THREAD)
     #include <stdexcept>
