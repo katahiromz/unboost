@@ -181,7 +181,9 @@ int main(void) {
     std::chrono::milliseconds dura(2000);
     checked = false;
     std::thread t0(thread_proc0);
+    assert(t0.joinable());
     t0.join();
+    assert(!t0.joinable());
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
@@ -223,7 +225,9 @@ int main(void) {
     boost::chrono::milliseconds dura(2000);
     checked = false;
     boost::thread t0(thread_proc0);
+    assert(t0.joinable());
     t0.join();
+    assert(!t0.joinable());
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
@@ -265,7 +269,9 @@ int main(void) {
     unboost::chrono::milliseconds dura(2000);
     checked = false;
     unboost::thread t0(thread_proc0);
+    assert(t0.joinable());
     t0.join();
+    assert(!t0.joinable());
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;

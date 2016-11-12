@@ -7,6 +7,7 @@
 #include "unboost.hpp"
 #include "chrono.hpp"
 #include "exception.hpp"
+#include "rv_ref.hpp"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_THREAD) + defined(UNBOOST_USE_BOOST_THREAD) + defined(UNBOOST_USE_WIN32_THREAD) + defined(UNBOOST_USE_POSIX_THREAD) == 0)
@@ -312,15 +313,29 @@
                 unboost::swap(m_hThread, other.m_hThread);
                 unboost::swap(m_id, other.m_id);
             }
-            friend void swap(thread& x, thread& y) {
-                x.swap(y);
-            }
 
             static unsigned hardware_concurrency() {
                 SYSTEM_INFO info;
                 ::GetSystemInfo(&info);
                 return info.dwNumberOfProcessors;
             }
+
+#ifdef UNBOOST_RV_REF
+            thread(UNBOOST_RV_REF(thread) other) {
+                m_hThread = UNBOOST_RV(other).m_hThread;
+                UNBOOST_RV(other).m_hThread = NULL;
+                m_id = UNBOOST_RV(other).m_id;
+                UNBOOST_RV(other).m_id = id();
+            }
+            thread& operator=(UNBOOST_RV_REF(thread) other) {
+                m_hThread = UNBOOST_RV(other).m_hThread;
+                UNBOOST_RV(other).m_hThread = NULL;
+                m_id = UNBOOST_RV(other).m_id;
+                UNBOOST_RV(other).m_id = id();
+                return *this;
+            }
+#endif
+
         protected:
             HANDLE  m_hThread;
             id      m_id;
@@ -328,6 +343,10 @@
             thread(const thread&)/* = delete*/;
             thread& operator=(const thread&)/* = delete*/;
         }; // class thread
+
+        inline void swap(thread& x, thread& y) {
+            x.swap(y);
+        }
 
         inline bool operator==(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
             return x.m_value == y.m_value;
@@ -832,19 +851,33 @@
             void swap(thread& other) {
                 unboost::swap(m_id, other.m_id);
             }
-            friend void swap(thread& x, thread& y) {
-                x.swap(y);
-            }
 
             static unsigned hardware_concurrency() {
                 return pthread_num_processors_np();
             }
+
+#ifdef UNBOOST_RV_REF
+            thread(UNBOOST_RV_REF(thread) other) {
+                m_id = UNBOOST_RV(other).m_id;
+                UNBOOST_RV(other).m_id = id();
+            }
+            thread& operator=(UNBOOST_RV_REF(thread) other) {
+                m_id = UNBOOST_RV(other).m_id;
+                UNBOOST_RV(other).m_id = id();
+                return *this;
+            }
+#endif
+
         protected:
             id      m_id;
         private:
             thread(const thread&)/* = delete*/;
             thread& operator=(const thread&)/* = delete*/;
         }; // class thread
+
+        inline void swap(thread& x, thread& y) {
+            x.swap(y);
+        }
 
         inline bool operator==(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
             return x.m_value == y.m_value;
