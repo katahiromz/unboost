@@ -401,7 +401,11 @@
                 sleep_for(ad);
             }
             inline void yield() {
-                ::Sleep(0);
+                #if (_WIN32_WINNT >= 0x0400)
+                    ::SwitchToThread();
+                #else
+                    ::Sleep(0);
+                #endif
             }
         } // namespace this_thread
 
