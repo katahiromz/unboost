@@ -11,7 +11,7 @@
     #include <initializer_list>
 #else   // Unboost
     #include <unboost/ilist.hpp>
-#endif
+#endif  // Unboost
 
 #ifdef CXX11
     std::vector<std::string> strs = {
