@@ -357,10 +357,15 @@
             return out;
         }
 
-        inline size_t hash_value(thread::id i) {
-            return i.m_value;
-        }
-        UNBOOST_HASH_SPECIALIZE(thread::id);
+        template <>
+        struct hash<thread::id> {
+            typedef thread::id argument_type;
+            typedef size_t result_type;
+            hash() { }
+            result_type operator()(thread::id key) const {
+                return key.m_value;
+            }
+        };
 
         namespace this_thread {
             inline unboost::thread::id get_id() {
@@ -865,10 +870,15 @@
             return out;
         }
 
-        inline size_t hash_value(thread::id i) {
-            return i.m_value;
-        }
-        UNBOOST_HASH_SPECIALIZE(thread::id);
+        template <>
+        struct hash<thread::id> {
+            typedef thread::id argument_type;
+            typedef size_t result_type;
+            hash() { }
+            result_type operator()(thread::id key) const {
+                return key.m_value;
+            }
+        };
 
         namespace this_thread {
             inline unboost::thread::id get_id() {

@@ -38,49 +38,49 @@
             hash() { }
         };
 
-        inline size_t hash_value(bool b) {
+        inline size_t _hash_value(bool b) {
             return b;
         }
-        inline size_t hash_value(char ch) {
+        inline size_t _hash_value(char ch) {
             return static_cast<unsigned char>(ch);
         }
-        inline size_t hash_value(signed char ch) {
+        inline size_t _hash_value(signed char ch) {
             return static_cast<unsigned char>(ch);
         }
-        inline size_t hash_value(unsigned char ch) {
+        inline size_t _hash_value(unsigned char ch) {
             return ch;
         }
-        inline size_t hash_value(short s) {
+        inline size_t _hash_value(short s) {
             return static_cast<unsigned short>(s);
         }
-        inline size_t hash_value(unsigned short s) {
+        inline size_t _hash_value(unsigned short s) {
             return s;
         }
-        inline size_t hash_value(long n) {
+        inline size_t _hash_value(long n) {
             return static_cast<unsigned long>(n);
         }
-        inline size_t hash_value(unsigned long n) {
+        inline size_t _hash_value(unsigned long n) {
             return n;
         }
-        inline size_t hash_value(int n) {
+        inline size_t _hash_value(int n) {
             return static_cast<unsigned int>(n);
         }
-        inline size_t hash_value(unsigned int n) {
+        inline size_t _hash_value(unsigned int n) {
             return n;
         }
-        inline size_t hash_value(_int64_t n) {
+        inline size_t _hash_value(_int64_t n) {
             return size_t(n ^ (n >> 32));
         }
-        inline size_t hash_value(_uint64_t n) {
+        inline size_t _hash_value(_uint64_t n) {
             return size_t(n ^ (n >> 32));
         }
-        inline size_t hash_value(float e) {
-            return hash_value(*reinterpret_cast<const int *>(&e));
+        inline size_t _hash_value(float e) {
+            return _hash_value(*reinterpret_cast<const int *>(&e));
         }
-        inline size_t hash_value(double e) {
-            return hash_value(*reinterpret_cast<const _uint64_t *>(&e));
+        inline size_t _hash_value(double e) {
+            return _hash_value(*reinterpret_cast<const _uint64_t *>(&e));
         }
-        inline size_t hash_value(long double e) {
+        inline size_t _hash_value(long double e) {
             size_t ret = 0;
             const unsigned char *pch = reinterpret_cast<const unsigned char *>(&e);
             for (size_t i = 0; i < sizeof(e); ++i) {
@@ -88,11 +88,11 @@
             }
             return ret;
         }
-        inline size_t hash_value(const void *p) {
+        inline size_t _hash_value(const void *p) {
             return *reinterpret_cast<const size_t *>(&p);
         }
 
-        inline size_t hash_value(const std::string& str) {
+        inline size_t _hash_value(const std::string& str) {
             size_t ret = 0;
             const size_t count = str.size();
             unsigned char shift = 0;
@@ -105,7 +105,7 @@
             }
             return ret;
         }
-        inline size_t hash_value(const std::wstring& str) {
+        inline size_t _hash_value(const std::wstring& str) {
             size_t ret = 0;
             const size_t count = str.size();
             unsigned char shift = 0;
@@ -126,7 +126,7 @@
                 typedef size_t result_type; \
                 hash() { } \
                 result_type operator()(type key) const { \
-                    return hash_value(key); \
+                    return _hash_value(key); \
                 } \
             }
 
@@ -137,7 +137,7 @@
                 typedef size_t result_type; \
                 hash() { } \
                 result_type operator()(const type& key) const { \
-                    return hash_value(key); \
+                    return _hash_value(key); \
                 } \
             }
 
