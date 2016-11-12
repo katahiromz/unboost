@@ -351,7 +351,9 @@
         template <class charT, class traits>
         inline std::basic_ostream<charT, traits>&
         operator<<(std::basic_ostream<charT, traits>& out, thread::id id) {
+            std::ios_base::fmtflags f = out.flags();
             out << "0x" << std::hex << id.m_value;
+            out.flags(f);
             return out;
         }
 
@@ -857,7 +859,9 @@
         template <class charT, class traits>
         inline std::basic_ostream<charT, traits>&
         operator<<(std::basic_ostream<charT, traits>& out, thread::id id) {
+            std::ios_base::fmtflags f = out.flags();
             out << "0x" << std::hex << id.m_value;
+            out.flags(f);
             return out;
         }
 

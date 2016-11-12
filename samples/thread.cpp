@@ -175,7 +175,8 @@ int main(void) {
     std::cout << "thread" << std::endl;
 
 #ifdef CXX11
-    std::cout << "current thread: " << std::this_thread::get_id() << std::endl;
+    std::thread::id cur_id = std::this_thread::get_id();
+    std::cout << "current thread: " << cur_id << std::endl;
 
     std::chrono::milliseconds dura(2000);
     checked = false;
@@ -187,6 +188,7 @@ int main(void) {
     std::this_thread::sleep_for(dura);
     checked = false;
     std::thread t1(thread_proc1, 2);
+    assert(t1.get_id() != cur_id);
     std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
@@ -215,7 +217,8 @@ int main(void) {
     std::this_thread::sleep_for(std::chrono::seconds(10));
     assert(checked);
 #elif defined(BOOST)
-    std::cout << "current thread: " << boost::this_thread::get_id() << std::endl;
+    boost::thread::id cur_id = boost::this_thread::get_id();
+    std::cout << "current thread: " << cur_id << std::endl;
 
     boost::chrono::milliseconds dura(2000);
     checked = false;
@@ -227,6 +230,7 @@ int main(void) {
     boost::this_thread::sleep_for(dura);
     checked = false;
     boost::thread t1(thread_proc1, 2);
+    assert(t1.get_id() != cur_id);
     std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
@@ -255,7 +259,8 @@ int main(void) {
     boost::this_thread::sleep_for(boost::chrono::seconds(10));
     assert(checked);
 #else   // Unboost
-    std::cout << "current thread: " << unboost::this_thread::get_id() << std::endl;
+    unboost::thread::id cur_id = unboost::this_thread::get_id();
+    std::cout << "current thread: " << cur_id << std::endl;
 
     unboost::chrono::milliseconds dura(2000);
     checked = false;
@@ -267,6 +272,7 @@ int main(void) {
     unboost::this_thread::sleep_for(dura);
     checked = false;
     unboost::thread t1(thread_proc1, 2);
+    assert(t1.get_id() != cur_id);
     std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
