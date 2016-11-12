@@ -109,39 +109,43 @@
             once_flag& operator=(const once_flag&)/* = delete*/;
         };
 
+        inline LONG _interlocked_exchange(LONG *ptr, LONG value) {
+            return ::InterlockedExchange(ptr, value);
+        }
+
         template <typename Callable>
         inline void call_once(once_flag& flag, Callable fn) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn();
             }
         }
         template <typename Callable, typename ARG1>
         inline void call_once(once_flag& flag, Callable fn, ARG1 arg1) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn(arg1);
             }
         }
         template <typename Callable, typename ARG1, typename ARG2>
         inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn(arg1, arg2);
             }
         }
         template <typename Callable, typename ARG1, typename ARG2, typename ARG3>
         inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn(arg1, arg2, arg3);
             }
         }
         template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
         inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn(arg1, arg2, arg3, arg4);
             }
         }
         template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
         inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
-            if (::InterlockedExchange(&flag.m_flag, 1) == 0) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
                 fn(arg1, arg2, arg3, arg4, arg5);
             }
         }
@@ -751,6 +755,67 @@
     #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
+        #ifdef _WIN32
+            struct once_flag {
+                once_flag() : m_flag(0) { }
+                LONG    m_flag;
+            private:
+                once_flag(const once_flag&)/* = delete*/;
+                once_flag& operator=(const once_flag&)/* = delete*/;
+            };
+            inline LONG _interlocked_exchange(LONG *ptr, LONG value) {
+                return ::InterlockedExchange(ptr, value);
+            }
+        #else
+            struct once_flag {
+                once_flag() : m_flag(0) { }
+                int     m_flag;
+            private:
+                once_flag(const once_flag&)/* = delete*/;
+                once_flag& operator=(const once_flag&)/* = delete*/;
+            };
+            inline int _interlocked_exchange(int *ptr, int value) {
+                return __sync_lock_test_and_set(ptr, value);
+            }
+        #endif
+
+        template <typename Callable>
+        inline void call_once(once_flag& flag, Callable fn) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn();
+            }
+        }
+        template <typename Callable, typename ARG1>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn(arg1);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3, arg4);
+            }
+        }
+        template <typename Callable, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+        inline void call_once(once_flag& flag, Callable fn, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5) {
+            if (_interlocked_exchange(&flag.m_flag, 1) == 0) {
+                fn(arg1, arg2, arg3, arg4, arg5);
+            }
+        }
+
         class thread {
         public:
             struct id {
