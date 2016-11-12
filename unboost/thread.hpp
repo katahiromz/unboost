@@ -85,13 +85,19 @@
         #endif
         #include <windows.h>
     #endif
-    #include "swap.hpp"     // for unboost::swap
+    #include "swap.hpp"             // for unboost::swap
+    #include "functional/hash.hpp"  // for unboost::hash
     #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
         class thread {
         public:
-            typedef DWORD id;
+            struct id {
+            public:
+                id() UNBOOST_NOEXCEPT : m_value(0) { }
+                id(DWORD value) UNBOOST_NOEXCEPT : m_value(value) { }
+                DWORD m_value;
+            };
             typedef HANDLE native_handle_type;
 
         protected:
@@ -209,7 +215,7 @@
                 data = new THREAD_DATA_ARG0<FUNC>(func);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg0<FUNC>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -221,7 +227,7 @@
                 data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg1<FUNC, ARG1>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -233,7 +239,7 @@
                 data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg2<FUNC, ARG1, ARG2>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -247,7 +253,7 @@
                 data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3>(func, arg1, arg2, arg3);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg3<FUNC, ARG1, ARG2, ARG3>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -261,7 +267,7 @@
                 data = new THREAD_DATA_ARG4<FUNC, ARG1, ARG2, ARG3, ARG4>(func, arg1, arg2, arg3, arg4);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg4<FUNC, ARG1, ARG2, ARG3, ARG4>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -275,7 +281,7 @@
                 data = new THREAD_DATA_ARG5<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5>(func, arg1, arg2, arg3, arg4, arg5);
                 m_hThread = reinterpret_cast<HANDLE>(
                     _beginthreadex(NULL, 0, thread_function_arg4<FUNC, ARG1, ARG2, ARG3, ARG4, ARG5>,
-                                   data, 0, (unsigned *)&m_id));
+                                   data, 0, (unsigned *)&m_id.m_value));
                 if (m_hThread == NULL) {
                     delete data;
                     throw system_error(::GetLastError());
@@ -284,7 +290,7 @@
 
             id get_id() const { return m_id; }
             native_handle_type native_handle() { return m_hThread; }
-            bool joinable() { return m_id != id(); }
+            bool joinable() { return m_id.m_value != id().m_value; }
 
             void join() {
                 if (joinable()) {
@@ -322,6 +328,37 @@
             thread(const thread&)/* = delete*/;
             thread& operator=(const thread&)/* = delete*/;
         }; // class thread
+
+        inline bool operator==(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value == y.m_value;
+        }
+        inline bool operator!=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value != y.m_value;
+        }
+        inline bool operator<(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value < y.m_value;
+        }
+        inline bool operator>=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value >= y.m_value;
+        }
+        inline bool operator>(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value > y.m_value;
+        }
+        inline bool operator<=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value <= y.m_value;
+        }
+
+        template <class charT, class traits>
+        inline std::basic_ostream<charT, traits>&
+        operator<<(std::basic_ostream<charT, traits>& out, thread::id id) {
+            out << "0x" << std::hex << id.m_value;
+            return out;
+        }
+
+        inline size_t hash_value(thread::id i) {
+            return i.m_value;
+        }
+        UNBOOST_HASH_SPECIALIZE(thread::id);
 
         namespace this_thread {
             inline unboost::thread::id get_id() {
@@ -623,14 +660,20 @@
             #include <windows.h>    // for Sleep
         #endif
     #else
-        #include <time.h>     // for nanosleep
+        #include <time.h>           // for nanosleep
     #endif
+    #include "functional/hash.hpp"  // for unboost::hash
     #define UNBOOST_NEED_LOCK_EXTRA
 
     namespace unboost {
         class thread {
         public:
-            typedef pthread_t id;
+            struct id {
+            public:
+                id() UNBOOST_NOEXCEPT : m_value(0) { }
+                id(pthread_t value) UNBOOST_NOEXCEPT : m_value(value) { }
+                pthread_t m_value;
+            };
             typedef pthread_t native_handle_type;
 
         protected:
@@ -702,7 +745,7 @@
         public:
             thread() : m_id(_PTHREAD_NULL_THREAD) { }
             ~thread() {
-                if (m_id) {
+                if (m_id.m_value) {
                     detach();
                     std::terminate();
                 }
@@ -712,9 +755,9 @@
             thread(FUNC func) : m_id() {
                 THREAD_DATA_ARG0<FUNC> *data;
                 data = new THREAD_DATA_ARG0<FUNC>(func);
-                pthread_create(&m_id, NULL,
+                pthread_create(&m_id.m_value, NULL,
                                thread_function_arg0<FUNC>, data);
-                if (m_id == 0) {
+                if (m_id.m_value == 0) {
                     delete data;
                     throw system_error(-1);
                 }
@@ -723,10 +766,10 @@
             thread(FUNC func, ARG1 arg1) : m_id() {
                 THREAD_DATA_ARG1<FUNC, ARG1> *data;
                 data = new THREAD_DATA_ARG1<FUNC, ARG1>(func, arg1);
-                pthread_create(&m_id, NULL,
+                pthread_create(&m_id.m_value, NULL,
                                thread_function_arg1<FUNC, ARG1>,
                                data);
-                if (m_id == 0) {
+                if (m_id.m_value == 0) {
                     delete data;
                     throw system_error(-1);
                 }
@@ -735,10 +778,10 @@
             thread(FUNC func, ARG1 arg1, ARG2 arg2) : m_id() {
                 THREAD_DATA_ARG2<FUNC, ARG1, ARG2> *data;
                 data = new THREAD_DATA_ARG2<FUNC, ARG1, ARG2>(func, arg1, arg2);
-                pthread_create(&m_id, NULL,
+                pthread_create(&m_id.m_value, NULL,
                                thread_function_arg2<FUNC, ARG1, ARG2>,
                                data);
-                if (m_id == 0) {
+                if (m_id.m_value == 0) {
                     delete data;
                     throw system_error(-1);
                 }
@@ -748,29 +791,29 @@
             {
                 THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3> *data;
                 data = new THREAD_DATA_ARG3<FUNC, ARG1, ARG2, ARG3>(func, arg1, arg2, arg3);
-                pthread_create(&m_id, NULL,
+                pthread_create(&m_id.m_value, NULL,
                                thread_function_arg3<FUNC, ARG1, ARG2, ARG3>,
                                data);
-                if (m_id == 0) {
+                if (m_id.m_value == 0) {
                     delete data;
                     throw system_error(-1);
                 }
             }
 
-            id get_id() const { return m_id; }
-            native_handle_type native_handle() { return m_id; }
+            id get_id() const { return id(m_id); }
+            native_handle_type native_handle() { return m_id.m_value; }
             bool joinable() { return m_id != id(); }
 
             void join() {
                 if (joinable()) {
-                    pthread_join(m_id, NULL);
+                    pthread_join(m_id.m_value, NULL);
                     m_id = id();
                 }
             }
 
             void detach() {
-                if (m_id) {
-                    pthread_detach(m_id);
+                if (m_id.m_value) {
+                    pthread_detach(m_id.m_value);
                     m_id = id();
                 }
             }
@@ -786,15 +829,46 @@
                 return pthread_num_processors_np();
             }
         protected:
-            pthread_t   m_id;
+            id      m_id;
         private:
             thread(const thread&)/* = delete*/;
             thread& operator=(const thread&)/* = delete*/;
         }; // class thread
 
+        inline bool operator==(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value == y.m_value;
+        }
+        inline bool operator!=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value != y.m_value;
+        }
+        inline bool operator<(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value < y.m_value;
+        }
+        inline bool operator>=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value >= y.m_value;
+        }
+        inline bool operator>(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value > y.m_value;
+        }
+        inline bool operator<=(thread::id x, thread::id y) UNBOOST_NOEXCEPT {
+            return x.m_value <= y.m_value;
+        }
+
+        template <class charT, class traits>
+        inline std::basic_ostream<charT, traits>&
+        operator<<(std::basic_ostream<charT, traits>& out, thread::id id) {
+            out << "0x" << std::hex << id.m_value;
+            return out;
+        }
+
+        inline size_t hash_value(thread::id i) {
+            return i.m_value;
+        }
+        UNBOOST_HASH_SPECIALIZE(thread::id);
+
         namespace this_thread {
             inline unboost::thread::id get_id() {
-                return pthread_self();
+                return unboost::thread::id(pthread_self());
             }
             template <class Rep, class Period>
             inline void sleep_for(const unboost::chrono::duration<Rep, Period>& sleep_duration) {

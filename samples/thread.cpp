@@ -147,7 +147,7 @@ bool checked = false;
 
     void mutex_test_thread_proc1(void) {
         checked = true;
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 10; ++i) {
             my_mutex.lock();
             unboost::this_thread::sleep_for(interval1);
             ++n;
@@ -158,7 +158,7 @@ bool checked = false;
 
     void mutex_test_thread_proc2(void) {
         checked = true;
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 10; ++i) {
             my_mutex.lock();
             unboost::this_thread::sleep_for(interval2);
             ++n;
@@ -175,6 +175,8 @@ int main(void) {
     std::cout << "thread" << std::endl;
 
 #ifdef CXX11
+    std::cout << "current thread: " << std::this_thread::get_id() << std::endl;
+
     std::chrono::milliseconds dura(2000);
     checked = false;
     std::thread t0(thread_proc0);
@@ -185,14 +187,18 @@ int main(void) {
     std::this_thread::sleep_for(dura);
     checked = false;
     std::thread t1(thread_proc1, 2);
+    std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
-    std::this_thread::sleep_for(dura);
+    auto two_sec_later =
+        std::chrono::system_clock::now() + std::chrono::seconds(2);
+    std::this_thread::sleep_until(two_sec_later);
     checked = false;
     int m = 3;
     std::thread t2(thread_proc2, 2, std::cref(m));
+    std::cout << t2.get_id() << std::endl;
     t2.join();
     assert(checked);
 
@@ -209,6 +215,8 @@ int main(void) {
     std::this_thread::sleep_for(std::chrono::seconds(10));
     assert(checked);
 #elif defined(BOOST)
+    std::cout << "current thread: " << boost::this_thread::get_id() << std::endl;
+
     boost::chrono::milliseconds dura(2000);
     checked = false;
     boost::thread t0(thread_proc0);
@@ -219,14 +227,18 @@ int main(void) {
     boost::this_thread::sleep_for(dura);
     checked = false;
     boost::thread t1(thread_proc1, 2);
+    std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
-    boost::this_thread::sleep_for(dura);
+    auto two_sec_later =
+        boost::chrono::system_clock::now() + boost::chrono::seconds(2);
+    boost::this_thread::sleep_until(two_sec_later);
     checked = false;
     int m = 3;
     boost::thread t2(thread_proc2, 2, boost::cref(m));
+    std::cout << t2.get_id() << std::endl;
     t2.join();
     assert(checked);
 
@@ -243,6 +255,8 @@ int main(void) {
     boost::this_thread::sleep_for(boost::chrono::seconds(10));
     assert(checked);
 #else   // Unboost
+    std::cout << "current thread: " << unboost::this_thread::get_id() << std::endl;
+
     unboost::chrono::milliseconds dura(2000);
     checked = false;
     unboost::thread t0(thread_proc0);
@@ -253,14 +267,18 @@ int main(void) {
     unboost::this_thread::sleep_for(dura);
     checked = false;
     unboost::thread t1(thread_proc1, 2);
+    std::cout << t1.get_id() << std::endl;
     t1.join();
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
-    unboost::this_thread::sleep_for(dura);
+    unboost_auto_time_point two_sec_later =
+        unboost::chrono::system_clock::now() + unboost::chrono::seconds(2);
+    unboost::this_thread::sleep_until(two_sec_later);
     checked = false;
     int m = 3;
     unboost::thread t2(thread_proc2, 2, unboost::cref(m));
+    std::cout << t2.get_id() << std::endl;
     t2.join();
     assert(checked);
 
@@ -274,7 +292,7 @@ int main(void) {
     unboost::thread thread2(mutex_test_thread_proc2);
     thread1.detach();
     thread2.detach();
-    unboost::this_thread::sleep_for(unboost::chrono::seconds(10));
+    unboost::this_thread::sleep_for(unboost::chrono::seconds(5));
     assert(checked);
 #endif  // Unboost
 
