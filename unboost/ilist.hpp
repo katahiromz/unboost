@@ -130,7 +130,8 @@
         struct initializer {
             template <typename OBJ_T, typename VALUE, size_t N>
             initializer(OBJ_T& obj, const VALUE (&array)[N]) {
-                _ilist_assign(obj, initializer_list<VALUE>(array, N));
+                initializer_list<VALUE> ilist(array, N);
+                _ilist_assign(obj, ilist);
             }
         };
     } // namespace unboost
