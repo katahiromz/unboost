@@ -797,7 +797,7 @@
                 inline _int64_t _get_steady_clock_time(void) {
                     // in nanoseconds
                     struct timespec ts;
-                    clock_gettime(CLOCK_REALTIME, &ts);
+                    clock_gettime(CLOCK_MONOTONIC, &ts);
                     return _int64_t(ts.tv_sec) * 1000000000 + ts.tv_nsec;
                 }
             #else
