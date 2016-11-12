@@ -92,7 +92,6 @@
         using boost::try_lock;
     } // namespace unboost
 #elif defined(UNBOOST_USE_WIN32_THREAD)
-    #include <stdexcept>
     #include <process.h>
     #ifndef _INC_WINDOWS
         #ifndef NOMINMAX
@@ -100,6 +99,7 @@
         #endif
         #include <windows.h>
     #endif
+    #include "exception.hpp"        // for unboost::system_error
     #include "swap.hpp"             // for unboost::swap
     #include "functional/hash.hpp"  // for unboost::hash
     #define UNBOOST_NEED_LOCK_EXTRA
@@ -503,16 +503,24 @@
             }
             native_handle_type native_handle() { return m_hMutex; }
             void lock() {
-                ::WaitForSingleObject(m_hMutex, INFINITE);
+                DWORD dwWait = ::WaitForSingleObject(m_hMutex, INFINITE);
+                _check_result(dwWait);
             }
             void unlock() {
                 ::ReleaseMutex(m_hMutex);
             }
             bool try_lock() {
-                return (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0);
+                DWORD dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                _check_result(dwWait);
+                return (dwWait == WAIT_OBJECT_0);
             }
         protected:
             native_handle_type  m_hMutex;
+            void _check_result(DWORD dwWait) {
+                if (dwWait == WAIT_FAILED) {
+                    throw system_error(::GetLastError());
+                }
+            }
         private:
             mutex(const mutex&)/* = delete*/;
             mutex& operator=(const mutex&)/* = delete*/;
@@ -531,13 +539,16 @@
             }
             native_handle_type native_handle() { return m_hMutex; }
             void lock() {
-                ::WaitForSingleObject(m_hMutex, INFINITE);
+                DWORD dwWait = ::WaitForSingleObject(m_hMutex, INFINITE);
+                _check_result(dwWait);
             }
             void unlock() {
                 ::ReleaseMutex(m_hMutex);
             }
             bool try_lock() {
-                return (::WaitForSingleObject(m_hMutex, 0) == WAIT_OBJECT_0);
+                DWORD dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                _check_result(dwWait);
+                return (dwWait == WAIT_OBJECT_0);
             }
             template <class Rep, class Period>
             bool try_lock_for(
@@ -546,7 +557,9 @@
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 if (ms.count() > 0) {
-                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
+                    _check_result(dwWait);
+                    return (dwWait == WAIT_OBJECT_0);
                 } else {
                     return try_lock();
                 }
@@ -555,7 +568,9 @@
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 if (ms.count() > 0) {
-                    return ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0;
+                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
+                    _check_result(dwWait);
+                    return (dwWait == WAIT_OBJECT_0);
                 } else {
                     return try_lock();
                 }
@@ -575,6 +590,11 @@
             }
         protected:
             native_handle_type  m_hMutex;
+            void _check_result(DWORD dwWait) {
+                if (dwWait == WAIT_FAILED) {
+                    throw system_error(::GetLastError());
+                }
+            }
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
@@ -595,7 +615,8 @@
             native_handle_type native_handle() { return m_hMutex; }
             void lock()     {
                 if (m_thread_id != ::GetCurrentThreadId()) {
-                    ::WaitForSingleObject(m_hMutex, INFINITE);
+                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, INFINITE);
+                    _check_result(dwWait);
                 }
                 m_thread_id = ::GetCurrentThreadId();
                 ::InterlockedIncrement(&m_lock_count);
@@ -615,6 +636,7 @@
                 } else {
                     dwWait = WAIT_OBJECT_0;
                 }
+                _check_result(dwWait);
                 if (dwWait == WAIT_OBJECT_0) {
                     m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
@@ -626,6 +648,11 @@
             native_handle_type  m_hMutex;
             DWORD               m_thread_id;
             LONG                m_lock_count;
+            void _check_result(DWORD dwWait) {
+                if (dwWait == WAIT_FAILED) {
+                    throw system_error(::GetLastError());
+                }
+            }
         private:
             recursive_mutex(const recursive_mutex&)/* = delete*/;
             recursive_mutex& operator=(const recursive_mutex&)/* = delete*/;
@@ -646,7 +673,8 @@
             native_handle_type native_handle() { return m_hMutex; }
             void lock() {
                 if (m_thread_id != ::GetCurrentThreadId()) {
-                    ::WaitForSingleObject(m_hMutex, INFINITE);
+                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, INFINITE);
+                    _check_result(dwWait);
                 }
                 m_thread_id = ::GetCurrentThreadId();
                 ::InterlockedIncrement(&m_lock_count);
@@ -666,6 +694,7 @@
                 } else {
                     dwWait = WAIT_OBJECT_0;
                 }
+                _check_result(dwWait);
                 if (dwWait == WAIT_OBJECT_0) {
                     m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
@@ -696,6 +725,8 @@
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
+                _check_result(dwWait);
+                return false;
             }
             bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
                 using namespace unboost::chrono;
@@ -717,6 +748,7 @@
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
+                _check_result(dwWait);
                 return false;
             }
             template <class Clock, class Duration>
@@ -736,13 +768,17 @@
             native_handle_type  m_hMutex;
             DWORD               m_thread_id;
             LONG                m_lock_count;
+            void _check_result(DWORD dwWait) {
+                if (dwWait == WAIT_FAILED) {
+                    throw system_error(::GetLastError());
+                }
+            }
         private:
             recursive_timed_mutex(const recursive_timed_mutex&)/* = delete*/;
             recursive_timed_mutex& operator=(const recursive_timed_mutex&)/* = delete*/;
         }; // recursive_timed_mutex
     } // namespace unboost
 #elif defined(UNBOOST_USE_POSIX_THREAD)
-    #include <stdexcept>
     #include <pthread.h>
     #include <cerrno>
     #ifdef _WIN32
@@ -755,6 +791,8 @@
     #else
         #include <time.h>           // for nanosleep
     #endif
+    #include "exception.hpp"        // for unboost::system_error
+    #include "swap.hpp"             // for unboost::swap
     #include "functional/hash.hpp"  // for unboost::hash
     #define UNBOOST_NEED_LOCK_EXTRA
 
@@ -1096,16 +1134,26 @@
         public:
             typedef pthread_mutex_t     native_handle_type;
 
-            mutex()         { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
+            mutex()         { m_mutex = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER; }
             ~mutex()        { pthread_mutex_destroy(&m_mutex); }
             native_handle_type native_handle() { return m_mutex; }
-            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void lock()     {
+                int result = pthread_mutex_lock(&m_mutex);
+                _check_result(result);
+            }
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
-                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+                int result = pthread_mutex_trylock(&m_mutex);
+                _check_result(result);
+                return result != EBUSY;
             }
         protected:
             native_handle_type m_mutex;
+            void _check_result(int err) {
+                if (err == EDEADLK) {
+                    throw system_error(EDEADLK);
+                }
+            }
         private:
             mutex(const mutex&)/* = delete*/;
             mutex& operator=(const mutex&)/* = delete*/;
@@ -1115,13 +1163,18 @@
         public:
             typedef pthread_mutex_t     native_handle_type;
 
-            timed_mutex()   { m_mutex = PTHREAD_MUTEX_INITIALIZER; }
+            timed_mutex()   { m_mutex = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER; }
             ~timed_mutex()  { pthread_mutex_destroy(&m_mutex); }
             native_handle_type native_handle() { return m_mutex; }
-            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void lock()     {
+                int result = pthread_mutex_lock(&m_mutex);
+                _check_result(result);
+            }
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
-                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+                int result = pthread_mutex_trylock(&m_mutex);
+                _check_result(result);
+                return result != EBUSY;
             }
             template <class Rep, class Period>
             bool try_lock_for(
@@ -1155,6 +1208,13 @@
                 using namespace unboost::chrono;
                 return try_lock_for(timeout_time - system_clock::now());
             }
+        protected:
+            native_handle_type m_mutex;
+            void _check_result(int err) {
+                if (err == EDEADLK) {
+                    throw system_error(EDEADLK);
+                }
+            }
         private:
             timed_mutex(const timed_mutex&)/* = delete*/;
             timed_mutex& operator=(const timed_mutex&)/* = delete*/;
@@ -1169,13 +1229,23 @@
             }
             ~recursive_mutex()  { pthread_mutex_destroy(&m_mutex); }
             native_handle_type native_handle() { return m_mutex; }
-            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void lock() {
+                int result = pthread_mutex_lock(&m_mutex);
+                _check_result(result);
+            }
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
-                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+                int result = pthread_mutex_trylock(&m_mutex);
+                _check_result(result);
+                return result != EBUSY;
             }
         protected:
             native_handle_type m_mutex;
+            void _check_result(int err) {
+                if (err == EDEADLK) {
+                    throw system_error(EDEADLK);
+                }
+            }
         private:
             recursive_mutex(const recursive_mutex&)/* = delete*/;
             recursive_mutex& operator=(const recursive_mutex&)/* = delete*/;
@@ -1192,10 +1262,15 @@
                 pthread_mutex_destroy(&m_mutex);
             }
             native_handle_type native_handle() { return m_mutex; }
-            void lock()     { pthread_mutex_lock(&m_mutex); }
+            void lock() {
+                int result = pthread_mutex_lock(&m_mutex);
+                _check_result(result);
+            }
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
-                return pthread_mutex_trylock(&m_mutex) != EBUSY;
+                int result = pthread_mutex_trylock(&m_mutex);
+                _check_result(result);
+                return result != EBUSY;
             }
             template <class Rep, class Period>
             bool try_lock_for(
@@ -1231,6 +1306,11 @@
             }
         protected:
             native_handle_type m_mutex;
+            void _check_result(int err) {
+                if (err == EDEADLK) {
+                    throw system_error(EDEADLK);
+                }
+            }
         private:
             recursive_timed_mutex(const recursive_timed_mutex&)/* = delete*/;
             recursive_timed_mutex& operator=(const recursive_timed_mutex&)/* = delete*/;
@@ -1254,14 +1334,19 @@
         public:
             typedef Mutex mutex_type;
             unique_lock() : m_pmutex(NULL), m_locked(false) { }
-            explicit unique_lock(mutex_type& m) : m_pmutex(&m), m_locked(true)
-            { m_pmutex->lock(); }
+            explicit unique_lock(mutex_type& m)
+                : m_pmutex(&m), m_locked(true)
+            {
+                m_pmutex->lock();
+            }
 
-            unique_lock(mutex_type& m, defer_lock_t) :
-                m_pmutex(&m), m_locked(false) { }
-            unique_lock(mutex_type& m, try_to_lock_t) :
-                m_pmutex(&m), m_locked(false)
-            { m_locked = m_pmutex->try_lock(); }
+            unique_lock(mutex_type& m, defer_lock_t)
+                : m_pmutex(&m), m_locked(false) { }
+            unique_lock(mutex_type& m, try_to_lock_t)
+                : m_pmutex(&m), m_locked(false)
+            {
+                m_locked = m_pmutex->try_lock();
+            }
 
             unique_lock(mutex_type& m, adopt_lock_t) :
                 m_pmutex(&m), m_locked(true) { }
@@ -1356,7 +1441,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
         } // lock
         template <typename L1, typename L2, typename L3>
@@ -1378,7 +1463,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
         } // lock
         template <typename L1, typename L2, typename L3, typename L4>
@@ -1405,7 +1490,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
         } // lock
         template <typename L1, typename L2, typename L3, typename L4, typename L5>
@@ -1437,19 +1522,19 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
         } // lock
         template <typename L1, typename L2>
         inline int try_lock(L1& l1, L2& l2) {
-            int i = 0;
+            volatile int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
+                ++i;
                 if (lock1.owns_lock()) {
-                    ++i;
                     unique_lock<L2> lock2(l2, try_to_lock);
+                    ++i;
                     if (lock2.owns_lock()) {
-                        ++i;
                         lock2.release();
                         lock1.release();
                         return -1;
@@ -1457,7 +1542,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
             return i;
         } // try_lock
@@ -1466,14 +1551,14 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
+                ++i;
                 if (lock1.owns_lock()) {
-                    ++i;
                     unique_lock<L2> lock2(l2, try_to_lock);
+                    ++i;
                     if (lock2.owns_lock()) {
-                        ++i;
                         unique_lock<L3> lock3(l3, try_to_lock);
+                        ++i;
                         if (lock3.owns_lock()) {
-                            ++i;
                             lock3.release();
                             lock2.release();
                             lock1.release();
@@ -1484,7 +1569,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
             return i;
         } // try_lock
@@ -1493,17 +1578,17 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
+                ++i;
                 if (lock1.owns_lock()) {
-                    ++i;
                     unique_lock<L2> lock2(l2, try_to_lock);
+                    ++i;
                     if (lock2.owns_lock()) {
-                        ++i;
                         unique_lock<L3> lock3(l3, try_to_lock);
+                        ++i;
                         if (lock3.owns_lock()) {
-                            ++i;
                             unique_lock<L4> lock4(l4, try_to_lock);
+                            ++i;
                             if (lock4.owns_lock()) {
-                                ++i;
                                 lock4.release();
                                 lock3.release();
                                 lock2.release();
@@ -1517,7 +1602,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
             return i;
         } // try_lock
@@ -1526,20 +1611,20 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
+                ++i;
                 if (lock1.owns_lock()) {
-                    ++i;
                     unique_lock<L2> lock2(l2, try_to_lock);
+                    ++i;
                     if (lock2.owns_lock()) {
-                        ++i;
                         unique_lock<L3> lock3(l3, try_to_lock);
+                        ++i;
                         if (lock3.owns_lock()) {
-                            ++i;
                             unique_lock<L4> lock4(l4, try_to_lock);
+                            ++i;
                             if (lock4.owns_lock()) {
-                                ++i;
                                 unique_lock<L5> lock5(l5, try_to_lock);
+                                ++i;
                                 if (lock5.owns_lock()) {
-                                    ++i;
                                     lock5.release();
                                     lock4.release();
                                     lock3.release();
@@ -1556,7 +1641,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                throw;
+                ;
             }
             return i;
         } // try_lock
