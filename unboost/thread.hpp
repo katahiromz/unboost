@@ -332,12 +332,16 @@
             inline void sleep_for(const unboost::chrono::duration<Rep,Period>& sleep_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                ::Sleep(DWORD(ms.count()));
+                if (ms.count() >= 0) {
+                    ::Sleep(DWORD(ms.count()));
+                }
             }
             inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                ::Sleep(DWORD(ms.count()));
+                if (ms.count() >= 0) {
+                    ::Sleep(DWORD(ms.count()));
+                }
             }
             template <class Clock, class Duration>
             inline void sleep_until(const chrono::time_point<Clock, Duration>&
@@ -545,18 +549,20 @@
             {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
+                DWORD dwWait = WAIT_TIMEOUT;
                 if (ms.count() > 0) {
-                    if (m_thread_id == ::GetCurrentThreadId() &&
-                        ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0)
-                    {
-                        m_thread_id = ::GetCurrentThreadId();
-                        ::InterlockedIncrement(&m_lock_count);
-                        return true;
+                    if (m_thread_id == ::GetCurrentThreadId()) {
+                        dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
                     }
                 } else {
                     if (m_thread_id != ::GetCurrentThreadId()) {
-                        return try_lock();
+                        dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                    } else {
+                        dwWait = WAIT_OBJECT_0;
                     }
+                }
+                if (dwWait == WAIT_OBJECT_0) {
+                    m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
@@ -564,21 +570,24 @@
             bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
+                DWORD dwWait = WAIT_TIMEOUT;
                 if (ms.count() > 0) {
-                    if (m_thread_id == ::GetCurrentThreadId() &&
-                        ::WaitForSingleObject(m_hMutex, ms.count()) == WAIT_OBJECT_0)
-                    {
-                        m_thread_id = ::GetCurrentThreadId();
-                        ::InterlockedIncrement(&m_lock_count);
-                        return true;
+                    if (m_thread_id == ::GetCurrentThreadId()) {
+                        dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
                     }
                 } else {
                     if (m_thread_id != ::GetCurrentThreadId()) {
-                        return try_lock();
+                        dwWait = ::WaitForSingleObject(m_hMutex, 0);
+                    } else {
+                        dwWait = WAIT_OBJECT_0;
                     }
+                }
+                if (dwWait == WAIT_OBJECT_0) {
+                    m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
+                return false;
             }
             template <class Clock, class Duration>
             bool try_lock_until(
@@ -791,26 +800,30 @@
             inline void sleep_for(const unboost::chrono::duration<Rep, Period>& sleep_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                #ifdef _WIN32
-                    ::Sleep(DWORD(ms.count()));
-                #else
-                    time_spec spec;
-                    spec.tv_sec = ms.count() / 1000;
-                    spec.tv_nsec = (ms.count() % 1000) * 1000000;
-                    nanosleep(&spec, NULL);
-                #endif
+                if (ms.count() > 0) {
+                    #ifdef _WIN32
+                        ::Sleep(DWORD(ms.count()));
+                    #else
+                        time_spec spec;
+                        spec.tv_sec = ms.count() / 1000;
+                        spec.tv_nsec = (ms.count() % 1000) * 1000000;
+                        nanosleep(&spec, NULL);
+                    #endif
+                }
             }
             inline void sleep_for(const unboost::chrono::auto_duration& sleep_duration) {
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(sleep_duration);
-                #ifdef _WIN32
-                    ::Sleep(DWORD(ms.count()));
-                #else
-                    time_spec spec;
-                    spec.tv_sec = ms.count() / 1000;
-                    spec.tv_nsec = (ms.count() % 1000) * 1000000;
-                    nanosleep(&spec, NULL);
-                #endif
+                if (ms.count() > 0) {
+                    #ifdef _WIN32
+                        ::Sleep(DWORD(ms.count()));
+                    #else
+                        time_spec spec;
+                        spec.tv_sec = ms.count() / 1000;
+                        spec.tv_nsec = (ms.count() % 1000) * 1000000;
+                        nanosleep(&spec, NULL);
+                    #endif
+                }
             }
             template <class Clock, class Duration>
             inline void sleep_until(const chrono::time_point<Clock, Duration>&
