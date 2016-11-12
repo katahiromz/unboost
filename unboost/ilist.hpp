@@ -32,8 +32,8 @@
     #define UNBOOST_ILIST_INIT(obj,name)        unboost::initializer initializer_##__LINE__((obj), (name))
     #define UNBOOST_ILIST_ASSIGN(obj,name)      ((obj) = (name))
 #elif defined(UNBOOST_USE_UNBOOST_ILIST)
-    #include <vector>
-    #include <list>
+    #include <vector>   // for std::vector
+    #include <list>     // for std::list
     namespace unboost {
         template <typename T>
         struct initializer_list {
