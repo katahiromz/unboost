@@ -1,4 +1,4 @@
-// windows_error.hpp --- Unboost system error codes
+// windows_error.hpp --- Unboost Windows error codes
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_WINDOWS_ERROR_HPP_

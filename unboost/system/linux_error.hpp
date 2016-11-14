@@ -1,4 +1,4 @@
-// error_code.hpp --- Unboost system error codes
+// linux_error.hpp --- Unboost Linux error numbers
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_LINUX_ERROR_CODE_HPP_
