@@ -74,6 +74,7 @@
         using boost::system::make_error_condition;
     } // namespace unboost;
 #elif defined(UNBOOST_USE_UNBOOST_SYSTEM)
+    #include "system/error_code.hpp"
     namespace unboost {
         class error_code;
         class error_condition;
@@ -89,11 +90,7 @@
             enum { value = 0 };
         };
         template <>
-        struct is_error_condition_enum<errc> {
-            enum { value = 1 };
-        };
-        template <>
-        struct is_error_condition_enum<errc::inner> {
+        struct is_error_condition_enum<errc::errc_t> {
             enum { value = 1 };
         };
 
@@ -117,30 +114,9 @@
             }
             virtual std::string
             message(int condition) const {
-                std::string ret;
-                #ifdef _WIN32
-                    HLOCAL hLocal = NULL;
-                    ::FormatMessageA(
-                        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS |
-                        FORMAT_MESSAGE_FROM_SYSTEM,
-                        NULL,
-                        condition,
-                        0,
-                        reinterpret_cast<char *>(&hLocal),
-                        1,
-                        NULL);
-                    if (hLocal)  {
-                        ret = reinterpret_cast<char *>(::LocalLock(hLocal));
-                        ::LocalUnlock(hLocal);
-                        ::LocalFree(hLocal);
-                    } else {
-                        ret = "internal error";
-                    }
-                #else
-                    ret = std::strerror(condition);
-                #endif
+                std::string ret = std::strerror(condition);
                 return ret;
-            } // message
+            }
             inline bool
             operator==(const error_category& rhs) {
                 return this == &rhs;
@@ -172,7 +148,25 @@
                 virtual const char *name() const UNBOOST_NOEXCEPT {
                     return "system_category";
                 }
-            };
+                #ifdef _WIN32
+                    virtual std::string message(int condition) const {
+                        std::string ret;
+                        HLOCAL hLocal = NULL;
+                        ::FormatMessageA(
+                            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS |
+                            FORMAT_MESSAGE_FROM_SYSTEM, NULL, condition, 0,
+                            reinterpret_cast<char *>(&hLocal), 1, NULL);
+                        if (hLocal)  {
+                            ret = reinterpret_cast<char *>(::LocalLock(hLocal));
+                            ::LocalUnlock(hLocal);
+                            ::LocalFree(hLocal);
+                        } else {
+                            ret = "internal error";
+                        }
+                        return ret;
+                    } // message
+                #endif  // def _WIN32
+            }; // class _my_system_category
         } // namespace details
 
         inline const error_category& generic_category() UNBOOST_NOEXCEPT {
@@ -351,16 +345,6 @@
             os << ec.category().name() << ':' << ec.value();
             return os;
         }
-
-        template <typename T>
-        struct is_error_condition_enum {
-            enum { value = 0 };
-        };
-
-        template <>
-        struct is_error_condition_enum<errc> {
-            enum { value = 1 };
-        };
 
         template <>
         struct hash<error_code> {

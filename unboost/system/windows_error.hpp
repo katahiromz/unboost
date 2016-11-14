@@ -1,8 +1,8 @@
-// error_code.hpp --- Unboost system error codes
+// windows_error.hpp --- Unboost system error codes
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef UNBOOST_WINDOWS_ERROR_CODE_HPP_
-#define UNBOOST_WINDOWS_ERROR_CODE_HPP_
+#ifndef UNBOOST_WINDOWS_ERROR_HPP_
+#define UNBOOST_WINDOWS_ERROR_HPP_
 
 #include "../unboost.hpp"
 
@@ -79,4 +79,4 @@ namespace unboost {
     } // namespace windows_error
 } // namespace unboost
 
-#endif  // ndef UNBOOST_WINDOWS_ERROR_CODE_HPP_
+#endif  // ndef UNBOOST_WINDOWS_ERROR_HPP_
