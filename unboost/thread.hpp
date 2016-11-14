@@ -1468,7 +1468,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
         } // lock
         template <typename L1, typename L2, typename L3>
@@ -1490,7 +1490,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
         } // lock
         template <typename L1, typename L2, typename L3, typename L4>
@@ -1517,7 +1517,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
         } // lock
         template <typename L1, typename L2, typename L3, typename L4, typename L5>
@@ -1549,7 +1549,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
         } // lock
         template <typename L1, typename L2>
@@ -1569,7 +1569,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
             return i;
         } // try_lock
@@ -1596,7 +1596,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
             return i;
         } // try_lock
@@ -1629,7 +1629,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
             return i;
         } // try_lock
@@ -1668,7 +1668,7 @@
                     lock1.unlock();
                 }
             } catch (...) {
-                ;
+                throw;
             }
             return i;
         } // try_lock
