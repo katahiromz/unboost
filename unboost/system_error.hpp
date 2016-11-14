@@ -187,10 +187,8 @@
                 ;
             }
 
-            template <typename _ErrorCodeEnum>
-            error_code(_ErrorCodeEnum e);
-            template <typename _ErrorCodeEnum>
-            error_code& operator=(_ErrorCodeEnum e);
+            error_code(int e);
+            error_code& operator=(int e);
 
             void assign(int ec, const error_category& ecat) {
                 m_code = ec;
@@ -224,7 +222,7 @@
         }; // class error_code
 
         error_condition
-        make_error_condition(errc::errc_t e) UNBOOST_NOEXCEPT;
+        make_error_condition(int e) UNBOOST_NOEXCEPT;
 
         class error_condition {
         public:
@@ -233,16 +231,12 @@
             error_condition(int val, const error_category& ecat)
                 : m_value(val), m_pecat(&ecat) { }
 
-            template <typename _ErrorConditionEnum>
-            error_condition(_ErrorConditionEnum e) {
-                assert(is_error_condition_enum<_ErrorConditionEnum>::value);
-                *this = make_error_condition(*reinterpret_cast<errc::errc_t*>(&e));
+            error_condition(int e) {
+                *this = make_error_condition(e);
             }
 
-            template <typename _ErrorConditionEnum>
-            error_condition& operator=(_ErrorConditionEnum e) {
-                assert(is_error_condition_enum<_ErrorConditionEnum>::value);
-                *this = make_error_condition(*reinterpret_cast<errc::errc_t*>(&e));
+            error_condition& operator=(int e) {
+                *this = make_error_condition(e);
                 return *this;
             }
 
@@ -284,9 +278,8 @@
         }; // class error_condition
 
         inline error_condition
-        make_error_condition(errc::errc_t e) UNBOOST_NOEXCEPT
-        {
-            return error_condition(static_cast<int>(e), generic_category());
+        make_error_condition(int e) UNBOOST_NOEXCEPT {
+            return error_condition(e, generic_category());
         }
 
         inline bool operator==(const error_code& lhs, const error_code& rhs) {
@@ -313,13 +306,12 @@
         }
         inline bool
         operator==(const error_code& lhs, const error_condition& rhs) {
-            return lhs.category().equivalent(rhs.value(), lhs) ||
-                   rhs.category().equivalent(lhs.value(), rhs);
+            return lhs.category().equivalent(lhs.value(), rhs) ||
+                   rhs.category().equivalent(lhs, rhs.value());
         }
         inline bool
         operator==(const error_condition& lhs, const error_code& rhs) {
-            return lhs.category().equivalent(rhs.value(), lhs) ||
-                   rhs.category().equivalent(lhs.value(), rhs);
+            return rhs == lhs;
         }
         inline bool
         operator!=(const error_condition& lhs, const error_condition& rhs) {
@@ -426,11 +418,6 @@
             struct is_error_code_enum<windows_error::windows_error_code> {
                 enum { value = 1 };
             };
-
-            inline error_code
-            make_error_code(windows_error::windows_error_code e) {
-                return error_code(e, system_category());
-            }
         } // namespace unboost
     #elif defined(__linux__)
         #include "system/linux_error.hpp"
@@ -440,11 +427,6 @@
             struct is_error_code_enum<linux_error::linux_errno> {
                 enum { value = 1 };
             };
-
-            inline error_code
-            make_error_code(linux_error::linux_errno e) {
-                return error_code(e, system_category());
-            }
         } // namespace unboost
     #else
         #error Your compiler is not supported yet. You lose.
@@ -455,15 +437,11 @@
             return error_code(e, system_category());
         }
 
-        template <typename _ErrorCodeEnum>
-        inline error_code::error_code(_ErrorCodeEnum e) {
-            assert(is_error_code_enum<_ErrorCodeEnum>::value);
+        inline error_code::error_code(int e) {
             *this = make_error_code(e);
         }
 
-        template <typename _ErrorCodeEnum>
-        inline error_code& error_code::operator=(_ErrorCodeEnum e) {
-            assert(is_error_code_enum<_ErrorCodeEnum>::value);
+        inline error_code& error_code::operator=(int e) {
             *this = make_error_code(e);
             return *this;
         }
