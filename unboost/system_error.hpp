@@ -75,7 +75,7 @@
     } // namespace unboost;
 #elif defined(UNBOOST_USE_UNBOOST_SYSTEM)
     #include <cstring>
-    #include "system/error_code.hpp"
+    #include "system/error_code.hpp"    // for unboost::errc
     #include "functional/hash.hpp"      // for unboost::hash
     namespace unboost {
         class error_code;
