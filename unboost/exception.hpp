@@ -10,10 +10,8 @@
 #include <cstdio>
 
 #ifdef UNBOOST_USE_CXX11
-    #include <system_error>
     #include <memory>
 #elif defined(UNBOOST_USE_BOOST)
-    #include <boost/system/system_error.hpp>    // for boost::system::system_error
     #include <boost/lexical_cast.hpp>           // for boost::bad_lexical_cast
     #include <boost/smart_ptr/bad_weak_ptr.hpp> // for boost::bad_weak_ptr
 #endif
@@ -23,33 +21,6 @@ namespace unboost {
     using std::invalid_argument;
     using std::out_of_range;
     using std::runtime_error;
-
-    #ifdef UNBOOST_USE_CXX11
-        namespace system {
-            using std::system_error;
-        }
-    #elif defined(UNBOOST_USE_BOOST)
-        namespace system {
-            using boost::system::system_error;
-        }
-    #else   // Unboost
-        namespace system {
-            class system_error : public exception {
-            public:
-                typedef long error_code;
-                system_error(error_code ec) : m_code(ec) { }
-                const error_code code() const { return m_code; }
-                virtual const char *what() const UNBOOST_NOEXCEPT {
-                    static char buf[64];
-                    std::sprintf(buf, "Error Code: %d", code());
-                    return buf;
-                }
-            protected:
-                int m_code;
-            };
-        } // namespace system
-    #endif  // Unboost
-    using unboost::system::system_error;
 
     #ifdef UNBOOST_USE_BOOST
         using boost::bad_lexical_cast;

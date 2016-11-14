@@ -35,7 +35,6 @@
         struct hash {
             typedef Key argument_type;
             typedef size_t result_type;
-            hash() { }
         };
 
         inline size_t _hash_value(bool b) {
@@ -124,7 +123,6 @@
             struct hash<type> { \
                 typedef type argument_type; \
                 typedef size_t result_type; \
-                hash() { } \
                 result_type operator()(type key) const { \
                     return _hash_value(key); \
                 } \
@@ -135,7 +133,6 @@
             struct hash<type> { \
                 typedef type argument_type; \
                 typedef size_t result_type; \
-                hash() { } \
                 result_type operator()(const type& key) const { \
                     return _hash_value(key); \
                 } \

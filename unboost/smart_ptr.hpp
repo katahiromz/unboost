@@ -5,7 +5,7 @@
 #define UNBOOST_SMART_PTR_HPP_
 
 #include "unboost.hpp"
-#include "exception.hpp"
+#include "exception.hpp"    // for unboost::bad_weak_ptr
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_SMART_PTR) + defined(UNBOOST_USE_TR1_SMART_PTR) + defined(UNBOOST_USE_BOOST_SMART_PTR) + defined(UNBOOST_USE_UNBOOST_SMART_PTR)) == 0)
