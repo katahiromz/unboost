@@ -74,7 +74,9 @@
         using boost::system::make_error_condition;
     } // namespace unboost;
 #elif defined(UNBOOST_USE_UNBOOST_SYSTEM)
+    #include <cstring>
     #include "system/error_code.hpp"
+    #include "functional/hash.hpp"      // for unboost::hash
     namespace unboost {
         class error_code;
         class error_condition;
@@ -101,32 +103,28 @@
 
             virtual const char *name() const UNBOOST_NOEXCEPT = 0;
 
-            virtual error_condition default_error_condition(int code) const {
-                return error_condition(code, *this);
-            }
+            virtual error_condition default_error_condition(int code) const;
+
             virtual bool
-            equivalent(int code, const error_condition& condition) const {
-                return default_error_condition(code) == condition;
-            }
+            equivalent(int code, const error_condition& condition) const;
             virtual bool
-            equivalent(const error_code& code, int condition) const {
-                return *this == code.category() && code.value() == condition;
-            }
+            equivalent(const error_code& code, int condition) const;
+
             virtual std::string
             message(int condition) const {
                 std::string ret = std::strerror(condition);
                 return ret;
             }
             inline bool
-            operator==(const error_category& rhs) {
+            operator==(const error_category& rhs) const {
                 return this == &rhs;
             }
             inline bool
-            operator!=(const error_category& rhs) {
+            operator!=(const error_category& rhs) const {
                 return this != &rhs;
             }
             inline bool
-            operator<(const error_category& rhs) {
+            operator<(const error_category& rhs) const {
                 return this < &rhs;
             }
         private:
@@ -210,9 +208,7 @@
                 return *m_pecat;
             }
 
-            error_condition default_error_condition() const {
-                return category().default_error_condition(value());
-            }
+            error_condition default_error_condition() const;
 
             std::string message() const {
                 return category().message(value());
@@ -227,6 +223,9 @@
             const error_category *  m_pecat;
         }; // class error_code
 
+        error_condition
+        make_error_condition(errc::errc_t e) UNBOOST_NOEXCEPT;
+
         class error_condition {
         public:
             error_condition() : m_value(0), m_pecat(&generic_category()) { }
@@ -237,13 +236,13 @@
             template <typename _ErrorConditionEnum>
             error_condition(_ErrorConditionEnum e) {
                 assert(is_error_condition_enum<_ErrorConditionEnum>::value);
-                *this = make_error_condition(e);
+                *this = make_error_condition(*reinterpret_cast<errc::errc_t*>(&e));
             }
 
             template <typename _ErrorConditionEnum>
             error_condition& operator=(_ErrorConditionEnum e) {
                 assert(is_error_condition_enum<_ErrorConditionEnum>::value);
-                *this = make_error_condition(e);
+                *this = make_error_condition(*reinterpret_cast<errc::errc_t*>(&e));
                 return *this;
             }
 
@@ -282,7 +281,13 @@
         protected:
             int m_value;
             const error_category *m_pecat;
-        };
+        }; // class error_condition
+
+        inline error_condition
+        make_error_condition(errc::errc_t e) UNBOOST_NOEXCEPT
+        {
+            return error_condition(static_cast<int>(e), generic_category());
+        }
 
         inline bool operator==(const error_code& lhs, const error_code& rhs) {
             return lhs.category() == rhs.category() &&
@@ -339,6 +344,24 @@
             return false;
         }
 
+        inline /*virtual*/ error_condition
+        error_category::default_error_condition(int code) const {
+            return error_condition(code, *this);
+        }
+        inline /*virtual*/ bool
+        error_category::equivalent(int code, const error_condition& condition) const {
+            return default_error_condition(code) == condition;
+        }
+        inline /*virtual*/ bool
+        error_category::equivalent(const error_code& code, int condition) const {
+            return *this == code.category() && code.value() == condition;
+        }
+
+        inline error_condition
+        error_code::default_error_condition() const {
+            return category().default_error_condition(value());
+        }
+
         template <typename CharT, class Traits>
         inline std::basic_ostream<CharT, Traits>&
         operator<<(std::basic_ostream<CharT, Traits>& os, const error_code& ec) {
@@ -357,10 +380,13 @@
 
         class system_error : public std::runtime_error {
         public:
+            system_error(long ec)
+                : runtime_error(error_code(ec).message()), m_code(error_code(ec)) { }
+
             system_error(error_code ec = error_code())
                 : runtime_error(ec.message()), m_code(ec) { }
 
-            system_error(error_code ec, const string& what)
+            system_error(error_code ec, const std::string& what)
                 : runtime_error(what + ": " + ec.message()),
                   m_code(ec) { }
 
@@ -376,7 +402,7 @@
                   m_code(v, ecat) { }
 
             system_error(int v, const error_category& ecat,
-                         const string& what)
+                         const std::string& what)
                 : runtime_error(what + ": " +
                                 error_code(v, ecat).message()),
                   m_code(v, ecat) { }
@@ -425,6 +451,10 @@
     #endif
 
     namespace unboost {
+        inline error_code make_error_code(int e) {
+            return error_code(e, system_category());
+        }
+
         template <typename _ErrorCodeEnum>
         inline error_code::error_code(_ErrorCodeEnum e) {
             assert(is_error_code_enum<_ErrorCodeEnum>::value);

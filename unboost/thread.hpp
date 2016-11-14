@@ -513,7 +513,6 @@
             }
             bool try_lock() {
                 DWORD dwWait = ::WaitForSingleObject(m_hMutex, 0);
-                _check_result(dwWait);
                 return (dwWait == WAIT_OBJECT_0);
             }
         protected:
@@ -549,7 +548,6 @@
             }
             bool try_lock() {
                 DWORD dwWait = ::WaitForSingleObject(m_hMutex, 0);
-                _check_result(dwWait);
                 return (dwWait == WAIT_OBJECT_0);
             }
             template <class Rep, class Period>
@@ -560,7 +558,6 @@
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 if (ms.count() > 0) {
                     DWORD dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
-                    _check_result(dwWait);
                     return (dwWait == WAIT_OBJECT_0);
                 } else {
                     return try_lock();
@@ -571,7 +568,6 @@
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 if (ms.count() > 0) {
                     DWORD dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
-                    _check_result(dwWait);
                     return (dwWait == WAIT_OBJECT_0);
                 } else {
                     return try_lock();
@@ -615,7 +611,7 @@
                 ::CloseHandle(m_hMutex);
             }
             native_handle_type native_handle() { return m_hMutex; }
-            void lock()     {
+            void lock() {
                 if (m_thread_id != ::GetCurrentThreadId()) {
                     DWORD dwWait = ::WaitForSingleObject(m_hMutex, INFINITE);
                     _check_result(dwWait);
@@ -638,7 +634,6 @@
                 } else {
                     dwWait = WAIT_OBJECT_0;
                 }
-                _check_result(dwWait);
                 if (dwWait == WAIT_OBJECT_0) {
                     m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
@@ -696,7 +691,6 @@
                 } else {
                     dwWait = WAIT_OBJECT_0;
                 }
-                _check_result(dwWait);
                 if (dwWait == WAIT_OBJECT_0) {
                     m_thread_id = ::GetCurrentThreadId();
                     ::InterlockedIncrement(&m_lock_count);
@@ -727,7 +721,6 @@
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
-                _check_result(dwWait);
                 return false;
             }
             bool try_lock_for(const unboost::chrono::auto_duration& timeout_duration) {
@@ -750,7 +743,6 @@
                     ::InterlockedIncrement(&m_lock_count);
                     return true;
                 }
-                _check_result(dwWait);
                 return false;
             }
             template <class Clock, class Duration>
@@ -1148,7 +1140,6 @@
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
                 int result = pthread_mutex_trylock(&m_mutex);
-                _check_result(result);
                 return result != EBUSY;
             }
         protected:
@@ -1177,7 +1168,6 @@
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
                 int result = pthread_mutex_trylock(&m_mutex);
-                _check_result(result);
                 return result != EBUSY;
             }
             template <class Rep, class Period>
@@ -1227,7 +1217,6 @@
         class recursive_mutex {
         public:
             typedef pthread_mutex_t     native_handle_type;
-
             recursive_mutex()   {
                 m_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
             }
@@ -1240,7 +1229,6 @@
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
                 int result = pthread_mutex_trylock(&m_mutex);
-                _check_result(result);
                 return result != EBUSY;
             }
         protected:
@@ -1273,7 +1261,6 @@
             void unlock()   { pthread_mutex_unlock(&m_mutex); }
             bool try_lock() {
                 int result = pthread_mutex_trylock(&m_mutex);
-                _check_result(result);
                 return result != EBUSY;
             }
             template <class Rep, class Period>
@@ -1570,11 +1557,11 @@
             volatile int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
-                ++i;
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
                     ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
                     if (lock2.owns_lock()) {
+                        ++i;
                         lock2.release();
                         lock1.release();
                         return -1;
@@ -1591,14 +1578,14 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
-                ++i;
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
                     ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
                         ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
                         if (lock3.owns_lock()) {
+                            ++i;
                             lock3.release();
                             lock2.release();
                             lock1.release();
@@ -1618,17 +1605,17 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
-                ++i;
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
                     ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
                         ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
                         if (lock3.owns_lock()) {
-                            unique_lock<L4> lock4(l4, try_to_lock);
                             ++i;
+                            unique_lock<L4> lock4(l4, try_to_lock);
                             if (lock4.owns_lock()) {
+                                ++i;
                                 lock4.release();
                                 lock3.release();
                                 lock2.release();
@@ -1651,20 +1638,20 @@
             int i = 0;
             try {
                 unique_lock<L1> lock1(l1, try_to_lock);
-                ++i;
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
                     ++i;
+                    unique_lock<L2> lock2(l2, try_to_lock);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
                         ++i;
+                        unique_lock<L3> lock3(l3, try_to_lock);
                         if (lock3.owns_lock()) {
-                            unique_lock<L4> lock4(l4, try_to_lock);
                             ++i;
+                            unique_lock<L4> lock4(l4, try_to_lock);
                             if (lock4.owns_lock()) {
-                                unique_lock<L5> lock5(l5, try_to_lock);
                                 ++i;
+                                unique_lock<L5> lock5(l5, try_to_lock);
                                 if (lock5.owns_lock()) {
+                                    ++i;
                                     lock5.release();
                                     lock4.release();
                                     lock3.release();
