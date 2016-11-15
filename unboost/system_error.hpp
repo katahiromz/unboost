@@ -53,6 +53,7 @@
     } // namespace unboost;
 #elif defined(UNBOOST_USE_BOOST_SYSTEM)
     #include <boost/system/system_error.hpp>    // for boost::system::system_error
+    #include <boost/system/error_code.hpp>
     namespace unboost {
         namespace system {
             using boost::system::error_category;
@@ -63,8 +64,10 @@
             using boost::system::system_error;
             using boost::system::is_error_code_enum;
             using boost::system::is_error_condition_enum;
-            using boost::system::make_error_code;
-            using boost::system::make_error_condition;
+            namespace errc {
+                using boost::system::errc::make_error_code;
+                using boost::system::errc::make_error_condition;
+            }
         }
         using boost::system::error_category;
         using boost::system::generic_category;
@@ -74,8 +77,8 @@
         using boost::system::system_error;
         using boost::system::is_error_code_enum;
         using boost::system::is_error_condition_enum;
-        using boost::system::make_error_code;
-        using boost::system::make_error_condition;
+        using boost::system::errc::make_error_code;
+        using boost::system::errc::make_error_condition;
     } // namespace unboost;
 #elif defined(UNBOOST_USE_WIN32_SYSTEM) || defined(UNBOOST_USE_POSIX_SYSTEM)
     #include <cstring>
@@ -141,14 +144,14 @@
             public:
                 _my_generic_category() { }
                 virtual const char *name() const UNBOOST_NOEXCEPT {
-                    return "generic_category";
+                    return "generic";
                 }
             };
             class _my_system_category : public error_category {
             public:
                 _my_system_category() { }
                 virtual const char *name() const UNBOOST_NOEXCEPT {
-                    return "system_category";
+                    return "system";
                 }
                 #ifdef UNBOOST_USE_WIN32_SYSTEM
                     virtual std::string message(int condition) const {
@@ -160,6 +163,14 @@
                             reinterpret_cast<char *>(&hLocal), 1, NULL);
                         if (hLocal)  {
                             ret = reinterpret_cast<char *>(::LocalLock(hLocal));
+                            if (ret.size()) {
+                                if (ret[ret.size() - 1] == '\n') {
+                                    ret.resize(ret.size() - 1);
+                                }
+                                if (ret[ret.size() - 1] == '\r') {
+                                    ret.resize(ret.size() - 1);
+                                }
+                            }
                             ::LocalUnlock(hLocal);
                             ::LocalFree(hLocal);
                         } else {
