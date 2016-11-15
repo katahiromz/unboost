@@ -1457,9 +1457,9 @@
         template <typename L1, typename L2>
         inline void lock(L1& l1, L2& l2) {
             try {
-                unique_lock<L1> lock1(l1, try_to_lock);
+                unique_lock<L1> lock1(l1);
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
+                    unique_lock<L2> lock2(l2);
                     if (lock2.owns_lock()) {
                         lock2.release();
                         lock1.release();
@@ -1467,6 +1467,8 @@
                     }
                     lock1.unlock();
                 }
+            } catch (const system_error&) {
+                ;
             } catch (...) {
                 throw;
             }
@@ -1474,11 +1476,11 @@
         template <typename L1, typename L2, typename L3>
         inline void lock(L1& l1, L2& l2, L3& l3) {
             try {
-                unique_lock<L1> lock1(l1, try_to_lock);
+                unique_lock<L1> lock1(l1);
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
+                    unique_lock<L2> lock2(l2);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
+                        unique_lock<L3> lock3(l3);
                         if (lock3.owns_lock()) {
                             lock3.release();
                             lock2.release();
@@ -1496,13 +1498,13 @@
         template <typename L1, typename L2, typename L3, typename L4>
         inline void lock(L1& l1, L2& l2, L3& l3, L4& l4) {
             try {
-                unique_lock<L1> lock1(l1, try_to_lock);
+                unique_lock<L1> lock1(l1);
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
+                    unique_lock<L2> lock2(l2);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
+                        unique_lock<L3> lock3(l3);
                         if (lock3.owns_lock()) {
-                            unique_lock<L4> lock4(l4, try_to_lock);
+                            unique_lock<L4> lock4(l4);
                             if (lock4.owns_lock()) {
                                 lock4.release();
                                 lock3.release();
@@ -1516,6 +1518,8 @@
                     }
                     lock1.unlock();
                 }
+            } catch (const system_error&) {
+                ;
             } catch (...) {
                 throw;
             }
@@ -1523,15 +1527,15 @@
         template <typename L1, typename L2, typename L3, typename L4, typename L5>
         inline void lock(L1& l1, L2& l2, L3& l3, L4& l4, L5& l5) {
             try {
-                unique_lock<L1> lock1(l1, try_to_lock);
+                unique_lock<L1> lock1(l1);
                 if (lock1.owns_lock()) {
-                    unique_lock<L2> lock2(l2, try_to_lock);
+                    unique_lock<L2> lock2(l2);
                     if (lock2.owns_lock()) {
-                        unique_lock<L3> lock3(l3, try_to_lock);
+                        unique_lock<L3> lock3(l3);
                         if (lock3.owns_lock()) {
-                            unique_lock<L4> lock4(l4, try_to_lock);
+                            unique_lock<L4> lock4(l4);
                             if (lock4.owns_lock()) {
-                                unique_lock<L5> lock5(l5, try_to_lock);
+                                unique_lock<L5> lock5(l5);
                                 if (lock5.owns_lock()) {
                                     lock5.release();
                                     lock4.release();
@@ -1548,6 +1552,8 @@
                     }
                     lock1.unlock();
                 }
+            } catch (const system_error&) {
+                ;
             } catch (...) {
                 throw;
             }
