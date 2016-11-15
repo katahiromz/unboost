@@ -168,6 +168,18 @@
     #endif
 #endif
 
+// win32/posix thread depends on win32/posix system
+#ifdef UNBOOST_USE_WIN32_THREAD
+    #ifndef UNBOOST_USE_WIN32_SYSTEM
+        #define UNBOOST_USE_WIN32_SYSTEM
+    #endif
+#endif
+#ifdef UNBOOST_USE_POSIX_THREAD
+    #ifndef UNBOOST_USE_POSIX_SYSTEM
+        #define UNBOOST_USE_POSIX_SYSTEM
+    #endif
+#endif
+
 // Unboost's type_traits depends on Unboost's rvref
 #ifdef UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #ifndef UNBOOST_USE_UNBOOST_RV_REF
@@ -181,7 +193,6 @@
         #define UNBOOST_USE_UNBOOST_FORWARD_LIST
     #endif
 #endif
-
 
 //////////////////////////////////////////////////////////////////////////////
 // consistency checks

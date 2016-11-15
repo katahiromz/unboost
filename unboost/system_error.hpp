@@ -7,7 +7,7 @@
 #include "unboost.hpp"
 
 // If not choosed, choose one
-#if (defined(UNBOOST_USE_CXX11_SYSTEM) + defined(UNBOOST_USE_BOOST_SYSTEM) + defined(UNBOOST_USE_UNBOOST_SYSTEM) == 0)
+#if (defined(UNBOOST_USE_CXX11_SYSTEM) + defined(UNBOOST_USE_BOOST_SYSTEM) + defined(UNBOOST_USE_WIN32_SYSTEM) + defined(UNBOOST_USE_POSIX_SYSTEM) == 0)
     #ifdef UNBOOST_USE_CXX11
         #define UNBOOST_USE_CXX11_SYSTEM
     #elif defined(UNBOOST_USE_BOOST)
@@ -16,7 +16,11 @@
         #ifdef UNBOOST_CXX11
             #define UNBOOST_USE_CXX11_SYSTEM
         #else
-            #define UNBOOST_USE_UNBOOST_SYSTEM
+            #ifdef _WIN32
+                #define UNBOOST_USE_WIN32_SYSTEM
+            #else
+                #define UNBOOST_USE_POSIX_SYSTEM
+            #endif
         #endif
     #endif
 #endif
@@ -73,7 +77,7 @@
         using boost::system::make_error_code;
         using boost::system::make_error_condition;
     } // namespace unboost;
-#elif defined(UNBOOST_USE_UNBOOST_SYSTEM)
+#elif defined(UNBOOST_USE_WIN32_SYSTEM) || defined(UNBOOST_USE_POSIX_SYSTEM)
     #include <cstring>
     #include "system/error_code.hpp"    // for unboost::errc
     #include "functional/hash.hpp"      // for unboost::hash
@@ -146,7 +150,7 @@
                 virtual const char *name() const UNBOOST_NOEXCEPT {
                     return "system_category";
                 }
-                #ifdef _WIN32
+                #ifdef UNBOOST_USE_WIN32_SYSTEM
                     virtual std::string message(int condition) const {
                         std::string ret;
                         HLOCAL hLocal = NULL;
@@ -163,7 +167,7 @@
                         }
                         return ret;
                     } // message
-                #endif  // def _WIN32
+                #endif  // def UNBOOST_USE_WIN32_SYSTEM
             }; // class _my_system_category
         } // namespace details
 
@@ -410,7 +414,7 @@
         }; // system_error
     } // namespace unboost
 
-    #ifdef _WIN32
+    #ifdef UNBOOST_USE_WIN32_SYSTEM
         #include "system/windows_error.hpp"
 
         namespace unboost {
@@ -429,7 +433,12 @@
             };
         } // namespace unboost
     #else
-        #error Your compiler is not supported yet. You lose.
+        namespace unboost {
+            template <>
+            struct is_error_code_enum<errc::errc_t> {
+                enum { value = 1 };
+            };
+        } // namespace unboost
     #endif
 
     namespace unboost {
