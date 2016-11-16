@@ -974,7 +974,7 @@ namespace unboost {
 
               T& operator[](size_t i)       { return get()[i]; }
         const T& operator[](size_t i) const { return get()[i]; }
-    };
+    }; // unique_array<T, DELETER>
 } // namespace unboost
 
 #endif  // ndef UNBOOST_SMART_PTR_HPP_
