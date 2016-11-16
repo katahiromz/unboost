@@ -19,7 +19,7 @@
         #ifdef UNBOOST_CXX11    // C++11
             #define UNBOOST_USE_CXX11_THREAD
         #elif defined(_WIN32)
-            #if (_MSC_VER >= 1700)
+            #if defined(_MSC_VER) && (_MSC_VER >= 1700)
                 // Visual C++ 2012 and later
                 #ifndef UNBOOST_NO_CXX11
                     #define UNBOOST_USE_CXX11_THREAD

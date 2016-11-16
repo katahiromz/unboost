@@ -15,8 +15,8 @@
     #ifndef UNBOOST_HAVE_STDINT
         #define UNBOOST_HAVE_STDINT
     #endif
-#elif defined(_MSC_VER) && (_MSC_VER >= 1800)
-    /* Visual Studio 2013 and later */
+#elif defined(_MSC_VER) && (_MSC_VER >= 1600)
+    /* Visual C++ 2010 and later */
     #ifndef UNBOOST_HAVE_STDINT
         #define UNBOOST_HAVE_STDINT
     #endif

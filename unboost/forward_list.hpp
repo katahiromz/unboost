@@ -12,7 +12,12 @@
     #ifdef UNBOOST_CXX11
         #define UNBOOST_USE_CXX11_FORWARD_LIST
     #else
-        #define UNBOOST_USE_UNBOOST_FORWARD_LIST
+        #if defined(_MSC_VER) && (_MSC_VER >= 1600)
+            // Visual C++ 2010 and later
+            #define UNBOOST_USE_CXX11_FORWARD_LIST
+        #else
+            #define UNBOOST_USE_UNBOOST_FORWARD_LIST
+        #endif
     #endif
 #endif
 

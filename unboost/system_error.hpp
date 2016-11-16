@@ -16,10 +16,19 @@
         #ifdef UNBOOST_CXX11
             #define UNBOOST_USE_CXX11_SYSTEM
         #else
-            #ifdef _WIN32
-                #define UNBOOST_USE_WIN32_SYSTEM
+            #ifdef _MSC_VER
+                #if (_MSC_VER >= 1600)
+                    // Visual C++ 2010 and later
+                    #define UNBOOST_USE_CXX11_SYSTEM
+                #else
+                    #define UNBOOST_USE_WIN32_SYSTEM
+                #endif
             #else
-                #define UNBOOST_USE_POSIX_SYSTEM
+                #ifdef _WIN32
+                    #define UNBOOST_USE_WIN32_SYSTEM
+                #else
+                    #define UNBOOST_USE_POSIX_SYSTEM
+                #endif
             #endif
         #endif
     #endif

@@ -14,7 +14,12 @@
     #elif defined(UNBOOST_USE_BOOST)
         #define UNBOOST_USE_BOOST_TYPE_TRAITS
     #else
-        #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #if defined(_MSC_VER) && (_MSC_VER >= 1600)
+            // Visual C++ 2010 and later
+            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+        #else
+            #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+        #endif
     #endif
 #endif
 

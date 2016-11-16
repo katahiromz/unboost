@@ -16,7 +16,12 @@
         #ifdef UNBOOST_CXX11
             #define UNBOOST_USE_CXX11_TUPLE
         #else
-            #define UNBOOST_USE_BOOST_TUPLE
+            #if defined(_MSC_VER) && (_MSC_VER >= 1600)
+                // Visual C++ 2010 and later
+                #define UNBOOST_USE_CXX11_TUPLE
+            #else
+                #define UNBOOST_USE_BOOST_TUPLE
+            #endif
         #endif
     #endif
 #endif
