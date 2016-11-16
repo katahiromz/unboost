@@ -16,7 +16,11 @@
     #else
         #if defined(_MSC_VER) && (_MSC_VER >= 1600)
             // Visual C++ 2010 and later
-            #define UNBOOST_USE_CXX11_TYPE_TRAITS
+            #ifdef UNBOOST_NO_CXX11
+                #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
+            #else
+                #define UNBOOST_USE_CXX11_TYPE_TRAITS
+            #endif
         #else
             #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
         #endif
