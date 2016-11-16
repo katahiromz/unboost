@@ -1414,20 +1414,41 @@
                 copy(from, to, copy_options::none, ec);
             }
 
-            inline file_time_type last_write_time(const path& p) {
-            }
             inline file_time_type last_write_time(const path& p, error_code& ec) {
-            }
-            inline void
-            last_write_time(const path& p, file_time_type new_time) {
+                ...
             }
             inline void
             last_write_time(const path& p, file_time_type new_time, error_code& ec) {
+                ...
+            }
+            inline file_time_type last_write_time(const path& p) {
+                error_code ec;
+                file_time_type ret = last_write_time(p, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::last_write_time", p, ec);
+                }
+                return ret;
+            }
+            inline void
+            last_write_time(const path& p, file_time_type new_time) {
+                error_code ec;
+                file_time_type ret = last_write_time(p, new_time, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::last_write_time", p, ec);
+                }
+                return ret;
             }
 
             inline path read_symlink(const path& p, error_code& ec) {
+                ...
             }
             inline path read_symlink(const path& p) {
+                error_code ec;
+                path ret = read_symlink(p, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::read_symlink", p, ec);
+                }
+                return ret;
             }
 
             inline bool
@@ -1513,11 +1534,16 @@
                 return siz;
             }
 
-            uintmax_t hard_link_count(const path& p) {
-                
-            }
             uintmax_t hard_link_count(const path& p, error_code& ec) {
-                
+                ...
+            }
+            uintmax_t hard_link_count(const path& p) {
+                error_code ec;
+                uintmax_t ret = hard_link_count(p, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::hard_link_count", p, ec);
+                }
+                return ret;
             }
 
             inline void permissions(const path& p, perms::inner prms, error_code& ec) {
