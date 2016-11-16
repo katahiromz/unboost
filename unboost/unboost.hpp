@@ -62,20 +62,26 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// _char16_t, _char32_t
+// _char16_t, _char32_t, u16string, u32string
 
-#if (__cplusplus >= 201103L)
-    namespace unboost {
-        // NOTE: char16_t, char32_t are keywords on C++11
-        typedef char16_t        _char16_t;
-        typedef char32_t        _char32_t;
-    } // namespace unboost
-#else
-    namespace unboost {
-        typedef unsigned short  _char16_t;
-        typedef unsigned int    _char32_t;
-    } // namespace unboost
-#endif
+#ifdef __cplusplus
+    #if (__cplusplus >= 201103L)
+        namespace unboost {
+            // NOTE: char16_t, char32_t are keywords on C++11
+            typedef char16_t        _char16_t;
+            typedef char32_t        _char32_t;
+            using std::u16string    u16string;
+            using std::u32string    u32string;
+        } // namespace unboost
+    #else
+        namespace unboost {
+            typedef unsigned short  _char16_t;
+            typedef unsigned int    _char32_t;
+            typedef std::basic_string<_char16_t>    u16string;
+            typedef std::basic_string<_char32_t>    u32string;
+        } // namespace unboost
+    #endif
+#endif  // def __cplusplus
 
 //////////////////////////////////////////////////////////////////////////////
 // treat GNU extension
