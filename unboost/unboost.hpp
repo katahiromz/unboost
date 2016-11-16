@@ -62,6 +62,22 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// _char16_t, _char32_t
+
+#if (__cplusplus >= 201103L)
+    namespace unboost {
+        // NOTE: char16_t, char32_t are keywords on C++11
+        typedef char16_t        _char16_t;
+        typedef char32_t        _char32_t;
+    } // namespace unboost
+#else
+    namespace unboost {
+        typedef unsigned short  _char16_t;
+        typedef unsigned int    _char32_t;
+    } // namespace unboost
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 // treat GNU extension
 
 #ifndef __extension__
