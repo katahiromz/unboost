@@ -9,7 +9,7 @@
 #include <iterator>     // for std::input_iterator_tag
 
 // If not choosed, choose one
-#if (defined(UNBOOST_USE_CXX17_FILESYSTEM) + defined(UNBOOST_USE_BOOST_FILESYSTEM) + defined(UNBOOST_USE_WIN32_FILESYSTEM) + defined(UNBOOST_USE_POSIX_FILESYSTEM) == 0)
+#if (defined(UNBOOST_USE_CXX17_FILESYSTEM) + defined(UNBOOST_USE_BOOST_FILESYSTEM) + defined(UNBOOST_USE_UNBOOST_FILESYSTEM) == 0)
     #ifdef UNBOOST_USE_CXX17
         #define UNBOOST_USE_CXX17_FILESYSTEM
     #elif defined(UNBOOST_USE_BOOST)
@@ -18,11 +18,7 @@
         #ifdef UNBOOST_CXX17
             #define UNBOOST_USE_CXX17_FILESYSTEM
         #else
-            #ifdef _WIN32
-                #define UNBOOST_USE_WIN32_FILESYSTEM
-            #else
-                #define UNBOOST_USE_POSIX_FILESYSTEM
-            #endif
+            #define UNBOOST_USE_UNBOOST_FILESYSTEM
         #endif
     #endif
 #endif
@@ -137,8 +133,8 @@
             using boost::filesystem::status_known;
         } // namespace filesystem
     } // namespace unboost
-#elif defined(UNBOOST_USE_WIN32_FILESYSTEM) || defined(UNBOOST_USE_POSIX_FILESYSTEM)
-    #include "system_error.hpp"     // for unboost::system_error
+#elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
+    #include "system_error.hpp"     // for unboost::system_error, error_code
     namespace unboost {
         namespace filesystem {
             class path;
@@ -233,7 +229,7 @@
                 if (exists(p, ec)) {
                     return true;
                 }
-                throw ec;
+                throw system_error(ec);
             }
 
             inline bool is_block_file(file_status s) {
@@ -346,7 +342,7 @@
                 error_code ec;
                 file_status ret = status(p, ec);
                 if (ec)
-                    throw ec;
+                    throw system_error(ec);
                 return ret;
             }
 
@@ -363,7 +359,7 @@
                 error_code ec;
                 file_status ret = symlink_status(p, ec);
                 if (ec)
-                    throw ec;
+                    throw system_error(ec);
                 return ret;
             }
 

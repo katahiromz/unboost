@@ -73,6 +73,19 @@
 //////////////////////////////////////////////////////////////////////////////
 // dependencies
 
+// Unboost's filesystem depends on system-specific system
+#ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
+    #ifdef _WIN32
+        #ifndef UNBOOST_USE_WIN32_SYSTEM
+            #define UNBOOST_USE_WIN32_SYSTEM
+        #endif
+    #else
+        #ifndef UNBOOST_USE_POSIX_SYSTEM
+            #define UNBOOST_USE_POSIX_SYSTEM
+        #endif
+    #endif
+#endif
+
 // thread and chrono depends on each other
 #ifdef UNBOOST_USE_CXX11_THREAD
     #ifndef UNBOOST_USE_CXX11_CHRONO
