@@ -456,9 +456,7 @@
 
             template <typename T_STRING, typename Pred>
             inline size_t
-            find_last_not_of(const T_STRING& str,
-                             const predicate_facade<Pred>& pred)
-            {
+            find_last_not_of(const T_STRING& str, const Pred& pred) {
                 return find_last_of(str, !pred);
             }
         } // namespace detail
