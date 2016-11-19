@@ -1,5 +1,5 @@
-                 ----- Unboost -----
-      ----- Time to say good-bye to Boost -----
+                  ----- Unboost -----
+       <<<< The Revival of Old C++ Compilers >>>>
 
 This is Unboost, that is a compatibility library for C++11, Boost 
 and C++03.
