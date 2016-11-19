@@ -101,8 +101,8 @@
                 typedef bool result_type;
 
                 is_classifiedF(std::ctype_base::mask Type,
-                               const std::locale& Locale = std::locale())
-                    : m_Type(Type), m_Locale(Locale)
+                               const std::locale& loc = std::locale())
+                    : m_Type(Type), m_Locale(loc)
                 {
                 }
 
@@ -325,54 +325,54 @@
 
         inline detail::is_classifiedF
         is_classified(std::ctype_base::mask Type,
-                      const std::locale& Locale = std::locale())
+                      const std::locale& loc = std::locale())
         {
-            return detail::is_classifiedF(Type, Locale);
+            return detail::is_classifiedF(Type, loc);
         }
 
         inline detail::is_classifiedF 
-        is_space(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::space, Locale);
+        is_space(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::space, loc);
         }
         inline detail::is_classifiedF 
-        is_digit(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::digit, Locale);
+        is_digit(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::digit, loc);
         }
         inline detail::is_classifiedF 
-        is_alpha(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::alpha, Locale);
+        is_alpha(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::alpha, loc);
         }
         inline detail::is_classifiedF 
-        is_alnum(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::alnum, Locale);
+        is_alnum(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::alnum, loc);
         }
         inline detail::is_classifiedF 
-        is_lower(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::lower, Locale);
+        is_lower(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::lower, loc);
         }
         inline detail::is_classifiedF 
-        is_upper(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::upper, Locale);
+        is_upper(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::upper, loc);
         }
         inline detail::is_classifiedF 
-        is_cntrl(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::cntrl, Locale);
+        is_cntrl(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::cntrl, loc);
         }
         inline detail::is_classifiedF 
-        is_graph(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::graph, Locale);
+        is_graph(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::graph, loc);
         }
         inline detail::is_classifiedF 
-        is_print(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::print, Locale);
+        is_print(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::print, loc);
         }
         inline detail::is_classifiedF 
-        is_punct(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::punct, Locale);
+        is_punct(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::punct, loc);
         }
         inline detail::is_classifiedF 
-        is_xdigit(const std::locale& Locale = std::locale()) {
-            return is_classified(std::ctype_base::xdigit, Locale);
+        is_xdigit(const std::locale& loc = std::locale()) {
+            return is_classified(std::ctype_base::xdigit, loc);
         }
 
         template <typename CharT>
@@ -418,12 +418,12 @@
         }
 
         namespace detail {
-            template <typename T_STRING, typename Pred>
+            template <typename T_STR, typename Pred>
             inline size_t
-            find_first_of(const T_STRING& str,
+            find_first_of(const T_STR& str,
                           const Pred& pred, size_t i = 0)
             {
-                size_t ret = T_STRING::npos;
+                size_t ret = T_STR::npos;
                 while (i < str.size()) {
                     if (pred(str[i])) {
                         ret = i;
@@ -433,18 +433,18 @@
                 }
                 return ret;
             }
-            template <typename T_STRING, typename Pred>
+            template <typename T_STR, typename Pred>
             inline size_t
-            find_first_not_of(const T_STRING& str, const Pred& pred,
+            find_first_not_of(const T_STR& str, const Pred& pred,
                               size_t i = 0)
             {
                 return find_first_of(str, !pred, i);
             }
 
-            template <typename T_STRING, typename Pred>
+            template <typename T_STR, typename Pred>
             inline size_t
-            find_last_of(const T_STRING& str, const Pred& pred) {
-                size_t i = 0, ret = T_STRING::npos;
+            find_last_of(const T_STR& str, const Pred& pred) {
+                size_t i = 0, ret = T_STR::npos;
                 while (i < str.size()) {
                     if (pred(str[i])) {
                         ret = i;
@@ -454,211 +454,163 @@
                 return ret;
             }
 
-            template <typename T_STRING, typename Pred>
+            template <typename T_STR, typename Pred>
             inline size_t
-            find_last_not_of(const T_STRING& str, const Pred& pred) {
+            find_last_not_of(const T_STR& str, const Pred& pred) {
                 return find_last_of(str, !pred);
             }
         } // namespace detail
 
-        inline void to_upper(std::string& str) {
-            using namespace std;
+        template <typename T_STR>
+        inline void to_upper(T_STR& str,
+                             const std::locale& loc = std::locale())
+        {
+            typedef typename T_STR::value_type char_type;
+            const std::ctype<char_type>& ct = 
+                std::use_facet<std::ctype<char_type> >(loc);
             const size_t count = str.size();
             for (size_t i = 0; i < count; ++i) {
-                char& ch = str[i];
-                if (islower(ch)) {
-                    ch = toupper(ch);
+                char_type ch = str[i];
+                if (ct.is(std::ctype_base::lower, ch)) {
+                    str[i] = ct.toupper(ch);
                 }
             }
         }
-        inline void to_lower(std::string& str) {
-            using namespace std;
+        template <typename T_STR>
+        inline void to_lower(T_STR& str,
+                             const std::locale& loc = std::locale())
+        {
+            typedef typename T_STR::value_type char_type;
+            const std::ctype<char_type>& ct = 
+                std::use_facet<std::ctype<char_type> >(loc);
             const size_t count = str.size();
             for (size_t i = 0; i < count; ++i) {
-                char& ch = str[i];
-                if (isupper(ch)) {
-                    ch = tolower(ch);
+                char_type ch = str[i];
+                if (ct.is(std::ctype_base::upper, ch)) {
+                    str[i] = ct.tolower(ch);
                 }
             }
         }
-        inline void to_upper(std::wstring& str) {
-            using namespace std;
-            const size_t count = str.size();
-            for (size_t i = 0; i < count; ++i) {
-                wchar_t& ch = str[i];
-                if (iswlower(ch)) {
-                    ch = towupper(ch);
-                }
-            }
-        }
-        inline void to_lower(std::wstring& str) {
-            using namespace std;
-            const size_t count = str.size();
-            for (size_t i = 0; i < count; ++i) {
-                wchar_t& ch = str[i];
-                if (iswupper(ch)) {
-                    ch = towlower(ch);
-                }
-            }
-        }
-        template <typename Pred>
-        inline void trim_if(std::string& str, const Pred& pred) {
+
+        template <typename CharT, typename Pred>
+        inline void
+        trim_if(std::basic_string<CharT>& str, const Pred& pred) {
+            typedef std::basic_string<CharT> string_type;
             size_t i = detail::find_first_not_of(str, pred);
             size_t j = detail::find_last_not_of(str, pred);
-            if ((i == std::string::npos) || (j == std::string::npos)) {
+            if ((i == string_type::npos) || (j == string_type::npos)) {
                 str.clear();
             } else {
                 str = str.substr(i, j - i + 1);
             }
         }
-        template <typename Pred>
-        inline void trim_left_if(std::string& str, const Pred& pred) {
+        template <typename CharT, typename Pred>
+        inline void
+        trim_left_if(std::basic_string<CharT>& str, const Pred& pred) {
+            typedef std::basic_string<CharT> string_type;
             size_t i = detail::find_first_not_of(str, pred);
-            if (i == std::string::npos) {
+            if (i == string_type::npos) {
                 str.clear();
             } else {
                 str = str.substr(i);
             }
         }
-        template <typename Pred>
-        inline void trim_right_if(std::string& str, const Pred& pred) {
+        template <typename CharT, typename Pred>
+        inline void
+        trim_right_if(std::basic_string<CharT>& str, const Pred& pred) {
+            typedef std::basic_string<CharT> string_type;
             size_t j = detail::find_first_not_of(str, pred);
-            if (j == std::string::npos) {
+            if (j == string_type::npos) {
                 str.clear();
             } else {
                 str = str.substr(0, j + 1);
             }
         }
-        inline void trim(std::string& str) {
+        template <typename CharT>
+        inline void trim(std::basic_string<CharT>& str) {
             trim_if(str, is_space());
         }
-        inline void trim_left(std::string& str) {
+        template <typename CharT>
+        inline void trim_left(std::basic_string<CharT>& str) {
             trim_left_if(str, is_space());
         }
-        inline void trim_right(std::string& str) {
+        template <typename CharT>
+        inline void trim_right(std::basic_string<CharT>& str) {
             trim_right_if(str, is_space());
         }
-        template <typename Pred>
-        inline void trim_if(std::wstring& str, const Pred& pred) {
-            size_t i = detail::find_first_not_of(str, pred);
-            size_t j = detail::find_last_not_of(str, pred);
-            if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
-                str.clear();
-            } else {
-                str = str.substr(i, j - i + 1);
-            }
-        }
-        template <typename Pred>
-        inline void trim_left_if(std::wstring& str, const Pred& pred) {
-            size_t i = detail::find_first_not_of(str, pred);
-            if (i == std::wstring::npos) {
-                str.clear();
-            } else {
-                str = str.substr(i);
-            }
-        }
-        template <typename Pred>
-        inline void trim_right_if(std::wstring& str, const Pred& pred) {
-            size_t j = detail::find_last_not_of(str, pred);
-            if (j == std::wstring::npos) {
-                str.clear();
-            } else {
-                str = str.substr(0, j + 1);
-            }
-        }
-        inline void trim(std::wstring& str) {
-            trim_if(str, is_space());
-        }
-        inline void trim_left(std::wstring& str) {
-            trim_left_if(str, is_space());
-        }
-        inline void trim_right(std::wstring& str) {
-            trim_right_if(str, is_space());
-        }
-        template <typename T_STRING>
-        inline T_STRING to_upper_copy(const T_STRING& str) {
-            T_STRING copy(str);
+
+        template <typename T_STR>
+        inline T_STR to_upper_copy(const T_STR& str) {
+            T_STR copy(str);
             to_upper(copy);
             return copy;
         }
-        template <typename T_STRING>
-        inline T_STRING to_lower_copy(const T_STRING& str) {
-            T_STRING copy(str);
+        template <typename T_STR>
+        inline T_STR to_lower_copy(const T_STR& str) {
+            T_STR copy(str);
             to_lower(copy);
             return copy;
         }
-        template <typename T_STRING>
-        inline T_STRING trim_copy(const T_STRING& str) {
-            T_STRING copy(str);
+        template <typename T_STR>
+        inline T_STR trim_copy(const T_STR& str) {
+            T_STR copy(str);
             trim(copy);
             return copy;
         }
-        template <typename T_STRING, typename Pred>
-        inline T_STRING
-        trim_copy_if(const T_STRING& str, const Pred& pred) {
-            T_STRING copy(str);
+        template <typename T_STR, typename Pred>
+        inline T_STR
+        trim_copy_if(const T_STR& str, const Pred& pred) {
+            T_STR copy(str);
             trim_if(copy, pred);
             return copy;
         }
-        template <typename T_STRING>
-        inline T_STRING trim_left_copy(const T_STRING& str) {
-            T_STRING copy(str);
+        template <typename T_STR>
+        inline T_STR trim_left_copy(const T_STR& str) {
+            T_STR copy(str);
             trim_left(copy);
             return copy;
         }
-        template <typename T_STRING, typename Pred>
-        inline T_STRING
-        trim_left_copy_if(const T_STRING& str, const Pred& pred) {
-            T_STRING copy(str);
+        template <typename T_STR, typename Pred>
+        inline T_STR
+        trim_left_copy_if(const T_STR& str, const Pred& pred) {
+            T_STR copy(str);
             trim_left_if(copy, pred);
             return copy;
         }
-        template <typename T_STRING>
-        inline T_STRING trim_right_copy(const T_STRING& str) {
-            T_STRING copy(str);
+        template <typename T_STR>
+        inline T_STR trim_right_copy(const T_STR& str) {
+            T_STR copy(str);
             trim_right(copy);
             return copy;
         }
-        template <typename T_STRING, typename Pred>
-        inline T_STRING
-        trim_right_copy_if(const T_STRING& str, const Pred& pred) {
-            T_STRING copy(str);
+        template <typename T_STR, typename Pred>
+        inline T_STR
+        trim_right_copy_if(const T_STR& str, const Pred& pred) {
+            T_STR copy(str);
             trim_right_if(copy, pred);
             return copy;
         }
-        template <typename T_STRING_CONTAINER, typename Pred>
-        void split(T_STRING_CONTAINER& container,
-                   const std::string& str, const Pred& pred)
+        template <typename T_STR_CONTAINER, typename Pred>
+        void split(T_STR_CONTAINER& container,
+                   const typename T_STR_CONTAINER::value_type& str,
+                   const Pred& pred)
         {
             container.clear();
             size_t i = 0, j = detail::find_first_of(str, pred);
-            while (j != T_STRING_CONTAINER::value_type::npos) {
+            while (j != T_STR_CONTAINER::value_type::npos) {
                 container.push_back(str.substr(i, j - i));
                 i = j + 1;
                 j = detail::find_first_of(str, pred, i);
             }
             container.push_back(str.substr(i));
         }
-        template <typename T_STRING_CONTAINER, typename Pred>
-        void split(T_STRING_CONTAINER& container,
-                   const std::wstring& str, const Pred& pred)
+        template <typename T_STR_CONTAINER>
+        typename T_STR_CONTAINER::value_type
+        join(const T_STR_CONTAINER& container,
+             const typename T_STR_CONTAINER::value_type& sep)
         {
-            container.clear();
-            size_t i = 0, j = detail::find_first_of(str, pred);
-            while (j != T_STRING_CONTAINER::value_type::npos) {
-                container.push_back(str.substr(i, j - i));
-                i = j + 1;
-                j = detail::find_first_of(str, pred, i);
-            }
-            container.push_back(str.substr(i));
-        }
-        template <typename T_STRING_CONTAINER>
-        typename T_STRING_CONTAINER::value_type
-        join(const T_STRING_CONTAINER& container,
-             const typename T_STRING_CONTAINER::value_type& sep)
-        {
-            typename T_STRING_CONTAINER::value_type result;
-            typename T_STRING_CONTAINER::const_iterator it, end;
+            typename T_STR_CONTAINER::value_type result;
+            typename T_STR_CONTAINER::const_iterator it, end;
             it = container.begin();
             end = container.end();
             if (it != end) {
@@ -670,41 +622,41 @@
             }
             return result;
         }
-        template <typename T_STRING>
-        void replace_all(T_STRING& str,
-                         const T_STRING& from, const T_STRING& to)
+        template <typename T_STR>
+        void replace_all(T_STR& str,
+                         const T_STR& from, const T_STR& to)
         {
             size_t i = 0;
             for (;;) {
                 i = str.find(from, i);
-                if (i == T_STRING::npos)
+                if (i == T_STR::npos)
                     break;
                 str.replace(i, from.size(), to);
                 i += to.size();
             }
         }
-        template <typename T_STRING>
-        inline void replace_all(T_STRING& str,
-            const typename T_STRING::value_type *from,
-            const typename T_STRING::value_type *to)
+        template <typename T_STR>
+        inline void replace_all(T_STR& str,
+            const typename T_STR::value_type *from,
+            const typename T_STR::value_type *to)
         {
-            replace_all(str, T_STRING(from), T_STRING(to));
+            replace_all(str, T_STR(from), T_STR(to));
         }
-        template <typename T_STRING>
-        inline T_STRING replace_all_copy(
-            const T_STRING& str,
-            const T_STRING& from, const T_STRING& to)
+        template <typename T_STR>
+        inline T_STR replace_all_copy(
+            const T_STR& str,
+            const T_STR& from, const T_STR& to)
         {
-            T_STRING copy(str);
+            T_STR copy(str);
             replace_all(copy, from, to);
             return copy;
         }
-        template <typename T_STRING>
-        inline T_STRING replace_all_copy(const T_STRING& str,
-            const typename T_STRING::value_type *from,
-            const typename T_STRING::value_type *to)
+        template <typename T_STR>
+        inline T_STR replace_all_copy(const T_STR& str,
+            const typename T_STR::value_type *from,
+            const typename T_STR::value_type *to)
         {
-            T_STRING copy(str);
+            T_STR copy(str);
             replace_all(copy, from, to);
             return copy;
         }

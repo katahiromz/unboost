@@ -51,6 +51,9 @@ int main(void) {
 
     wstr = boost::replace_all_copy(wstr, L"<>", L"===");
     assert(wstr == L"TEST1===TEST2===TEST3");
+
+    boost::to_lower(wstr);
+    assert(wstr == L"test1===test2===test3");
 #else   // Unboost
     // ansi
     std::string str = "  TEST1-TEST2_TEST3  ";
@@ -87,6 +90,9 @@ int main(void) {
 
     wstr = unboost::replace_all_copy(wstr, L"<>", L"===");
     assert(wstr == L"TEST1===TEST2===TEST3");
+
+    unboost::to_lower(wstr);
+    assert(wstr == L"test1===test2===test3");
 #endif  // Unboost
 
     std::cout << "success" << std::endl;
