@@ -65,14 +65,17 @@
 // _char16_t, _char32_t, u16string, u32string
 
 #ifdef __cplusplus
-    #if (__cplusplus >= 201103L)
+    #if (__cplusplus >= 201103L) || defined(UNBOOST_HAVE_CHARXX_T)
         namespace unboost {
             // NOTE: char16_t, char32_t are keywords on C++11
             typedef char16_t        _char16_t;
             typedef char32_t        _char32_t;
-            using std::u16string    u16string;
-            using std::u32string    u32string;
+            typedef std::u16string  u16string;
+            typedef std::u32string  u32string;
         } // namespace unboost
+        #ifndef UNBOOST_HAVE_CHARXX_T
+            #define UNBOOST_HAVE_CHARXX_T
+        #endif
     #else
         namespace unboost {
             typedef unsigned short  _char16_t;

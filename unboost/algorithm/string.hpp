@@ -19,123 +19,450 @@
 #ifdef UNBOOST_USE_BOOST_STRING_ALGORITHM
     #include <boost/algorithm/string.hpp>
     namespace unboost {
-        using boost::is_space;
-        using boost::is_alpha;
-        using boost::is_alnum;
-        using boost::is_digit;
-        using boost::is_xdigit;
-        using boost::is_lower;
-        using boost::is_upper;
-        using boost::is_from_range;
-        using boost::is_cntrl;
-        using boost::is_punct;
-        using boost::is_any_of;
-        using boost::to_upper;
-        using boost::to_lower;
-        using boost::trim;
-        using boost::trim_left;
-        using boost::trim_right;
-        using boost::trim_if;
-        using boost::trim_left_if;
-        using boost::trim_right_if;
-        using boost::to_upper_copy;
-        using boost::to_lower_copy;
-        using boost::trim_copy;
-        using boost::trim_left_copy;
-        using boost::trim_right_copy;
-        using boost::trim_copy_if;
-        using boost::trim_left_copy_if;
-        using boost::trim_right_copy_if;
-        using boost::split;
-        using boost::join;
-        using boost::replace_all;
-        using boost::replace_all_copy;
+        using boost::algorithm::is_alnum;
+        using boost::algorithm::is_alpha;
+        using boost::algorithm::is_any_of;
+        using boost::algorithm::is_classified;
+        using boost::algorithm::is_cntrl;
+        using boost::algorithm::is_digit;
+        using boost::algorithm::is_from_range;
+        using boost::algorithm::is_lower;
+        using boost::algorithm::is_punct;
+        using boost::algorithm::is_space;
+        using boost::algorithm::is_upper;
+        using boost::algorithm::is_xdigit;
+        using boost::algorithm::join;
+        using boost::algorithm::replace_all;
+        using boost::algorithm::replace_all_copy;
+        using boost::algorithm::split;
+        using boost::algorithm::to_lower;
+        using boost::algorithm::to_lower_copy;
+        using boost::algorithm::to_upper;
+        using boost::algorithm::to_upper_copy;
+        using boost::algorithm::trim;
+        using boost::algorithm::trim_copy;
+        using boost::algorithm::trim_copy_if;
+        using boost::algorithm::trim_if;
+        using boost::algorithm::trim_left;
+        using boost::algorithm::trim_left_copy;
+        using boost::algorithm::trim_left_copy_if;
+        using boost::algorithm::trim_left_if;
+        using boost::algorithm::trim_right;
+        using boost::algorithm::trim_right_copy;
+        using boost::algorithm::trim_right_copy_if;
+        using boost::algorithm::trim_right_if;
+        namespace algorithm {
+            using boost::algorithm::is_alnum;
+            using boost::algorithm::is_alpha;
+            using boost::algorithm::is_any_of;
+            using boost::algorithm::is_classified;
+            using boost::algorithm::is_cntrl;
+            using boost::algorithm::is_digit;
+            using boost::algorithm::is_from_range;
+            using boost::algorithm::is_lower;
+            using boost::algorithm::is_punct;
+            using boost::algorithm::is_space;
+            using boost::algorithm::is_upper;
+            using boost::algorithm::is_xdigit;
+            using boost::algorithm::join;
+            using boost::algorithm::replace_all;
+            using boost::algorithm::replace_all_copy;
+            using boost::algorithm::split;
+            using boost::algorithm::to_lower;
+            using boost::algorithm::to_lower_copy;
+            using boost::algorithm::to_upper;
+            using boost::algorithm::to_upper_copy;
+            using boost::algorithm::trim;
+            using boost::algorithm::trim_copy;
+            using boost::algorithm::trim_copy_if;
+            using boost::algorithm::trim_if;
+            using boost::algorithm::trim_left;
+            using boost::algorithm::trim_left_copy;
+            using boost::algorithm::trim_left_copy_if;
+            using boost::algorithm::trim_left_if;
+            using boost::algorithm::trim_right;
+            using boost::algorithm::trim_right_copy;
+            using boost::algorithm::trim_right_copy_if;
+            using boost::algorithm::trim_right_if;
+        } // namespace algorithm
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_STRING_ALGORITHM)
-    #include <cctype>
+    #include <locale>   // for std::locale
+    #include <cstring>  // for std::strlen, ...
+    #include <cwchar>   // for std::wcslen, ...
     namespace unboost {
-        // TODO: be locale aware
-        namespace char_set {
-            // ansi
-            static const char *spaces = " \t\n\r\f\v";
-            static const char *alphas = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            static const char *alnums = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            static const char *digits = "0123456789";
-            static const char *xdigits = "0123456789ABCDEFabcdef";
-            static const char *uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            static const char *lowers = "abcdefghijklmnopqrstuvwxyz";
-            static const char *puncts = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
-            // wide
-            static const wchar_t *wspaces = L" \t\n\r\f\v\u3000";
-            static const wchar_t *walphas = L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            static const wchar_t *walnums = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            static const wchar_t *wdigits = L"0123456789";
-            static const wchar_t *wxdigits = L"0123456789ABCDEFabcdef";
-            static const wchar_t *wuppers = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            static const wchar_t *wlowers = L"abcdefghijklmnopqrstuvwxyz";
-            static const wchar_t *wpuncts = L"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
-        } // namespace char_set
-        struct char_set_predicate {
-            std::string     m_char_set;
-            std::wstring    m_wchar_set;
-            char_set_predicate() { }
-            char_set_predicate(const std::string& str) : m_char_set(str) {
-                for (size_t i = 0; i < str.size(); ++i) {
-                    m_wchar_set += wchar_t(str[i]);
+        template <typename Derived>
+        struct predicate_facade { };
+
+        namespace detail {
+            struct is_classifiedF
+                : public predicate_facade<is_classifiedF>
+            {
+                typedef bool result_type;
+
+                is_classifiedF(std::ctype_base::mask Type,
+                               const std::locale& Locale = std::locale())
+                    : m_Type(Type), m_Locale(Locale)
+                {
                 }
+
+                template <typename CharT>
+                bool operator()(CharT ch) const {
+                    const std::ctype<CharT>& ct =
+                        std::use_facet<std::ctype<CharT> >(m_Locale);
+                    return ct.is(m_Type, ch);
+                }
+
+            protected:
+                std::ctype_base::mask   m_Type;
+                std::locale             m_Locale;
+            }; // struct is_classifiedF
+
+            template <typename CharT>
+            inline size_t slen(const CharT *str) {
+                size_t count = 0;
+                while (*str) {
+                    ++str;
+                    ++count;
+                }
+                return count;
             }
-            char_set_predicate(const std::wstring& str) : m_wchar_set(str) {
-                for (size_t i = 0; i < str.size(); ++i) {
-                    if (str[i] <= 0x7F) {
-                        m_char_set += char(str[i]);
+            template <>
+            inline size_t slen<char>(const char *str) {
+                using namespace std;
+                return strlen(str);
+            }
+            template <>
+            inline size_t slen<wchar_t>(const wchar_t *str) {
+                using namespace std;
+                return wcslen(str);
+            }
+
+            template <typename CharT>
+            inline CharT *sdup(const CharT *str, size_t count) {
+                using namespace std;
+                size_t size = count * sizeof(CharT);
+                CharT *ptr = reinterpret_cast<CharT *>(malloc(size));
+                if (ptr) {
+                    memcpy(ptr, str, size);
+                } else {
+                    throw bad_alloc();
+                }
+                return ptr;
+            }
+
+            template <typename CharT>
+            inline CharT *sdup(const CharT *str) {
+                using namespace std;
+                size_t count = slen(str);
+                return sdup(str, count);
+            }
+
+            template <typename CharT>
+            inline CharT *schr(const CharT *str, CharT ch, size_t len) {
+                while (len > 0) {
+                    if (*str == ch) {
+                        return const_cast<CharT *>(str);
                     }
+                    ++str;
+                    --len;
                 }
+                return NULL;
             }
-            char_set_predicate(const std::string& str, const std::wstring& wstr)
-                : m_char_set(str), m_wchar_set(wstr) { }
-        }; // struct char_set_predicate
-        struct is_space : public char_set_predicate {
-            is_space() : char_set_predicate(char_set::spaces, char_set::wspaces) { }
-        };
-        struct is_alpha : public char_set_predicate {
-            is_alpha() : char_set_predicate(char_set::alphas, char_set::walphas) { }
-        };
-        struct is_alnum : public char_set_predicate {
-            is_alnum() : char_set_predicate(char_set::alnums, char_set::walnums) { }
-        };
-        struct is_digit : public char_set_predicate {
-            is_digit() : char_set_predicate(char_set::digits, char_set::wdigits) { }
-        };
-        struct is_xdigit : public char_set_predicate {
-            is_xdigit() : char_set_predicate(char_set::xdigits, char_set::wxdigits) { }
-        };
-        struct is_lower : public char_set_predicate {
-            is_lower() : char_set_predicate(char_set::lowers, char_set::wlowers) { }
-        };
-        struct is_upper : public char_set_predicate {
-            is_upper() : char_set_predicate(char_set::uppers, char_set::wuppers) { }
-        };
-        struct is_from_range : public char_set_predicate {
-            is_from_range(char from, char to) {
-                for (int ch = from; ch <= to; ++ch) {
-                    m_char_set += char(ch);
-                    m_wchar_set += wchar_t(ch);
+            template <typename CharT>
+            inline CharT *schr(const CharT *str, CharT ch) {
+                while (*str) {
+                    if (*str == ch) {
+                        return const_cast<CharT *>(str);
+                    }
+                    ++str;
                 }
+                return NULL;
             }
-        };
-        struct is_cntrl : public is_from_range {
-            is_cntrl(char from, char to) : is_from_range(0, '\x1F') {
-                m_char_set += '\x7F';
-                m_wchar_set += static_cast<wchar_t>(0x7F);
+            template <>
+            inline char *schr<char>(const char *str, char ch) {
+                using namespace std;
+                return strchr(str, ch);
             }
-        };
-        struct is_punct : public char_set_predicate {
-            is_punct() : char_set_predicate(char_set::puncts, char_set::wpuncts) { }
-        };
-        struct is_any_of : public char_set_predicate {
-            is_any_of(const std::string& str) : char_set_predicate(str) { }
-            is_any_of(const std::wstring& str) : char_set_predicate(str) { }
-        };
+            template <>
+            inline wchar_t *schr<wchar_t>(const wchar_t *str, wchar_t ch) {
+                using namespace std;
+                return wcschr(str, ch);
+            }
+
+            template <typename CharT>
+            struct is_any_ofF : public predicate_facade<is_any_ofF<CharT> > {
+                typedef bool result_type;
+                typedef is_any_ofF<CharT> self_type;
+
+                is_any_ofF(const CharT *str) : m_str(NULL), m_len(0) {
+                    *this = str;
+                }
+
+                template <typename Traits>
+                is_any_ofF(const std::basic_string<CharT, Traits>& str)
+                    : m_str(NULL), m_len(0)
+                {
+                    *this = str;
+                }
+
+                is_any_ofF(const self_type& other) : m_str(NULL), m_len(0) {
+                    *this = other;
+                }
+
+                self_type& operator=(const CharT *str) {
+                    std::free(m_str);
+                    m_str = sdup(str);
+                    m_len = slen(str);
+                    return *this;
+                }
+
+                template <typename Traits>
+                self_type&
+                operator=(const std::basic_string<CharT, Traits>& str) {
+                    std::free(m_str);
+                    m_str = sdup(str.c_str(), str.size());
+                    m_len = str.size();
+                    return *this;
+                }
+
+                self_type& operator=(const self_type& other) {
+                    if (this != &other) {
+                        std::free(m_str);
+                        m_str = sdup(other.m_str, other.m_len);
+                        m_len = other.m_len;
+                    }
+                    return *this;
+                }
+
+                ~is_any_ofF() {
+                    std::free(m_str);
+                }
+
+                bool operator()(CharT ch) const {
+                    return schr(m_str, ch, m_len) != NULL;
+                }
+
+            protected:
+                CharT *     m_str;
+                size_t      m_len;
+            }; // struct is_any_ofF<CharT>
+
+            template <typename CharT>
+            struct is_from_rangeF
+                : public predicate_facade<is_from_rangeF<CharT> >
+            {
+                typedef bool result_type;
+
+                is_from_rangeF(CharT from, CharT to)
+                    : m_From(from), m_To(to) { }
+
+                template <typename Char2T>
+                bool operator()(Char2T ch) const {
+                    return (m_From <= ch && ch <= m_To);
+                }
+
+            protected:
+                CharT m_From;
+                CharT m_To;
+            };
+
+            template <typename Pred1, typename Pred2>
+            struct pred_andF
+                : public predicate_facade<pred_andF<Pred1, Pred2> >
+            {
+                typedef bool result_type;
+
+                pred_andF(Pred1 pred1, Pred2 pred2)
+                    : m_Pred1(pred1), m_Pred2(pred2) { }
+
+                template <typename CharT>
+                bool operator()(CharT ch) const {
+                    return (m_Pred1(ch) && m_Pred2(ch));
+                }
+
+            protected:
+                Pred1   m_Pred1;
+                Pred2   m_Pred2;
+            };
+
+            template <typename Pred1, typename Pred2>
+            struct pred_orF
+                : public predicate_facade<pred_orF<Pred1, Pred2> >
+            {
+                typedef bool result_type;
+
+                pred_orF(Pred1 pred1, Pred2 pred2)
+                    : m_Pred1(pred1), m_Pred2(pred2) { }
+
+                template <typename CharT>
+                bool operator()(CharT ch) const {
+                    return (m_Pred1(ch) || m_Pred2(ch));
+                }
+
+            protected:
+                Pred1   m_Pred1;
+                Pred2   m_Pred2;
+            };
+
+            template <typename Pred1>
+            struct pred_notF
+                : public predicate_facade<pred_notF<Pred1> >
+            {
+                typedef bool result_type;
+
+                pred_notF(Pred1 pred1) : m_Pred1(pred1) { }
+
+                template <typename CharT>
+                bool operator()(CharT ch) const {
+                    return !m_Pred1(ch);
+                }
+
+            protected:
+                Pred1   m_Pred1;
+            };
+        } // namespace detail
+
+        inline detail::is_classifiedF
+        is_classified(std::ctype_base::mask Type,
+                      const std::locale& Locale = std::locale())
+        {
+            return detail::is_classifiedF(Type, Locale);
+        }
+
+        inline detail::is_classifiedF 
+        is_space(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::space, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_digit(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::digit, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_alpha(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::alpha, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_alnum(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::alnum, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_lower(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::lower, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_upper(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::upper, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_cntrl(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::cntrl, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_graph(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::graph, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_print(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::print, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_punct(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::punct, Locale);
+        }
+        inline detail::is_classifiedF 
+        is_xdigit(const std::locale& Locale = std::locale()) {
+            return is_classified(std::ctype_base::xdigit, Locale);
+        }
+
+        template <typename CharT>
+        inline detail::is_any_ofF<CharT>
+        is_any_of(const CharT *ptr) {
+            return detail::is_any_ofF<CharT>(ptr);
+        }
+        template <typename CharT, typename Traits>
+        inline detail::is_any_ofF<CharT>
+        is_any_of(const std::basic_string<CharT, Traits>& str) {
+            return detail::is_any_ofF<CharT>(str);
+        }
+
+        template <typename CharT>
+        inline detail::is_from_rangeF<CharT>
+        is_from_range(CharT from, CharT to) {
+            return detail::is_from_rangeF<CharT>(from, to); 
+        }
+
+        template<typename Pred1, typename Pred2>
+        inline detail::pred_andF<Pred1, Pred2>
+        operator&&(const predicate_facade<Pred1>& pred1,
+                   const predicate_facade<Pred2>& pred2)
+        {
+            return detail::pred_andF<Pred1, Pred2>(
+                *static_cast<const Pred1*>(&pred1), 
+                *static_cast<const Pred2*>(&pred2));
+        }
+        template<typename Pred1, typename Pred2>
+        inline detail::pred_orF<Pred1, Pred2>
+        operator||(const predicate_facade<Pred1>& pred1,
+                   const predicate_facade<Pred2>& pred2)
+        {
+            return detail::pred_orF<Pred1, Pred2>(
+                *static_cast<const Pred1*>(&pred1), 
+                *static_cast<const Pred2*>(&pred2));
+        }
+        template<typename Pred1>
+        inline detail::pred_notF<Pred1>
+        operator!(const predicate_facade<Pred1>& pred1) {
+            return detail::pred_notF<Pred1>(
+                *static_cast<const Pred1*>(&pred1));
+        }
+
+        namespace detail {
+            template <typename T_STRING, typename Pred>
+            inline size_t
+            find_first_of(const T_STRING& str,
+                          const Pred& pred, size_t i = 0)
+            {
+                size_t ret = T_STRING::npos;
+                while (i < str.size()) {
+                    if (pred(str[i])) {
+                        ret = i;
+                        break;
+                    }
+                    ++i;
+                }
+                return ret;
+            }
+            template <typename T_STRING, typename Pred>
+            inline size_t
+            find_first_not_of(const T_STRING& str, const Pred& pred,
+                              size_t i = 0)
+            {
+                return find_first_of(str, !pred, i);
+            }
+
+            template <typename T_STRING, typename Pred>
+            inline size_t
+            find_last_of(const T_STRING& str, const Pred& pred) {
+                size_t i = 0, ret = T_STRING::npos;
+                while (i < str.size()) {
+                    if (pred(str[i])) {
+                        ret = i;
+                    }
+                    ++i;
+                }
+                return ret;
+            }
+
+            template <typename T_STRING, typename Pred>
+            inline size_t
+            find_last_not_of(const T_STRING& str,
+                             const predicate_facade<Pred>& pred)
+            {
+                return find_last_of(str, !pred);
+            }
+        } // namespace detail
+
         inline void to_upper(std::string& str) {
             using namespace std;
             const size_t count = str.size();
@@ -176,25 +503,28 @@
                 }
             }
         }
-        inline void trim_if(std::string& str, const char_set_predicate& pred) {
-            size_t i = str.find_first_not_of(pred.m_char_set);
-            size_t j = str.find_last_not_of(pred.m_char_set);
+        template <typename Pred>
+        inline void trim_if(std::string& str, const Pred& pred) {
+            size_t i = detail::find_first_not_of(str, pred);
+            size_t j = detail::find_last_not_of(str, pred);
             if ((i == std::string::npos) || (j == std::string::npos)) {
                 str.clear();
             } else {
                 str = str.substr(i, j - i + 1);
             }
         }
-        inline void trim_left_if(std::string& str, const char_set_predicate& pred) {
-            size_t i = str.find_first_not_of(pred.m_char_set);
+        template <typename Pred>
+        inline void trim_left_if(std::string& str, const Pred& pred) {
+            size_t i = detail::find_first_not_of(str, pred);
             if (i == std::string::npos) {
                 str.clear();
             } else {
                 str = str.substr(i);
             }
         }
-        inline void trim_right_if(std::string& str, const char_set_predicate& pred) {
-            size_t j = str.find_last_not_of(pred.m_char_set);
+        template <typename Pred>
+        inline void trim_right_if(std::string& str, const Pred& pred) {
+            size_t j = detail::find_first_not_of(str, pred);
             if (j == std::string::npos) {
                 str.clear();
             } else {
@@ -210,25 +540,28 @@
         inline void trim_right(std::string& str) {
             trim_right_if(str, is_space());
         }
-        inline void trim_if(std::wstring& str, const char_set_predicate& pred) {
-            size_t i = str.find_first_not_of(pred.m_wchar_set);
-            size_t j = str.find_last_not_of(pred.m_wchar_set);
+        template <typename Pred>
+        inline void trim_if(std::wstring& str, const Pred& pred) {
+            size_t i = detail::find_first_not_of(str, pred);
+            size_t j = detail::find_last_not_of(str, pred);
             if ((i == std::wstring::npos) || (j == std::wstring::npos)) {
                 str.clear();
             } else {
                 str = str.substr(i, j - i + 1);
             }
         }
-        inline void trim_left_if(std::wstring& str, const char_set_predicate& pred) {
-            size_t i = str.find_first_not_of(pred.m_wchar_set);
+        template <typename Pred>
+        inline void trim_left_if(std::wstring& str, const Pred& pred) {
+            size_t i = detail::find_first_not_of(str, pred);
             if (i == std::wstring::npos) {
                 str.clear();
             } else {
                 str = str.substr(i);
             }
         }
-        inline void trim_right_if(std::wstring& str, const char_set_predicate& pred) {
-            size_t j = str.find_last_not_of(pred.m_wchar_set);
+        template <typename Pred>
+        inline void trim_right_if(std::wstring& str, const Pred& pred) {
+            size_t j = detail::find_last_not_of(str, pred);
             if (j == std::wstring::npos) {
                 str.clear();
             } else {
@@ -262,10 +595,24 @@
             trim(copy);
             return copy;
         }
+        template <typename T_STRING, typename Pred>
+        inline T_STRING
+        trim_copy_if(const T_STRING& str, const Pred& pred) {
+            T_STRING copy(str);
+            trim_if(copy, pred);
+            return copy;
+        }
         template <typename T_STRING>
         inline T_STRING trim_left_copy(const T_STRING& str) {
             T_STRING copy(str);
             trim_left(copy);
+            return copy;
+        }
+        template <typename T_STRING, typename Pred>
+        inline T_STRING
+        trim_left_copy_if(const T_STRING& str, const Pred& pred) {
+            T_STRING copy(str);
+            trim_left_if(copy, pred);
             return copy;
         }
         template <typename T_STRING>
@@ -274,31 +621,36 @@
             trim_right(copy);
             return copy;
         }
-        template <typename T_STRING_CONTAINER>
+        template <typename T_STRING, typename Pred>
+        inline T_STRING
+        trim_right_copy_if(const T_STRING& str, const Pred& pred) {
+            T_STRING copy(str);
+            trim_right_if(copy, pred);
+            return copy;
+        }
+        template <typename T_STRING_CONTAINER, typename Pred>
         void split(T_STRING_CONTAINER& container,
-                   const std::string& str,
-                   const char_set_predicate& pred)
+                   const std::string& str, const Pred& pred)
         {
             container.clear();
-            size_t i = 0, j = str.find_first_of(pred.m_char_set);
+            size_t i = 0, j = detail::find_first_of(str, pred);
             while (j != T_STRING_CONTAINER::value_type::npos) {
                 container.push_back(str.substr(i, j - i));
                 i = j + 1;
-                j = str.find_first_of(pred.m_char_set, i);
+                j = detail::find_first_of(str, pred, i);
             }
             container.push_back(str.substr(i));
         }
-        template <typename T_STRING_CONTAINER>
+        template <typename T_STRING_CONTAINER, typename Pred>
         void split(T_STRING_CONTAINER& container,
-                   const std::wstring& str,
-                   const char_set_predicate& pred)
+                   const std::wstring& str, const Pred& pred)
         {
             container.clear();
-            size_t i = 0, j = str.find_first_of(pred.m_wchar_set);
+            size_t i = 0, j = detail::find_first_of(str, pred);
             while (j != T_STRING_CONTAINER::value_type::npos) {
                 container.push_back(str.substr(i, j - i));
                 i = j + 1;
-                j = str.find_first_of(pred.m_wchar_set, i);
+                j = detail::find_first_of(str, pred, i);
             }
             container.push_back(str.substr(i));
         }
@@ -308,8 +660,9 @@
              const typename T_STRING_CONTAINER::value_type& sep)
         {
             typename T_STRING_CONTAINER::value_type result;
-            typename T_STRING_CONTAINER::const_iterator it = container.begin();
-            typename T_STRING_CONTAINER::const_iterator end = container.end();
+            typename T_STRING_CONTAINER::const_iterator it, end;
+            it = container.begin();
+            end = container.end();
             if (it != end) {
                 result = *it;
                 for (++it; it != end; ++it) {
@@ -357,6 +710,41 @@
             replace_all(copy, from, to);
             return copy;
         }
+
+        namespace algorithm {
+            using unboost::is_alnum;
+            using unboost::is_alpha;
+            using unboost::is_any_of;
+            using unboost::is_classified;
+            using unboost::is_cntrl;
+            using unboost::is_digit;
+            using unboost::is_from_range;
+            using unboost::is_lower;
+            using unboost::is_punct;
+            using unboost::is_space;
+            using unboost::is_upper;
+            using unboost::is_xdigit;
+            using unboost::join;
+            using unboost::replace_all;
+            using unboost::replace_all_copy;
+            using unboost::split;
+            using unboost::to_lower;
+            using unboost::to_lower_copy;
+            using unboost::to_upper;
+            using unboost::to_upper_copy;
+            using unboost::trim;
+            using unboost::trim_copy;
+            using unboost::trim_copy_if;
+            using unboost::trim_if;
+            using unboost::trim_left;
+            using unboost::trim_left_copy;
+            using unboost::trim_left_copy_if;
+            using unboost::trim_left_if;
+            using unboost::trim_right;
+            using unboost::trim_right_copy;
+            using unboost::trim_right_copy_if;
+            using unboost::trim_right_if;
+        } // namespace algorithm
     } // namespace unboost
 #else
     #error Your compiler is not supported yet. You lose.
