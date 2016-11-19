@@ -182,12 +182,12 @@
             template <>
             inline char *schr<char>(const char *str, char ch) {
                 using namespace std;
-                return strchr(str, ch);
+                return const_cast<char *>(strchr(str, ch));
             }
             template <>
             inline wchar_t *schr<wchar_t>(const wchar_t *str, wchar_t ch) {
                 using namespace std;
-                return wcschr(str, ch);
+                return const_cast<wchar_t *>(wcschr(str, ch));
             }
 
             template <typename CharT>
