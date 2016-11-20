@@ -4,7 +4,7 @@
 #ifndef UNBOOST_TUPLE_HPP_
 #define UNBOOST_TUPLE_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_TUPLE) + defined(UNBOOST_USE_BOOST_TUPLE)) == 0)

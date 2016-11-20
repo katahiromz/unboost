@@ -4,7 +4,7 @@
 #ifndef UNBOOST_TYPE_TRAITS_HPP_
 #define UNBOOST_TYPE_TRAITS_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "rv_ref.hpp"   // for rvalue reference
 
 // If not choosed, choose one

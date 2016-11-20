@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SWAP_HPP_
 #define UNBOOST_SWAP_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 #include <algorithm>
 #if (__cplusplus >= 201103L)

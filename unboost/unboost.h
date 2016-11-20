@@ -1,8 +1,8 @@
 // unboost.hpp --- Unboost core
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef UNBOOST_CORE_HPP_
-#define UNBOOST_CORE_HPP_
+#ifndef UNBOOST_CORE_H_
+#define UNBOOST_CORE_H_
 
 #define UNBOOST_VERSION             36
 #define UNBOOST_VERSION_STRING      "Unboost 36 by Katayama Hirofumi MZ"
@@ -304,6 +304,6 @@ namespace unboost {
 
 //////////////////////////////////////////////////////////////////////////////
 
-#endif  // ndef UNBOOST_CORE_HPP_
+#endif  // ndef UNBOOST_CORE_H_
 
 //////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_TEXT2TEXT_HPP_
 #define UNBOOST_TEXT2TEXT_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "exception.hpp"    // for unboost::range_error
 
 // If not choosed, choose one

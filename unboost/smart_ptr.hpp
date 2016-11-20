@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SMART_PTR_HPP_
 #define UNBOOST_SMART_PTR_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "exception.hpp"    // for unboost::bad_weak_ptr
 
 // If not choosed, choose one

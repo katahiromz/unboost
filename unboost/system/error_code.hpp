@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SYSTEM_ERROR_CODE_HPP_
 #define UNBOOST_SYSTEM_ERROR_CODE_HPP_
 
-#include "../unboost.hpp"
+#include "../unboost.h"
 
 namespace unboost {
     namespace errc {

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_SYSTEM_ERROR_HPP_
 #define UNBOOST_SYSTEM_ERROR_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_SYSTEM) + defined(UNBOOST_USE_BOOST_SYSTEM) + defined(UNBOOST_USE_WIN32_SYSTEM) + defined(UNBOOST_USE_POSIX_SYSTEM) == 0)

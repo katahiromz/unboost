@@ -4,7 +4,7 @@
 #ifndef UNBOOST_RATIO_HPP_
 #define UNBOOST_RATIO_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "static_assert.hpp"
 
 // If not choosed, choose one

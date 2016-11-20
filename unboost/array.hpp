@@ -4,7 +4,7 @@
 #ifndef UNBOOST_ARRAY_HPP_
 #define UNBOOST_ARRAY_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "rv_ref.hpp"
 #undef max
 #undef min

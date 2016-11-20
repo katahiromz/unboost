@@ -4,7 +4,7 @@
 #ifndef UNBOOST_REF_HPP_
 #define UNBOOST_REF_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 // NOTE: function types are not supported yet
 

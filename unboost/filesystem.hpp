@@ -4,7 +4,7 @@
 #ifndef UNBOOST_FILESYSTEM_HPP_
 #define UNBOOST_FILESYSTEM_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 #include <iterator>     // for std::input_iterator_tag
 

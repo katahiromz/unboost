@@ -4,7 +4,7 @@
 #ifndef UNBOOST_WINDOWS_ERROR_HPP_
 #define UNBOOST_WINDOWS_ERROR_HPP_
 
-#include "../unboost.hpp"
+#include "../unboost.h"
 
 #ifdef _WIN32
     #ifndef _INC_WINDOWS

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_STATIC_ASSERT_HPP_
 #define UNBOOST_STATIC_ASSERT_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_STATIC_ASSERT) + defined(UNBOOST_USE_UNBOOST_STATIC_ASSERT) + defined(UNBOOST_USE_BOOST_STATIC_ASSERT)) == 0)

@@ -4,7 +4,7 @@
 #ifndef UNBOOST_LINUX_ERROR_CODE_HPP_
 #define UNBOOST_LINUX_ERROR_CODE_HPP_
 
-#include "../unboost.hpp"
+#include "../unboost.h"
 
 #include <errno.h>
 

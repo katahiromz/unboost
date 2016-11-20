@@ -13,7 +13,7 @@
 // bool reset_event(event_handle eh);
 // bool pulse_event(event_handle eh);
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "pstdbool.h"   // for bool, true, false
 #include "pstdint.h"    // for unboost::int*_t, uint*_t
 

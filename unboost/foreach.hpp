@@ -4,7 +4,7 @@
 #ifndef UNBOOST_FOREACH_HPP_
 #define UNBOOST_FOREACH_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_FOREACH) + defined(UNBOOST_USE_BOOST_FOREACH)) == 0)

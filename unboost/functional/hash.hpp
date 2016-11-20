@@ -4,7 +4,7 @@
 #ifndef UNBOOST_HASH_HPP_
 #define UNBOOST_HASH_HPP_
 
-#include "../unboost.hpp"
+#include "../unboost.h"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX11_HASH) + defined(UNBOOST_USE_BOOST_HASH) + defined(UNBOOST_USE_UNBOOST_HASH) == 0)

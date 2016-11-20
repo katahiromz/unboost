@@ -4,7 +4,7 @@
 #ifndef UNBOOST_CHRONO_HPP_
 #define UNBOOST_CHRONO_HPP_
 
-#include "unboost.hpp"
+#include "unboost.h"
 #include "ratio.hpp"        // for unboost::ratio, ...
 #include "type_traits.hpp"  // for unboost::common_type
 #undef min
