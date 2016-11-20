@@ -46,7 +46,7 @@ namespace unboost {
                 open(from, to, throw_if_error);
             }
 
-            void open(encoding from, encoding to, bool throw_if_error = false) {
+            bool open(encoding from, encoding to, bool throw_if_error = false) {
                 close();
 
                 assert(_is_encoding_wide(from) != _is_encoding_wide(to));
@@ -54,6 +54,7 @@ namespace unboost {
                 m_to = to;
                 m_converted = 0;
                 m_throw_if_error = throw_if_error;
+                return true;
             }
             void close() { }
 
