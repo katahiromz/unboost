@@ -34,6 +34,7 @@ namespace unboost {
         #endif
         #include <windows.h>
     #endif
+    #include <cstring>  // for std::strlen and std::wcslen
     namespace unboost {
         class text2text {
         public:
@@ -68,7 +69,7 @@ namespace unboost {
 
             // wide string from multi-byte
             wide_string from_bytes(const char *ptr) {
-                return from_bytes(ptr, ptr + ::lstrlenA(ptr));
+                return from_bytes(ptr, ptr + std::strlen(ptr));
             }
             wide_string from_bytes(const byte_string& str) {
                 return from_bytes(&str[0], &str[str.size()]);
@@ -98,7 +99,7 @@ namespace unboost {
             // wide string to multi-byte
             byte_string to_bytes(const wchar_t *ptr) {
                 using namespace std;
-                return to_bytes(ptr, ptr + ::lstrlenW(ptr));
+                return to_bytes(ptr, ptr + wcslen(ptr));
             }
             byte_string to_bytes(const wide_string& wstr) {
                 return to_bytes(&wstr[0], &wstr[wstr.size()]);
