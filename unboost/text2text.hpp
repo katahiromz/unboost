@@ -137,9 +137,10 @@ namespace unboost {
             UINT _cp_from_encoding(encoding e) const {
                 switch (e) {
                 case ENC_ANSI:  return CP_ACP;
-                case ENC_SJIS:  return CP_ACP;
+                case ENC_SJIS:  return 932;
                 case ENC_UTF7:  return CP_UTF7;
                 case ENC_UTF8:  return CP_UTF8;
+                case ENC_WIDE:  return 1200;
                 default:
                     assert(0);
                     return CP_ACP;
