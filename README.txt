@@ -7,7 +7,7 @@ and C++03.
 The Boost C++ Libraries (http://www.boost.org) are famous and very 
 sophisticated but too large and expensive for daily use.
 
-This Unboost (only 774 KB) enables you to avoid that expensive booster 
+This Unboost (only 788 KB) enables you to avoid that expensive booster 
 if possible on your C++ compiler (C++11, std::tr1, substitute tiny
 implementations).
 
