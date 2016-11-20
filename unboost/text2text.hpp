@@ -323,7 +323,7 @@ namespace unboost {
                     if (sizeof(wchar_t) == 2)
                         return "UTF-16LE";
                     if (sizeof(wchar_t) == 4)
-                        return "UTF-32";
+                        return "UTF-32LE";
                     // FALL THROUGH
                 default:
                     assert(0);
