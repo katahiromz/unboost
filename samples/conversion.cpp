@@ -17,10 +17,13 @@ int main(void) {
 
 #ifdef CXX11
     assert(std::to_string(2016) == "2016");
+    assert(std::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
 #elif defined(BOOST)
     assert(boost::to_string(2016) == "2016");
+    assert(boost::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
 #else
     assert(unboost::to_string(2016) == "2016");
+    assert(unboost::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
 #endif
 
     std::cout << "success" << std::endl;
