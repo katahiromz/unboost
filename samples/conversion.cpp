@@ -30,9 +30,9 @@ int main(void) {
 #elif defined(BOOST)
     assert(boost::to_string(2016) == "2016");
     assert(boost::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
-    assert(boost::to_string((float)1) == "1");
-    assert(boost::to_string((double)1) == "1");
-    assert(boost::to_string((long double)1) == "1");
+    assert(boost::to_string((float)1) == "1");  // differs from standard
+    assert(boost::to_string((double)1) == "1"); // differs
+    assert(boost::to_string((long double)1) == "1"); // differs
 
     // NOTE: to_wstring is not supported in Boost
     //assert(boost::to_wstring(2016) == L"2016");
