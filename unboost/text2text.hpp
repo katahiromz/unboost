@@ -47,6 +47,8 @@ namespace unboost {
             }
 
             void open(encoding from, encoding to, bool throw_if_error = false) {
+                close();
+
                 assert(_is_encoding_wide(from) != _is_encoding_wide(to));
                 m_from = from;
                 m_to = to;
