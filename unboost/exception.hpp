@@ -21,6 +21,7 @@ namespace unboost {
     using std::invalid_argument;
     using std::out_of_range;
     using std::runtime_error;
+    using std::range_error;
 
     #ifdef UNBOOST_USE_BOOST
         using boost::bad_lexical_cast;
