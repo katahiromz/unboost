@@ -289,7 +289,17 @@ namespace unboost {
 // _countof
 
 #ifndef _countof
-    #define _countof(array)   (sizeof(array) / sizeof((array)[0]))
+    #ifdef __cplusplus
+        namespace unboost {
+            template <typename T, size_t N>
+            inline size_t _countof_helper(const T (&array)[N]) {
+                return N;
+            }
+        }
+        #define _countof            unboost::_countof_helper
+    #else
+        #define _countof(array)     (sizeof(array) / sizeof((array)[0]))
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
