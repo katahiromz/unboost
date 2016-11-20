@@ -348,17 +348,130 @@
             }
             return ret;
         }
-        template <typename T>
-        inline std::string to_string(const T& value) {
-            std::stringstream ss;
-            ss << value;
-            return ss.str();
+        inline std::string to_string(int d) {
+            using namespace std;
+            char buf[12];
+            sprintf(buf, "%d", d);
+            return std::string(buf);
         }
-        template <typename T>
-        inline std::wstring to_wstring(const T& value) {
-            std::wstringstream ss;
-            ss << value;
-            return ss.str();
+        inline std::string to_string(unsigned int u) {
+            using namespace std;
+            char buf[12];
+            sprintf(buf, "%u", u);
+            return std::string(buf);
+        }
+        inline std::string to_string(long n) {
+            using namespace std;
+            char buf[21];
+            sprintf(buf, "%ld", n);
+            return std::string(buf);
+        }
+        inline std::string to_string(unsigned long u) {
+            using namespace std;
+            char buf[21];
+            sprintf(buf, "%lu", u);
+            return std::string(buf);
+        }
+        inline std::string to_string(_int64_t n) {
+            using namespace std;
+            char buf[21];
+            #ifdef UNBOOST_OLD_COMPILER
+                sprintf(buf, "%I64d", n);
+            #else
+                sprintf(buf, "%lld", n);
+            #endif
+            return std::string(buf);
+        }
+        inline std::string to_string(_uint64_t u) {
+            using namespace std;
+            char buf[21];
+            #ifdef UNBOOST_OLD_COMPILER
+                sprintf(buf, "%I64u", u);
+            #else
+                sprintf(buf, "%llu", u);
+            #endif
+            return std::string(buf);
+        }
+        inline std::string to_string(float e) {
+            using namespace std;
+            char buf[50];
+            sprintf(buf, "%f", e);
+            return std::string(buf);
+        }
+        inline std::string to_string(double e) {
+            using namespace std;
+            char buf[50];
+            sprintf(buf, "%f", e);
+            return std::string(buf);
+        }
+        inline std::string to_string(long double e) {
+            using namespace std;
+            char buf[310];
+            sprintf(buf, "%Lf", e);
+            return std::string(buf);
+        }
+
+        inline std::wstring to_wstring(int d) {
+            using namespace std;
+            wchar_t buf[12];
+            swprintf(buf, L"%d", d);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(unsigned int u) {
+            using namespace std;
+            wchar_t buf[12];
+            swprintf(buf, L"%u", u);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(long n) {
+            using namespace std;
+            wchar_t buf[21];
+            swprintf(buf, L"%ld", n);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(unsigned long u) {
+            using namespace std;
+            wchar_t buf[21];
+            swprintf(buf, L"%lu", u);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(_int64_t n) {
+            using namespace std;
+            wchar_t buf[21];
+            #ifdef UNBOOST_OLD_COMPILER
+                swprintf(buf, L"%I64d", n);
+            #else
+                swprintf(buf, L"%lld", n);
+            #endif
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(_uint64_t u) {
+            using namespace std;
+            wchar_t buf[21];
+            #ifdef UNBOOST_OLD_COMPILER
+                swprintf(buf, L"%I64u", u);
+            #else
+                swprintf(buf, L"%llu", u);
+            #endif
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(float e) {
+            using namespace std;
+            wchar_t buf[50];
+            swprintf(buf, L"%f", e);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(double e) {
+            using namespace std;
+            wchar_t buf[50];
+            swprintf(buf, L"%f", e);
+            return std::wstring(buf);
+        }
+        inline std::wstring to_wstring(long double e) {
+            using namespace std;
+            wchar_t buf[310];
+            swprintf(buf, L"%Lf", e);
+            return std::wstring(buf);
         }
     } // namespace unboost
 #else
