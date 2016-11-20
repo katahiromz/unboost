@@ -62,6 +62,7 @@ namespace unboost {
                 close();
             }
 
+            // wide string from multi-byte
             wide_string from_bytes(const char *ptr) {
                 return from_bytes(ptr, ptr + ::lstrlenA(ptr));
             }
@@ -90,6 +91,7 @@ namespace unboost {
                 return ret;
             } // from_bytes
 
+            // wide string to multi-byte
             byte_string to_bytes(const wchar_t *ptr) {
                 using namespace std;
                 return to_bytes(ptr, ptr + ::lstrlenW(ptr));
@@ -121,6 +123,7 @@ namespace unboost {
                 return ret;
             } // to_bytes
 
+            // number of converted characters
             size_t converted() const {
                 return m_converted;
             }
@@ -193,6 +196,7 @@ namespace unboost {
                 close();
             }
 
+            // wide string from multi-byte
             wide_string from_bytes(const char *ptr) {
                 return from_bytes(ptr, ptr + std::strlen(ptr));
             }
@@ -244,6 +248,7 @@ namespace unboost {
                 return ret;
             } // from_bytes
 
+            // wide string to multi-byte
             byte_string to_bytes(const wchar_t *ptr) {
                 using namespace std;
                 return to_bytes(ptr, ptr + wcslen(ptr));
@@ -295,6 +300,7 @@ namespace unboost {
                 return ret;
             } // to_bytes
 
+            // number of converted characters
             size_t converted() const {
                 return m_converted;
             }
