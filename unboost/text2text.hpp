@@ -30,8 +30,7 @@
             ENC_SJIS,
             ENC_UTF7,
             ENC_UTF8,
-            ENC_UTF16,
-            ENC_WIDE = ENC_UTF16
+            ENC_WIDE
         };
         class text2text {
         public:
@@ -64,7 +63,7 @@
                 return from_bytes(&str[0], &str[str.size()]);
             }
             wide_string from_bytes(const char *first, const char *last) {
-                assert(m_to == ENC_WIDE || m_to == ENC_UTF16);
+                assert(m_to == ENC_WIDE);
                 wide_string ret;
                 m_converted = 0;
 
@@ -93,7 +92,7 @@
                 return to_bytes(&wstr[0], &wstr[wstr.size()]);
             }
             byte_string to_bytes(const wchar_t *first, const wchar_t *last) {
-                assert(m_from == ENC_WIDE || m_from == ENC_UTF16);
+                assert(m_from == ENC_WIDE);
                 byte_string ret;
 
                 m_converted = 0;
@@ -139,9 +138,7 @@
             }
             bool _is_encoding_wide(encoding e) const {
                 switch (e) {
-                case ENC_UTF16:
-                //case ENC_UTF32:
-                //case ENC_WIDE:
+                case ENC_WIDE:
                     return true;
                 default:
                     return false;
@@ -158,8 +155,6 @@
             ENC_SJIS,
             ENC_UTF7,
             ENC_UTF8,
-            ENC_UTF16,
-            ENC_UTF32,
             ENC_WIDE
         };
         class text2text {
@@ -206,10 +201,7 @@
                 return from_bytes(&str[0], &str[str.size()]);
             }
             wide_string from_bytes(const char *first, const char *last) {
-                if (sizeof(wchar_t) == 2)
-                    assert(m_to == ENC_WIDE || m_to == ENC_UTF16);
-                if (sizeof(wchar_t) == 4)
-                    assert(m_to == ENC_WIDE || m_to == ENC_UTF32);
+                assert(m_to == ENC_WIDE);
 
                 wide_string ret;
                 m_converted = 0;
@@ -256,10 +248,7 @@
                 return to_bytes(&wstr[0], &wstr[wstr.size()]);
             }
             byte_string to_bytes(const wchar_t *first, const wchar_t *last) {
-                if (sizeof(wchar_t) == 2)
-                    assert(m_from == ENC_WIDE || m_from == ENC_UTF16);
-                if (sizeof(wchar_t) == 4)
-                    assert(m_from == ENC_WIDE || m_from == ENC_UTF32);
+                assert(m_from == ENC_WIDE);
 
                 byte_string ret;
                 m_converted = 0;
@@ -319,22 +308,19 @@
                 case ENC_SJIS:  return "CP932";
                 case ENC_UTF7:  return "UTF-7";
                 case ENC_UTF8:  return "UTF-8";
-                case ENC_UTF16: return "UTF-16LE";
-                case ENC_UTF32: return "UTF-32";
+                case ENC_WIDE:
+                    if (sizeof(wchar_t) == 2)
+                        return "UTF-16LE";
+                    if (sizeof(wchar_t) == 4)
+                        return "UTF-32";
+                    // FALL THROUGH
                 default:
-                    if (e == ENC_WIDE) {
-                        if (sizeof(wchar_t) == 2)
-                            return "UTF-16LE";
-                        if (sizeof(wchar_t) == 4)
-                            return "UTF-32";
-                    }
+                    assert(0);
                     return "CP1252";
                 }
             }
             bool _is_encoding_wide(encoding e) const {
                 switch (e) {
-                case ENC_UTF16:
-                case ENC_UTF32:
                 case ENC_WIDE:
                     return true;
                 default:
