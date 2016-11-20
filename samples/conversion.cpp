@@ -27,6 +27,12 @@ int main(void) {
     assert(std::to_wstring((float)1) == L"1.000000");
     assert(std::to_wstring((double)1) == L"1.000000");
     assert(std::to_wstring((long double)1) == L"1.000000");
+
+    assert(std::stol("100") == 100);
+    assert(std::stoul("100") == 100);
+    assert(std::stoi("100") == 100);
+    assert(std::stof("100") == 100.0);
+    assert(std::stod("100") == 100.0);
 #elif defined(BOOST)
     assert(boost::to_string(2016) == "2016");
     assert(boost::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
@@ -40,6 +46,13 @@ int main(void) {
     //assert(boost::to_wstring((float)1) == L"1.000000");
     //assert(boost::to_wstring((double)1) == L"1.000000");
     //assert(boost::to_wstring((long double)1) == L"1.000000");
+
+    // NOTE: there is no sto* conversion functions in Boost
+    //assert(boost::stol("100") == 100);
+    //assert(boost::stoul("100") == 100);
+    //assert(boost::stoi("100") == 100);
+    //assert(boost::stof("100") == 100.0);
+    //assert(boost::stod("100") == 100.0);
 #else
     assert(unboost::to_string(2016) == "2016");
     assert(unboost::to_string(0x7FFFFFFFFFFFFFFF) == "9223372036854775807");
@@ -52,8 +65,14 @@ int main(void) {
     assert(unboost::to_wstring((float)1) == L"1.000000");
     assert(unboost::to_wstring((double)1) == L"1.000000");
     assert(unboost::to_wstring((long double)1) == L"1.000000");
+
+    assert(unboost::stol("100") == 100);
+    assert(unboost::stoul("100") == 100);
+    assert(unboost::stoi("100") == 100);
+    assert(unboost::stof("100") == 100.0);
+    assert(unboost::stod("100") == 100.0);
 #endif
 
     std::cout << "success" << std::endl;
     return 0;
-}
+} // main
