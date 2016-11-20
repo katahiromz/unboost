@@ -16,6 +16,16 @@
     #endif
 #endif
 
+namespace unboost {
+    enum encoding {
+        ENC_ANSI,
+        ENC_SJIS,
+        ENC_UTF7,
+        ENC_UTF8,
+        ENC_WIDE
+    };
+} // namespace unboost
+
 // Adapt choosed one
 #ifdef UNBOOST_USE_WIN32_TEXT2TEXT
     #ifndef _INC_WINDOWS
@@ -25,13 +35,6 @@
         #include <windows.h>
     #endif
     namespace unboost {
-        enum encoding {
-            ENC_ANSI,
-            ENC_SJIS,
-            ENC_UTF7,
-            ENC_UTF8,
-            ENC_WIDE
-        };
         class text2text {
         public:
             typedef std::basic_string<char>         byte_string;
@@ -148,15 +151,8 @@
     } // namespace unboost
 #elif defined(UNBOOST_USE_ICONV_TEXT2TEXT)
     #include <iconv.h>
-    #include <cstring>  // for std::strlen
+    #include <cstring>  // for std::strlen and std::wcslen
     namespace unboost {
-        enum encoding {
-            ENC_ANSI,
-            ENC_SJIS,
-            ENC_UTF7,
-            ENC_UTF8,
-            ENC_WIDE
-        };
         class text2text {
         public:
             typedef std::basic_string<char>         byte_string;
