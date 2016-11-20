@@ -59,7 +59,8 @@
         }
 
         inline bool
-        wait_for_event(event_handle eh, uint32_t milliseconds unboost_optional_(-1))
+        wait_for_event(event_handle eh,
+                       uint32_t milliseconds unboost_optional_(-1))
         {
             assert(eh != NULL);
             return (WaitForSingleObject(eh, milliseconds) == WAIT_TIMEOUT);
@@ -206,7 +207,9 @@
                     ts.tv_nsec = nanoseconds % giga;
 
                     do {
-                        result = pthread_cond_timedwait(&e->m_condition, &e->m_lock, &ts);
+                        result = pthread_cond_timedwait(&e->m_condition,
+                                                        &e->m_lock,
+                                                        &ts);
                     } while ((result == 0) && !e->m_signaled);
                 } else {
                     do {
