@@ -31,5 +31,7 @@ int main(void) {
     std::cout << wide2sjis.converted() << std::endl;
     assert(str == data1);
 
+    std::cout << "success" << std::endl;
+
     return 0;
 } // main
