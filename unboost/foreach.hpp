@@ -16,7 +16,16 @@
         #ifdef UNBOOST_CXX11    // C++11
             #define UNBOOST_USE_CXX11_FOREACH
         #else
-            #define UNBOOST_USE_BOOST_FOREACH
+            #if defined(_MSC_VER) && (_MSC_VER >= 1700)
+                // Visual C++ 2012 and later
+                #ifndef UNBOOST_NO_CXX11
+                    #define UNBOOST_USE_CXX11_FOREACH
+                #else
+                    #define UNBOOST_USE_BOOST_FOREACH
+                #endif
+            #else
+                #define UNBOOST_USE_BOOST_FOREACH
+            #endif
         #endif
     #endif
 #endif
