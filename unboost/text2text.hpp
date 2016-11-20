@@ -220,9 +220,13 @@ namespace unboost {
                         throw range_error("text2text::to_bytes");
                     }
                     if (errno == EILSEQ) {
-                        *(wchar_t *)out = L'?';
-                        out += sizeof(wchar_t);
-                        out_len -= sizeof(wchar_t);
+                        if (out_len >= sizeof(wchar_t)) {
+                            *(wchar_t *)out = L'?';
+                            out += sizeof(wchar_t);
+                            out_len -= sizeof(wchar_t);
+                        } else {
+                            break;
+                        }
                         ++inp;
                         --in_len;
                         continue;
