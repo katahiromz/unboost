@@ -67,7 +67,6 @@
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_CONVERSION)
     #include <boost/lexical_cast.hpp>           // for lexical_cast
-    #include <boost/exception/to_string.hpp>    // for boost::to_string
     #include <climits>      // for INT_MAX, INT_MIN, FLT_MAX, ...
     #include <cfloat>       // for FLT_MAX, ...
     #include <stdexcept>    // for std::invalid_argument, ...
@@ -83,7 +82,7 @@
             ret = std::strtol(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stol");
+                throw invalid_argument("unboost::stol");
             }
             return ret;
         }
@@ -97,14 +96,14 @@
             ret = std::strtoul(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stoul");
+                throw invalid_argument("unboost::stoul");
             }
             return ret;
         }
         inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
             long n = unboost::stol(str, pos, base);
             if (n > INT_MAX || n < INT_MIN) {
-                throw out_of_range("stoi");
+                throw out_of_range("unboost::stoi");
             }
             return static_cast<int>(n);
         }
@@ -120,7 +119,7 @@
                 ret = std::strtoll(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw invalid_argument("stoll");
+                    throw invalid_argument("unboost::stoll");
                 }
                 return ret;
             }
@@ -135,7 +134,7 @@
                 ret = std::strtoull(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw invalid_argument("stoull");
+                    throw invalid_argument("unboost::stoull");
                 }
                 return ret;
             }
@@ -147,7 +146,7 @@
                 _int64_t result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw invalid_argument("stoll");
+                    throw invalid_argument("unboost::stoll");
                 }
                 return result;
             }
@@ -158,7 +157,7 @@
                 _uint64_t result;
                 stream >> result;
                 if (stream.fail()) {
-                    throw invalid_argument("stoull");
+                    throw invalid_argument("unboost::stoull");
                 }
                 return result;
             }
@@ -173,10 +172,10 @@
             d = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stof");
+                throw invalid_argument("unboost::stof");
             }
             if (d > FLT_MAX || d < -FLT_MAX) {
-                throw out_of_range("stof");
+                throw out_of_range("unboost::stof");
             }
             float ret = static_cast<float>(d);
             return ret;
@@ -191,21 +190,19 @@
             ret = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stod");
+                throw invalid_argument("unboost::stod");
             }
             return ret;
         }
-        using boost::to_string;
-        template <typename T>
-        inline std::wstring to_wstring(const T& value) {
-            std::wstringstream stream;
-            stream << value;
-            return stream.str();
-        }
+
+        // NOTE: We don't use boost::to_string for C++11 compatibility.
+        //using boost::to_string;
+        #define UNBOOST_NEED_UNBOOST_TO_STRING
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_CONVERSION)
     #include <climits>      // for INT_MAX, INT_MIN, ...
     #include <cfloat>       // for FLT_MAX, ...
+    #include <cstring>      // for std::strlen, std::wcslen, ...
     #include <iostream>
     #include <sstream>    // for std::strstream
     namespace unboost {
@@ -233,7 +230,7 @@
             ret = std::strtol(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stol");
+                throw invalid_argument("unboost::stol");
             }
             return ret;
         }
@@ -247,14 +244,14 @@
             ret = std::strtoul(str.c_str(), &end, base);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stoul");
+                throw invalid_argument("unboost::stoul");
             }
             return ret;
         }
         inline int stoi(const std::string& str, size_t *pos = NULL, int base = 10) {
             long n = unboost::stol(str, pos, base);
             if (n > INT_MAX || n < INT_MIN) {
-                throw out_of_range("stoi");
+                throw out_of_range("unboost::stoi");
             }
             return static_cast<int>(n);
         }
@@ -270,7 +267,7 @@
                 ret = std::strtoll(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw invalid_argument("stoll");
+                    throw invalid_argument("unboost::stoll");
                 }
                 return ret;
             }
@@ -285,7 +282,7 @@
                 ret = std::strtoull(str.c_str(), &end, base);
                 *pos = end - str.c_str();
                 if (*pos == 0) {
-                    throw invalid_argument("stoull");
+                    throw invalid_argument("unboost::stoull");
                 }
                 return ret;
             }
@@ -298,7 +295,7 @@
                     __int64 result;
                     ss >> result;
                     if (ss.fail()) {
-                        throw invalid_argument("stoll");
+                        throw invalid_argument("unboost::stoll");
                     }
                     return result;
                 }
@@ -309,7 +306,7 @@
                     unsigned __int64 result;
                     ss >> result;
                     if (ss.fail()) {
-                        throw invalid_argument("stoull");
+                        throw invalid_argument("unboost::stoull");
                     }
                     return result;
                 }
@@ -326,10 +323,10 @@
             d = strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stof");
+                throw invalid_argument("unboost::stof");
             }
             if (d > FLT_MAX || d < -FLT_MAX) {
-                throw out_of_range("stof");
+                throw out_of_range("unboost::stof");
             }
             float ret = static_cast<float>(d);
             return ret;
@@ -344,32 +341,44 @@
             ret = std::strtod(str.c_str(), &end);
             *pos = end - str.c_str();
             if (*pos == 0) {
-                throw invalid_argument("stod");
+                throw invalid_argument("unboost::stod");
             }
             return ret;
         }
+    } // namespace unboost
+    #define UNBOOST_NEED_UNBOOST_TO_STRING
+#else
+    #error Your compiler is not supported yet. You lose.
+#endif
+
+#ifdef UNBOOST_NEED_UNBOOST_TO_STRING
+    namespace unboost {
         inline std::string to_string(int d) {
             using namespace std;
             char buf[12];
             sprintf(buf, "%d", d);
+            assert(strlen(buf) < 12);
             return std::string(buf);
         }
         inline std::string to_string(unsigned int u) {
             using namespace std;
             char buf[12];
             sprintf(buf, "%u", u);
+            assert(strlen(buf) < 12);
             return std::string(buf);
         }
         inline std::string to_string(long n) {
             using namespace std;
             char buf[21];
             sprintf(buf, "%ld", n);
+            assert(strlen(buf) < 21);
             return std::string(buf);
         }
         inline std::string to_string(unsigned long u) {
             using namespace std;
             char buf[21];
             sprintf(buf, "%lu", u);
+            assert(strlen(buf) < 21);
             return std::string(buf);
         }
         inline std::string to_string(_int64_t n) {
@@ -380,6 +389,7 @@
             #else
                 sprintf(buf, "%lld", n);
             #endif
+            assert(strlen(buf) < 21);
             return std::string(buf);
         }
         inline std::string to_string(_uint64_t u) {
@@ -390,24 +400,28 @@
             #else
                 sprintf(buf, "%llu", u);
             #endif
+            assert(strlen(buf) < 21);
             return std::string(buf);
         }
         inline std::string to_string(float e) {
             using namespace std;
             char buf[50];
             sprintf(buf, "%f", e);
+            assert(strlen(buf) < 50);
             return std::string(buf);
         }
         inline std::string to_string(double e) {
             using namespace std;
             char buf[50];
             sprintf(buf, "%f", e);
+            assert(strlen(buf) < 50);
             return std::string(buf);
         }
         inline std::string to_string(long double e) {
             using namespace std;
             char buf[310];
             sprintf(buf, "%Lf", e);
+            assert(strlen(buf) < 310);
             return std::string(buf);
         }
 
@@ -415,24 +429,28 @@
             using namespace std;
             wchar_t buf[12];
             swprintf(buf, L"%d", d);
+            assert(wcslen(buf) < 12);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(unsigned int u) {
             using namespace std;
             wchar_t buf[12];
             swprintf(buf, L"%u", u);
+            assert(wcslen(buf) < 12);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(long n) {
             using namespace std;
             wchar_t buf[21];
             swprintf(buf, L"%ld", n);
+            assert(wcslen(buf) < 21);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(unsigned long u) {
             using namespace std;
             wchar_t buf[21];
             swprintf(buf, L"%lu", u);
+            assert(wcslen(buf) < 21);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(_int64_t n) {
@@ -443,6 +461,7 @@
             #else
                 swprintf(buf, L"%lld", n);
             #endif
+            assert(wcslen(buf) < 21);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(_uint64_t u) {
@@ -453,29 +472,31 @@
             #else
                 swprintf(buf, L"%llu", u);
             #endif
+            assert(wcslen(buf) < 21);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(float e) {
             using namespace std;
             wchar_t buf[50];
             swprintf(buf, L"%f", e);
+            assert(wcslen(buf) < 50);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(double e) {
             using namespace std;
             wchar_t buf[50];
             swprintf(buf, L"%f", e);
+            assert(wcslen(buf) < 50);
             return std::wstring(buf);
         }
         inline std::wstring to_wstring(long double e) {
             using namespace std;
             wchar_t buf[310];
             swprintf(buf, L"%Lf", e);
+            assert(wcslen(buf) < 310);
             return std::wstring(buf);
         }
     } // namespace unboost
-#else
-    #error Your compiler is not supported yet. You lose.
-#endif
+#endif  // def UNBOOST_NEED_UNBOOST_TO_STRING
 
 #endif  // ndef UNBOOST_CONVERSION_HPP_
