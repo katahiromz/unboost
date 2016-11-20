@@ -510,15 +510,6 @@
 
             typedef forward_list<char> FL;
 
-            void print(const FL& fl) {
-                FL::const_iterator it = fl.begin();
-                while (it != fl.end()) {
-                    std::cout << (int)*it << " ";
-                    ++it;
-                }
-                std::cout << std::endl;
-            }
-
             void splice_after(const_iterator pos, self_type& other,
                               const_iterator _before, const_iterator _end)
             {
