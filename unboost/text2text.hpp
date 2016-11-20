@@ -42,18 +42,22 @@ namespace unboost {
 
             text2text() { }
 
-            text2text(encoding from, encoding to, bool throw_if_error = false) {
-                open(from, to, throw_if_error);
+            text2text(encoding from, encoding to,
+                      bool throw_if_error_ = false)
+            {
+                open(from, to, throw_if_error_);
             }
 
-            bool open(encoding from, encoding to, bool throw_if_error = false) {
+            bool open(encoding from, encoding to,
+                      bool throw_if_error_ = false)
+            {
                 close();
 
                 assert(_is_encoding_wide(from) != _is_encoding_wide(to));
                 m_from = from;
                 m_to = to;
                 m_converted = 0;
-                m_throw_if_error = throw_if_error;
+                m_throw_if_error = throw_if_error_;
                 return true;
             }
             void close() { }
@@ -128,7 +132,14 @@ namespace unboost {
                 return m_converted;
             }
 
-        public:
+            bool throw_if_error() const {
+                return m_throw_if_error;
+            }
+            void throw_if_error(bool flag) {
+                m_throw_if_error = flag;
+            }
+
+        protected:
             encoding    m_from;
             encoding    m_to;
             size_t      m_converted;
@@ -165,22 +176,24 @@ namespace unboost {
             typedef std::basic_string<char>         byte_string;
             typedef std::basic_string<wchar_t>      wide_string;
 
-            text2text() {
-                m_iconv = iconv_t(-1);
-            }
-            text2text(encoding from, encoding to, bool throw_if_error = false) {
-                m_iconv = iconv_t(-1);
-                open(from, to, throw_if_error);
+            text2text() : m_iconv(iconv_t(-1)) { }
+
+            text2text(encoding from, encoding to,
+                      bool throw_if_error_ = false) : m_iconv(iconv_t(-1))
+            {
+                open(from, to, throw_if_error_);
             }
 
-            bool open(encoding from, encoding to, bool throw_if_error = false) {
+            bool open(encoding from, encoding to,
+                      bool throw_if_error_ = false)
+            {
                 close();
 
                 assert(_is_encoding_wide(from) != _is_encoding_wide(to));
                 m_from = from;
                 m_to = to;
                 m_converted = 0;
-                m_throw_if_error = throw_if_error;
+                m_throw_if_error = throw_if_error_;
                 m_iconv = iconv_open(_code_from_encoding(to),
                                      _code_from_encoding(from));
                 assert(m_iconv != iconv_t(-1));
@@ -306,7 +319,14 @@ namespace unboost {
                 return m_converted;
             }
 
-        public:
+            bool throw_if_error() const {
+                return m_throw_if_error;
+            }
+            void throw_if_error(bool flag) {
+                m_throw_if_error = flag;
+            }
+
+        protected:
             iconv_t     m_iconv;
             encoding    m_from;
             encoding    m_to;
