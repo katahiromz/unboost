@@ -215,6 +215,7 @@
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
     #include "system_error.hpp"     // for unboost::system_error, error_code
+    #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
         namespace filesystem {
             struct file_type {
@@ -377,25 +378,17 @@
             class path {
             public:
                 #ifdef _WIN32
-                    typedef wchar_t value_type;
+                    typedef wchar_t                     value_type;
                 #else
-                    typedef char value_type;
+                    typedef char                        value_type;
                 #endif
-                typedef std::basic_string<value_type>               string_type;
-                struct const_iterator {
-                    string_type m_root_name;
-                    string_type m_root_directory;
-                    std::vector<string_type> m_entries;
-                    ...
-                };
-                typedef const_iterator                              iterator;
+                typedef std::basic_string<value_type>   string_type;
 
-                static const value_type preferred_separator;
+                static const value_type     preferred_separator;
 
                 path() { }
-                path(const path& p) : m_str(p.m_str), m_comps(p.m_comps) { }
-                path(path&& p)
-                    : m_str(std::move(p.m_str)), m_comps(std::move(p.m_comps))
+                path(const path& p) : m_pathname(p.m_pathname) { }
+                path(path&& p) : m_pathname(std::move(p.m_pathname))
                 { }
                 template <class Source>
                 path(const Source& source) {
@@ -410,7 +403,7 @@
                     ...
                     switch (sizeof(Source::value_type)) {
                     case 1:
-                        m_str = source.m_str;
+                        m_pathname = source.m_pathname;
                         ...
                         break;
                     case 2:
@@ -432,11 +425,11 @@
                 }
 
                 path& operator=(const path& p) {
-                    m_str = p.m_str;
+                    m_pathname = p.m_pathname;
                     return *this;
                 }
                 path& operator=(path&& p) {
-                    m_str = std::move(p.m_str);
+                    m_pathname = std::move(p.m_pathname);
                     return *this;
                 }
                 template <class Source>
@@ -461,12 +454,10 @@
                         _is_separator(native().back()) ||
                         _is_separator(p.native().front())
                     {
-                        m_str += p.native();
-                        m_comps.push_back(p.native());
+                        m_pathname += p.native();
                     } else {
-                        m_str += preferred_separator;
-                        m_str += p.native();
-                        m_comps.push_back(p.native());
+                        m_pathname += preferred_separator;
+                        m_pathname += p.native();
                     }
                     return *this;
                 }
@@ -494,23 +485,19 @@
                 }
 
                 path& operator+=(const path& p) {
-                    m_str += p.native();
-                    m_comps.insert(m_comps.end(), p.m_comps.begin(), p.m_comps.end());
+                    m_pathname += p.native();
                     return *this;
                 }
                 path& operator+=(const string_type& str) {
-                    m_str += str;
-                    m_comps.back() += str;
+                    m_pathname += str;
                     return *this;
                 }
                 path& operator+=(const value_type *ptr) {
-                    m_str += ptr;
-                    m_comps.back() += ptr;
+                    m_pathname += ptr;
                     return *this;
                 }
                 path& operator+=(value_type x) {
-                    m_str += x;
-                    m_comps.back() += x;
+                    m_pathname += x;
                     return *this;
                 }
                 template <class Source>
@@ -537,12 +524,11 @@
                 }
 
                 void clear() {
-                    m_str.clear();
-                    m_comps.clear();
+                    m_pathname.clear();
                 }
                 path& make_preferred() {
                     #ifdef _WIN32
-                        unboost::replace_all(m_str, L'/', L'\\');
+                        unboost::replace_all(m_pathname, L'/', L'\\');
                     #endif
                     return *this;
                 }
@@ -551,26 +537,25 @@
                     assert(has_filename());
                     #ifdef _WIN32
                         size_t m, n;
-                        m = m_str.rfind(L'/');
-                        n = m_str.rfind(L'\\');
+                        m = m_pathname.rfind(L'/');
+                        n = m_pathname.rfind(L'\\');
                         if (m != string_type::npos && n != string_type::npos) {
                             if (m < n) {
-                                m_str = m_str.substr(0, n);
+                                m_pathname = m_pathname.substr(0, n);
                             } else {
-                                m_str = m_str.substr(0, m);
+                                m_pathname = m_pathname.substr(0, m);
                             }
                         } else if (m != string_type::npos) {
-                            m_str = m_str.substr(0, m);
+                            m_pathname = m_pathname.substr(0, m);
                         } else if (n != string_type::npos) {
-                            m_str = m_str.substr(0, n);
+                            m_pathname = m_pathname.substr(0, n);
                         }
                     #else
-                        size_t m = m_str.rfind(L'/');
+                        size_t m = m_pathname.rfind(L'/');
                         if (m != string_type::npos) {
-                            m_str = m_str.substr(0, m);
+                            m_pathname = m_pathname.substr(0, m);
                         }
                     #endif
-                    m_comps.pop_back();
                     return *this;
                 }
 
@@ -593,18 +578,17 @@
                 }
 
                 void swap(path& other) {
-                    std::swap(m_str, other.m_str);
-                    std::swap(m_comps, other.m_comps);
+                    std::swap(m_pathname, other.m_pathname);
                 }
 
                 const value_type *c_str() const {
                     return native().c_str();
                 }
                 const string_type& native() const {
-                    return m_str;
+                    return m_pathname;
                 }
                 operator string_type() const {
-                    return m_str;
+                    return m_pathname;
                 }
 
                 template <typename CharT, class Traits = std::char_traits<CharT> >
@@ -623,7 +607,7 @@
                     return ret;
                 }
                 std::string string() const {
-                    return m_str;
+                    return m_pathname;
                 }
                 std::wstring wstring() const {
                     if (sizeof(wchar_t) == 2)
@@ -648,13 +632,13 @@
                     std::basic_string<CharT, Traits> ret;
                     switch (sizeof(CharT)) {
                     case 1:
-                        ret = m_str;
+                        ret = m_pathname;
                         break;
                     case 2:
-                        ret = m_str;
+                        ret = m_pathname;
                         break;
                     case 4:
-                        ret = m_str;
+                        ret = m_pathname;
                         break;
                     default:
                         assert(0);
@@ -713,23 +697,23 @@
                     }
                     #ifdef _WIN32
                         // C:
-                        if (m_str[1] == L':' &&
-                            std::isalpha(m_str[0]))
+                        if (m_pathname[1] == L':' &&
+                            std::isalpha(m_pathname[0]))
                         {
-                            path p(m_str.substr(0, 2));
+                            path p(m_pathname.substr(0, 2));
                             return p;
                         }
                         // \\server
-                        if (m_str.substr(0, 2) == L"\\\\") {
+                        if (m_pathname.substr(0, 2) == L"\\\\") {
                             size_t i = 2;
-                            while (std::is_alnum(m_str[i])) {
+                            while (std::is_alnum(m_pathname[i])) {
                                 ++i;
                             }
-                            path p(m_str.substr(0, i));
+                            path p(m_pathname.substr(0, i));
                             return p;
                         }
                     #else
-                        if (m_str[0] == '/') {
+                        if (m_pathname[0] == '/') {
                             return path("/");
                         }
                     #endif
@@ -778,7 +762,7 @@
                 }
 
                 bool empty() const {
-                    return m_str.empty();
+                    return m_pathname.empty();
                 }
 
                 bool has_root_path() const {
@@ -814,9 +798,19 @@
                 bool is_relative() const {
                     return !is_absolute();
                 }
+
             protected:
-                string_type                 m_str;
-                std::vector<string_type>    m_comps;
+                string_type                 m_pathname;
+                text2text                   m_ansi2wide;
+                text2text                   m_wide2ansi;
+
+                bool _open_text2text() {
+                    return (
+                        m_ansi2wide.open(ENC_PATHANSI, ENC_PATHWIDE) &&
+                        m_wide2ansi.open(ENC_PATHWIDE, ENC_PATHANSI)
+                    );
+                }
+
                 bool _is_separator(value_type ch) const {
                     #ifdef _WIN32
                         return ch == L'\\' || ch == L'/';
@@ -831,15 +825,19 @@
                         return '.';
                     #endif
                 }
+                value_type _colon() const {
+                    #ifdef _WIN32
+                        return L':';
+                    #else
+                        return ':';
+                    #endif
+                }
                 void _remove_extension() {
                     if (extension().empty())
                         return;
-                    size_t i = p.m_str.rfind(_dot());
+                    size_t i = p.m_pathname.rfind(_dot());
                     if (i != string_type::npos) {
-                        p.m_str = p.m_str.substr(0, i);
-                        i = m_comps.back().rfind(_dot());
-                        assert(i != string_type::npos);
-                        m_comps.back() = m_comps.back().substr(0, i);
+                        p.m_pathname = p.m_pathname.substr(0, i);
                     }
                 }
             }; // class path
