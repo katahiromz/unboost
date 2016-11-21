@@ -76,6 +76,40 @@
             using std::filesystem::is_socket;
             using std::filesystem::is_symlink;
             using std::filesystem::status_known;
+            // file_type
+            using status_error = file_type::none;
+            using file_not_found = file_type::not_found;
+            using regular_file = file_type::regular;
+            using directory_file = file_type::directory;
+            using symlink_file = file_type::symlink;
+            using block_file = file_type::block;
+            using character_file = file_type::character;
+            using fifo_file = file_type::fifo;
+            using socket_file = file_type::socket;
+            using type_unknown = file_type::unknown;
+            // perms
+            using no_perms = perms::none;
+            using owner_read = perms::owner_read;
+            using owner_write = perms::owner_write;
+            using owner_exe = perms::owner_exec;
+            using owner_all = perms::owner_all;
+            using group_read = perms::group_read;
+            using group_write = perms::group_write;
+            using group_exe = perms::group_exec;
+            using group_all = perms::group_all;
+            using others_read = perms::others_read;
+            using others_write = perms::others_write;
+            using others_exe = perms::others_exec;
+            using others_all = perms::others_all;
+            using all_all = perms::all;
+            using set_uid_on_exe = perms::set_uid;
+            using set_gid_on_exe = perms::set_gid;
+            using sticky_bit = perms::sticky_bit;
+            using perms_mask = perms::mask;
+            using perms_not_known = perms::unknown;
+            using add_perms = perms::add_perms;
+            using remove_perms = perms::remove_perms;
+            using symlink_perms = perms::resolve_symlinks;
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_FILESYSTEM)
@@ -137,10 +171,7 @@
     #include "system_error.hpp"     // for unboost::system_error, error_code
     namespace unboost {
         namespace filesystem {
-            class path;
-            path operator/(const path& lhs, const path& rhs);
-
-            struct file_type {
+            enum file_type {
                 enum inner {
                     none = 0,
                     not_found = -1,
@@ -154,6 +185,16 @@
                     unknown = 8
                 };
             }; // struct file_type
+            static const file_type::inner status_error = file_type::none;
+            static const file_type::inner file_not_found = file_type::not_found;
+            static const file_type::inner regular_file = file_type::regular;
+            static const file_type::inner directory_file = file_type::directory;
+            static const file_type::inner symlink_file = file_type::symlink;
+            static const file_type::inner block_file = file_type::block;
+            static const file_type::inner character_file = file_type::character;
+            static const file_type::inner fifo_file = file_type::fifo;
+            static const file_type::inner socket_file = file_type::socket;
+            static const file_type::inner type_unknown = file_type::unknown;
 
             struct perms {
                 enum inner {
@@ -181,6 +222,28 @@
                     resolve_symlinks = 0x40000
                 };
             }; // struct perms
+            static const perms::inner no_perms = perms::none;
+            static const perms::inner owner_read = perms::owner_read;
+            static const perms::inner owner_write = perms::owner_write;
+            static const perms::inner owner_exe = perms::owner_exec;
+            static const perms::inner owner_all = perms::owner_all;
+            static const perms::inner group_read = perms::group_read;
+            static const perms::inner group_write = perms::group_write;
+            static const perms::inner group_exe = perms::group_exec;
+            static const perms::inner group_all = perms::group_all;
+            static const perms::inner others_read = perms::others_read;
+            static const perms::inner others_write = perms::others_write;
+            static const perms::inner others_exe = perms::others_exec;
+            static const perms::inner others_all = perms::others_all;
+            static const perms::inner all_all = perms::all;
+            static const perms::inner set_uid_on_exe = perms::set_uid;
+            static const perms::inner set_gid_on_exe = perms::set_gid;
+            static const perms::inner sticky_bit = perms::sticky_bit;
+            static const perms::inner perms_mask = perms::mask;
+            static const perms::inner perms_not_known = perms::unknown;
+            static const perms::inner add_perms = perms::add_perms;
+            static const perms::inner remove_perms = perms::remove_perms;
+            static const perms::inner symlink_perms = perms::resolve_symlinks;
 
             struct directory_options {
                 enum inner {
@@ -190,29 +253,80 @@
                 };
             }; // struct directory_options
 
-            struct file_status {
-                file_type::inner    m_type;
-                perms::inner        m_permissions;
-
+            class file_status {
+            public:
                 explicit file_status(file_type::inner type = file_type::none,
                                      perms::inner permissions = perms::unknown)
                 {
                     m_type = type;
                     m_permissions = permissions;
                 }
+
                 file_type::inner type() const {
                     return m_type;
                 }
                 void type(file_type::inner type) {
                     m_type = type;
                 }
+
                 perms::inner permissions() const {
                     return m_permissions;
                 }
                 void permissions(perms::inner perm) {
                     m_permissions = perm;
                 }
+
+                bool operator==(const file_status& other) const {
+                    return type() == other.type() &&
+                           permissions() == other.permissions();
+                }
+                bool operator!=(const file_status& other) const {
+                    return !(*this == rhs);
+                }
+
+            protected:
+                file_type::inner    m_type;
+                perms::inner        m_permissions;
             }; // struct file_status
+
+            namespace detail {
+                file_status status(const path& p, error_code& ec) {
+                    ...
+                }
+                inline file_status status(const path& p) {
+                    error_code ec;
+                    file_status ret = status(p, ec);
+                    if (ec)
+                        throw system_error(ec);
+                    return ret;
+                }
+
+                file_status symlink_status(const path& p, error_code& ec) {
+                    ...
+                }
+                inline file_status symlink_status(const path& p) {
+                    error_code ec;
+                    file_status ret = symlink_status(p, ec);
+                    if (ec)
+                        throw system_error(ec);
+                    return ret;
+                }
+
+                inline bool is_empty(const path& p, error_code& ec) {
+                    ...
+                }
+                inline bool is_empty(const path& p) {
+                    error_code ec;
+                    if (is_empty(p, ec)) {
+                        return true;
+                    }
+                    throw system_error(ec);
+                }
+            } // namespace detail
+
+            using detail::status;
+            using detail::symlink_status;
+            using detail::is_empty;
 
             inline bool status_known(file_status s) {
                 return s.type() != file_type::none;
@@ -250,11 +364,6 @@
             }
             inline bool is_character_file(const path& p, error_code& ec) {
                 return is_character_file(status(p, ec));
-            }
-
-            inline bool is_empty(const path& p) {
-            }
-            inline bool is_empty(const path& p, error_code& ec) {
             }
 
             inline bool is_fifo(file_status s) {
@@ -318,50 +427,69 @@
                 return is_socket(status(p, ec));
             }
 
-            inline file_status status(const path& p, error_code& ec) {
-                #ifdef _WIN32
-                    DWORD attrs = ::GetFileAttributesW(p.c_str());
-                    file_type::inner type;
-                    if (attrs == DWORD(-1))
-                        type = file_type::not_found;
-                    else if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-                        type = file_type::directory;
-                    else if (attrs & FILE_ATTRIBUTE_DEVICE)
-                        type = file_type::character;
-                    else
-                        type = file_type::regular;
-                    perms::inner permissions;
-                    ...
-                #else
-                    ...
-                #endif
-                file_status fs(type, permissions);
-                return fs;
-            }
-            inline file_status status(const path& p) {
-                error_code ec;
-                file_status ret = status(p, ec);
-                if (ec)
-                    throw system_error(ec);
-                return ret;
-            }
-
-            inline file_status symlink_status(const path& p, error_code& ec) {
-                #ifdef _WIN32
-                    return status(p, ec);
-                #else
-                    ...
-                    file_status fs(type, permissions);
-                    return fs;
-                #endif
-            }
-            inline file_status symlink_status(const path& p) {
-                error_code ec;
-                file_status ret = symlink_status(p, ec);
-                if (ec)
-                    throw system_error(ec);
-                return ret;
-            }
+            class filesystem_error {
+            public:
+                filesystem_error(const string& what_arg, error_code ec) {
+                    m_what = what_arg;
+                    m_code = ec;
+                }
+                filesystem_error(const string& what_arg, const path& p1, error_code ec) {
+                    m_what = what_arg;
+                    m_p1 = p1;
+                    m_code = ec;
+                }
+                filesystem_error(
+                    const string& what_arg, const path& p1, const path& p2, error_code ec)
+                {
+                    m_what = what_arg;
+                    m_p1 = p1;
+                    m_p2 = p2;
+                    m_code = ec;
+                }
+                const path& path1() const {
+                    return m_p1;
+                }
+                const path& path2() const {
+                    return m_p2;
+                }
+                const char *what() const {
+                    using namespace std;
+                    #ifdef _WIN32
+                        WCHAR buf[512];
+                        if (m_p1.empty() && m_p2.empty()) {
+                            ::wsprintfW(buf,
+                                L"%s: error_code: %d", m_what.c_str(), m_code);
+                        } else if (m_p2.empty()) {
+                            ::wsprintfW(buf, L"%s: error_code: %d",
+                                (m_what + L": " + m_p1.native()).c_str(),
+                                m_code);
+                        } else {
+                            ::wsprintfW(buf, L"%s: error_code: %d",
+                                (m_what + L": " + m_p1.native() + ", " +
+                                    m_p2.native()).c_str(), m_code);
+                        }
+                    #else
+                        char buf[512];
+                        if (m_p1.empty() && m_p2.empty()) {
+                            sprintf(buf,
+                                "%s: error_code: %d", m_what.c_str(), m_code);
+                        } else if (m_p2.empty()) {
+                            sprintf(buf, "%s: error_code: %d",
+                                (m_what + ": " + m_p1.native()).c_str(), m_code);
+                        } else {
+                            sprintf(buf, "%s: error_code: %d",
+                                (m_what + ": " + m_p1.native() + ", " +
+                                    m_p2.native()).c_str(), m_code);
+                        }
+                    #endif
+                    return buf;
+                }
+            protected:
+                path m_p1;
+                path m_p2;
+                std::string m_what;
+                error_code m_code;
+            }; // class filesystem_error
 
             class path {
             public:
@@ -897,57 +1025,6 @@
             inline bool operator>=(const path& lhs, const path& rhs) {
                 return !(lhs < rhs)
             }
-
-            class filesystem_error {
-            public:
-                filesystem_error(const string& what_arg, error_code ec) {
-                    m_what = what_arg;
-                    m_code = ec;
-                }
-                filesystem_error(const string& what_arg, const path& p1, error_code ec) {
-                    m_what = what_arg;
-                    m_p1 = p1;
-                    m_code = ec;
-                }
-                filesystem_error(
-                    const string& what_arg, const path& p1, const path& p2, error_code ec)
-                {
-                    m_what = what_arg;
-                    m_p1 = p1;
-                    m_p2 = p2;
-                    m_code = ec;
-                }
-                const path& path1() const {
-                    return m_p1;
-                }
-                const path& path2() const {
-                    return m_p2;
-                }
-                const char *what() const {
-                    using namespace std;
-                    #ifdef _WIN32
-                        wchar_t buf[512];
-                        swprintf(buf,
-                            L"%s: error_code: %d",
-                            (m_what + L": " + m_p1.native() + L", " + m_p2.native()).c_str(),
-                            m_code
-                        );
-                    #else
-                        char buf[512];
-                        sprintf(buf,
-                            "%s: error_code: %d",
-                            (m_what + ": " + m_p1.native() + ", " + m_p2.native()).c_str(),
-                            m_code
-                        );
-                    #endif
-                    return buf;
-                }
-            protected:
-                path m_p1;
-                path m_p2;
-                std::string m_what;
-                error_code m_code;
-            }; // class filesystem_error
 
             struct directory_entry {
                 explicit directory_entry(const path& p) : m_path(p) { }
