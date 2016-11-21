@@ -303,24 +303,12 @@
             public:
                 explicit file_status(file_type::inner type = file_type::none,
                                      perms::inner permissions = perms::unknown)
-                {
-                    m_type = type;
-                    m_permissions = permissions;
-                }
+                    : m_type(type), m_permissions(permissions) { }
 
-                file_type::inner type() const {
-                    return m_type;
-                }
-                void type(file_type::inner type) {
-                    m_type = type;
-                }
-
-                perms::inner permissions() const {
-                    return m_permissions;
-                }
-                void permissions(perms::inner perm) {
-                    m_permissions = perm;
-                }
+                file_type::inner type() const       { return m_type; }
+                void type(file_type::inner type)    { m_type = type; }
+                perms::inner permissions() const    { return m_permissions; }
+                void permissions(perms::inner perm) { m_permissions = perm; }
 
                 bool operator==(const file_status& other) const {
                     return type() == other.type() &&
@@ -354,58 +342,12 @@
             class filesystem_error;
             class path;
 
-            namespace detail {
-                #ifdef _WIN32
-                    struct handle_wrapper {
-                        HANDLE m_h;
-                        handle_wrapper(HANDLE h) : m_h(h) { }
-                        ~handle_wrapper() {
-                            if (m_h != INVALID_HANDLE_VALUE)
-                                ::CloseHandle(m_h);
-                        }
-                    };
-
-                    inline bool not_found_error(int ev) {
-                        switch (ev) {
-                        case ERROR_FILE_NOT_FOUND:
-                        case ERROR_PATH_NOT_FOUND:
-                        case ERROR_INVALID_NAME:
-                        case ERROR_INVALID_DRIVE:
-                        case ERROR_NOT_READY:
-                        case ERROR_INVALID_PARAMETER:
-                        case ERROR_BAD_PATHNAME:
-                        case ERROR_BAD_NETPATH:
-                            return true;
-                        default:
-                            return false;
-                        }
-                    }
-
-                    file_status process_status_failure(const path& p, error_code *ec);
-                    perms::inner make_permissions(const path& p, DWORD attr);
-                    bool is_reparse_point_a_symlink(const path& p);
-                #else   // ndef _WIN32
-                    inline bool not_found_error(int errval) {
-                        return errno == ENOENT || errno == ENOTDIR;
-                    }
-                #endif  // ndef _WIN32
-            } // namespace detail
-
-            file_status status(const path& p, error_code& ec);
-            file_status status(const path& p);
-            file_status symlink_status(const path& p, error_code& ec);
-            file_status symlink_status(const path& p);
-            bool is_empty(const path& p, error_code& ec);
-            bool is_empty(const path& p);
-
             inline bool status_known(file_status s) {
                 return s.type() != file_type::none;
             }
-
             inline bool exists(file_status s) {
                 return status_known(s) && s.type() != file_type::not_found;
             }
-
             inline bool is_block_file(file_status s) {
                 return s.type() == file_type::block;
             }
@@ -961,6 +903,43 @@
                 std::string m_what;
                 error_code m_code;
             }; // class filesystem_error
+
+            namespace detail {
+                #ifdef _WIN32
+                    struct handle_wrapper {
+                        HANDLE m_h;
+                        handle_wrapper(HANDLE h) : m_h(h) { }
+                        ~handle_wrapper() {
+                            if (m_h != INVALID_HANDLE_VALUE)
+                                ::CloseHandle(m_h);
+                        }
+                    };
+
+                    inline bool not_found_error(int ev) {
+                        switch (ev) {
+                        case ERROR_FILE_NOT_FOUND:
+                        case ERROR_PATH_NOT_FOUND:
+                        case ERROR_INVALID_NAME:
+                        case ERROR_INVALID_DRIVE:
+                        case ERROR_NOT_READY:
+                        case ERROR_INVALID_PARAMETER:
+                        case ERROR_BAD_PATHNAME:
+                        case ERROR_BAD_NETPATH:
+                            return true;
+                        default:
+                            return false;
+                        }
+                    }
+
+                    file_status process_status_failure(const path& p, error_code *ec);
+                    perms::inner make_permissions(const path& p, DWORD attr);
+                    bool is_reparse_point_a_symlink(const path& p);
+                #else   // ndef _WIN32
+                    inline bool not_found_error(int errval) {
+                        return errno == ENOENT || errno == ENOTDIR;
+                    }
+                #endif  // ndef _WIN32
+            } // namespace detail
 
             inline bool exists(const path& p, error_code& ec) {
                 return exists(status(p, &ec));
