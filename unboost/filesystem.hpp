@@ -391,7 +391,7 @@
                 #ifdef _WIN32
                     static const wchar_t dot = L'.';
                     static const wchar_t colon = L':';
-                    static const wchar_t *dot_dot = L"..";
+                    static const wchar_t *dot_dot_path = L"..";
                     inline bool is_separator(wchar_t ch) {
                         return ch == L'\\' || ch == L'/';
                     }
@@ -401,7 +401,7 @@
                 #else
                     static const char dot = '.';
                     static const char colon = ':';
-                    static const char *dot_dot = "..";
+                    static const char *dot_dot_path = "..";
                     inline bool is_separator(char ch) {
                         return ch == '/';
                     }
@@ -410,6 +410,10 @@
                     }
                 #endif
             } // namespace detail
+
+            namespace path_traits {
+                is_pathable
+            } // namespace path_traits
 
             class path {
             public:
@@ -424,53 +428,97 @@
 
                 path() { }
                 path(const path& p) : m_pathname(p.m_pathname) { }
-                path(path&& p) : m_pathname(std::move(p.m_pathname))
-                { }
 
                 template <class Source>
                 path(const Source& source) {
-                    ...
+                    assert(path_traits::is_pathable<Source>::value);
+                    path_traits::dispatch(source, m_pathname);
                 }
+                path(const value_type *str) : m_pathname(str) { }
+                path(const std::basic_string<value_type>& str)
+                    : m_pathname(str) {}
+
                 template <typename InputIt>
                 path(InputIt first, InputIt last) {
-                    ...
-                }
-                template <class Source>
-                path(const Source& source, const std::locale& loc) {
-                    ...
-                }
-                template <typename InputIt>
-                path(InputIt first, InputIt last, const std::locale& loc) {
-                    ...
-                }
-                ~path() {
-                    ...
+                    if (first != last) {
+                        path_traits::convert(first, last, m_pathname);
+                    }
                 }
 
                 path& operator=(const path& p) {
                     m_pathname = p.m_pathname;
                     return *this;
                 }
-                path& operator=(path&& p) {
-                    m_pathname = std::move(p.m_pathname);
+                path& operator=(const value_type *str) {
+                    m_pathname = str;
                     return *this;
                 }
                 template <class Source>
                 path& operator=(const Source& source) {
-                    *this = path(source);
+                    m_pathname.clear();
+                    path_traits::dispatch(source, m_pathname);
                     return *this;
                 }
-
                 template <class Source>
                 path& assign(const Source& source) {
-                    *this = path(source);
+                    m_pathname.clear();
+                    path_traits::dispatch(source, m_pathname);
                     return *this;
                 }
                 template <typename InputIt>
                 path& assign(InputIt first, InputIt last) {
-                    *this = path(first, last);
+                    m_pathname.clear();
+                    if (first != last) {
+                        path_traits::convert(first, last, m_pathname);
+                    }
                     return *this;
                 }
+
+                path& operator+=(const path& p) {
+                    m_pathname += p.m_pathname;
+                    return *this;
+                }
+                path& operator+=(const string_type& str) {
+                    m_pathname += str;
+                    return *this;
+                }
+                path& operator+=(const value_type *ptr) {
+                    m_pathname += ptr;
+                    return *this;
+                }
+                path& operator+=(value_type x) {
+                    m_pathname += x;
+                    return *this;
+                }
+                template <class Source>
+                path& operator+=(const Source& source) {
+                    assert(path_traits::is_pathable<source>::value);
+                    return concat(source);
+                }
+                template <class CharT>
+                path& operator+=(CharT x) {
+                    CharT tmp[2];
+                    tmp[0] = x;
+                    tmp[1] = 0;
+                    return concat(tmp);
+                }
+                template <class Source>
+                path& concat(const Source& source) {
+                    path_traits::dispatch(source, m_pathname);
+                    return *this;
+                }
+                template <typename InputIt>
+                path& concat(InputIt first, InputIt last) {
+                    if (first != last) {
+                        path_traits::convert(first, last, m_pathname);
+                    }
+                    return *this;
+                }
+
+                ...
+
+                path(path&& p);
+                path& operator=(path&& p);
 
                 path& operator/=(const path& p) {
                     if (empty() || p.empty() ||
@@ -505,45 +553,6 @@
                 }
                 iterator end() const {
                     ...
-                }
-
-                path& operator+=(const path& p) {
-                    m_pathname += p.native();
-                    return *this;
-                }
-                path& operator+=(const string_type& str) {
-                    m_pathname += str;
-                    return *this;
-                }
-                path& operator+=(const value_type *ptr) {
-                    m_pathname += ptr;
-                    return *this;
-                }
-                path& operator+=(value_type x) {
-                    m_pathname += x;
-                    return *this;
-                }
-                template <class Source>
-                path& operator+=(const Source& source) {
-                    *this += path(source);
-                    return *this;
-                }
-                template <class CharT>
-                path& operator+=(CharT x) {
-                    std::basic_string<CharT> str;
-                    str += x;
-                    *this += path(str);
-                    return *this;
-                }
-                template <class Source>
-                path& concat(const Source& source) {
-                    *this += path(source);
-                    return *this;
-                }
-                template <typename InputIt>
-                path& concat(InputIt first, InputIt last) {
-                    *this += path(first, last);
-                    return *this;
                 }
 
                 void clear() {
