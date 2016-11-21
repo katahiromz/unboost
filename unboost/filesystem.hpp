@@ -77,39 +77,231 @@
             using std::filesystem::is_symlink;
             using std::filesystem::status_known;
             // file_type
-            using status_error = file_type::none;
-            using file_not_found = file_type::not_found;
-            using regular_file = file_type::regular;
-            using directory_file = file_type::directory;
-            using symlink_file = file_type::symlink;
-            using block_file = file_type::block;
-            using character_file = file_type::character;
-            using fifo_file = file_type::fifo;
-            using socket_file = file_type::socket;
-            using type_unknown = file_type::unknown;
+            static const file_type status_error = file_type::none;
+            static const file_type file_not_found = file_type::not_found;
+            static const file_type regular_file = file_type::regular;
+            static const file_type directory_file = file_type::directory;
+            static const file_type symlink_file = file_type::symlink;
+            static const file_type block_file = file_type::block;
+            static const file_type character_file = file_type::character;
+            static const file_type fifo_file = file_type::fifo;
+            static const file_type socket_file = file_type::socket;
+            static const file_type type_unknown = file_type::unknown;
             // perms
-            using no_perms = perms::none;
-            using owner_read = perms::owner_read;
-            using owner_write = perms::owner_write;
-            using owner_exe = perms::owner_exec;
-            using owner_all = perms::owner_all;
-            using group_read = perms::group_read;
-            using group_write = perms::group_write;
-            using group_exe = perms::group_exec;
-            using group_all = perms::group_all;
-            using others_read = perms::others_read;
-            using others_write = perms::others_write;
-            using others_exe = perms::others_exec;
-            using others_all = perms::others_all;
-            using all_all = perms::all;
-            using set_uid_on_exe = perms::set_uid;
-            using set_gid_on_exe = perms::set_gid;
-            using sticky_bit = perms::sticky_bit;
-            using perms_mask = perms::mask;
-            using perms_not_known = perms::unknown;
-            using add_perms = perms::add_perms;
-            using remove_perms = perms::remove_perms;
-            using symlink_perms = perms::resolve_symlinks;
+            static const perms no_perms = perms::none;
+            static const perms owner_read = perms::owner_read;
+            static const perms owner_write = perms::owner_write;
+            static const perms owner_exe = perms::owner_exec;
+            static const perms owner_all = perms::owner_all;
+            static const perms group_read = perms::group_read;
+            static const perms group_write = perms::group_write;
+            static const perms group_exe = perms::group_exec;
+            static const perms group_all = perms::group_all;
+            static const perms others_read = perms::others_read;
+            static const perms others_write = perms::others_write;
+            static const perms others_exe = perms::others_exec;
+            static const perms others_all = perms::others_all;
+            static const perms all_all = perms::all;
+            static const perms set_uid_on_exe = perms::set_uid;
+            static const perms set_gid_on_exe = perms::set_gid;
+            static const perms sticky_bit = perms::sticky_bit;
+            static const perms perms_mask = perms::mask;
+            static const perms perms_not_known = perms::unknown;
+            static const perms add_perms = perms::add_perms;
+            static const perms remove_perms = perms::remove_perms;
+            static const perms symlink_perms = perms::resolve_symlinks;
+            // 
+            inline path system_complete(const path& p, error_code *ec) {
+                if (ec)
+                    return system_complete(p, *ec);
+                return system_complete(p);
+            }
+            inline path canonical(const path& p, error_code *ec) {
+                if (ec)
+                    return canonical(p, *ec);
+                return canonical(p);
+            }
+            inline path canonical(const path& p, const path& base, error_code *ec) {
+                if (ec)
+                    return canonical(p, base, *ec);
+                return canonical(p, base);
+            }
+            inline void copy(const path& from, const path& to, error_code *ec) {
+                if (ec)
+                    return copy(from, to, *ec);
+                return copy(from, to);
+            }
+            inline void
+            copy(const path& from, const path& to, copy_options options,
+                 error_code *ec)
+            {
+                if (ec)
+                    return copy(from, to, options, *ec);
+                return copy(from, to, options);
+            }
+            inline bool copy_file(const path& from, const path& to, error_code *ec) {
+                if (ec)
+                    return copy_file(from, to, *ec);
+                return copy_file(from, to);
+            }
+            inline bool
+            copy_file(const path& from, const path& to, copy_options options,
+                      error_code *ec)
+            {
+                if (ec)
+                    return copy_file(from, to, options, *ec);
+                return copy_file(from, to, options);
+            }
+            inline void
+            copy_symlink(const path& from, const path& to, error_code *ec) {
+                if (ec)
+                    return copy_symlink(from, to, *ec);
+                return copy_symlink(from, to);
+            }
+            inline bool create_directory(const path& p, error_code *ec) {
+                if (ec)
+                    return create_directory(p, *ec);
+                return create_directory(p);
+            }
+            inline bool
+            create_directory(const path& p, const path& existing_p,
+                             error_code *ec)
+            {
+                if (ec)
+                    return create_directory(p, existing_p, *ec);
+                return create_directory(p, existing_p);
+            }
+            inline bool create_directories(const path& p, error_code *ec) {
+                if (ec)
+                    return create_directories(p, *ec);
+                return create_directories(p);
+            }
+            inline void
+            create_hard_link(const path& target, const path& link,
+                             error_code *ec)
+            {
+                if (ec)
+                    return create_hard_link(target, link, *ec);
+                return create_hard_link(target, link);
+            }
+            inline path current_path(error_code *ec) {
+                if (ec)
+                    return current_path(*ec);
+                return current_path();
+            }
+            inline void current_path(const path& p, error_code *ec) {
+                if (ec)
+                    return current_path(p, *ec);
+                return current_path(p);
+            }
+            inline bool
+            equivalent(const path& p1, const path& p2, error_code *ec) {
+                if (ec)
+                    return equivalent(p1, p2, *ec);
+                return equivalent(p1, p2);
+            }
+            inline bool exists(const path& p, error_code *ec) {
+                if (ec)
+                    return exists(p, *ec);
+                return exists(p);
+            }
+            inline std::uintmax_t file_size(const path& p, error_code *ec) {
+                if (ec)
+                    return file_size(p, *ec);
+                return file_size(p);
+            }
+            inline std::uintmax_t
+            hard_link_count(const path& p, error_code *ec) {
+                if (ec)
+                    return hard_link_count(p, *ec);
+                return hard_link_count(p);
+            }
+            inline bool is_block_file(const path& p, error_code *ec) {
+                if (ec)
+                    return is_block_file(p, *ec);
+                return is_block_file(p);
+            }
+            inline bool is_character_file(const path& p, error_code *ec) {
+                if (ec)
+                    return is_character_file(p, *ec);
+                return is_character_file(p);
+            }
+            inline bool is_socket(const path& p, error_code *ec) {
+                if (ec)
+                    return is_socket(p, *ec);
+                return is_socket(p);
+            }
+            inline bool is_symlink(const path& p, error_code *ec) {
+                if (ec)
+                    return is_symlink(p, *ec);
+                return is_symlink(p);
+            }
+            inline file_time_type
+            last_write_time(const path& p, error_code *ec) {
+                if (ec)
+                    return last_write_time(p, *ec);
+                return last_write_time(p);
+            }
+            inline void
+            last_write_time(const path& p, file_time_type new_time,
+                            error_code *ec)
+            {
+                if (ec)
+                    return last_write_time(p, new_time, *ec);
+                return last_write_time(p, new_time);
+            }
+            inline void permissions(const path& p, perms prms, error_code *ec) {
+                if (ec)
+                    return permissions(p, prms, *ec);
+                return permissions(p, prms);
+            }
+            inline path read_symlink(const path& p, error_code *ec) {
+                if (ec)
+                    return read_symlink(p, *ec);
+                return read_symlink(p);
+            }
+            inline bool remove(const path& p, error_code *ec) {
+                if (ec)
+                    return remove(p, *ec);
+                return remove(p);
+            }
+            inline std::uintmax_t remove_all(const path& p, error_code *ec) {
+                if (ec)
+                    return remove_all(p, *ec);
+                return remove_all(p);
+            }
+            inline void
+            rename(const path& old_p, const path& new_p, std::error_code *ec) {
+                if (ec)
+                    return rename(old_p, new_p, *ec);
+                return rename(old_p, new_p);
+            }
+            inline void
+            resize_file(const path& p, std::uintmax_t new_size, error_code *ec) {
+                if (ec)
+                    return resize_file(p, new_size, *ec);
+                return resize_file(p, new_size);
+            }
+            inline space_info space(const path& p, error_code *ec) {
+                if (ec)
+                    return space(p, *ec);
+                return space(p);
+            }
+            inline file_status status(const path& p, error_code *ec) {
+                if (ec)
+                    return status(p, *ec);
+                return status(p);
+            }
+            inline file_status symlink_status(const path& p, error_code *ec) {
+                if (ec)
+                    return symlink_status(p, *ec);
+                return symlink_status(p);
+            }
+            inline path temp_directory_path(error_code *ec) {
+                if (ec)
+                    return temp_directory_path(*ec);
+                return temp_directory_path();
+            }
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_FILESYSTEM)
@@ -281,7 +473,7 @@
                            permissions() == other.permissions();
                 }
                 bool operator!=(const file_status& other) const {
-                    return !(*this == rhs);
+                    return !(*this == other);
                 }
 
             protected:
@@ -351,6 +543,15 @@
 
             namespace detail {
                 #ifdef _WIN32
+                    struct handle_wrapper {
+                        HANDLE m_h;
+                        handle_wrapper(HANDLE h) : m_h(h) { }
+                        ~handle_wrapper() {
+                            if (handle != INVALID_HANDLE_VALUE)
+                                ::CloseHandle(m_h);
+                        }
+                    };
+
                     inline bool not_found_error(int ev) {
                         return ev == ERROR_FILE_NOT_FOUND ||
                                ev == ERROR_PATH_NOT_FOUND ||
@@ -391,6 +592,30 @@
                         }
                         return prms;
                     }
+
+                    inline bool
+                    is_reparse_point_a_symlink(const path& p) {
+                        HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                            NULL, OPEN_EXISTING,
+                            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                        handle_wrapper h(hFile);
+                        if (hFile == INVALID_HANDLE_VALUE)
+                            return false;
+
+                        std::vector<BYTE> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
+
+                        DWORD dwRetLen;
+                        BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
+                            NULL, 0, buf.data(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
+                        if (!result)
+                            return false;
+
+                        REPARSE_DATA_BUFFER *pData;
+                        pData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buf.data());
+                        return pData->ReparseTag == IO_REPARSE_TAG_SYMLINK;
+                    }
+
                 #else   // ndef _WIN32
                     inline bool not_found_error(int errval) {
                         return errno == ENOENT || errno == ENOTDIR;
@@ -404,7 +629,15 @@
                             return process_status_failure(p, &ec);
                         }
                         if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                            //...
+                            HANDLE hFile = ::CreateFileW(p.c_str(), 0,
+                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                            handle_wrapper h(hFile);
+                            if (hFile == INVALID_HANDLE_VALUE) {
+                                return process_status_failure(p, ec);
+                            }
+                            if (!is_reparse_point_a_symlink(p))
+                                return file_status(reparse_file, make_permissions(p, attr));
                         }
                         if (ec)
                             ec->clear();
@@ -452,8 +685,57 @@
                     return ret;
                 }
 
-                file_status symlink_status(const path& p, error_code *ec) {
-                    ...
+                inline file_status
+                symlink_status(const path& p, error_code *ec) {
+                    #ifdef _WIN32
+                        DWORD attrs = ::GetFileAttributesW(p.c_str());
+                        if (attrs == 0xFFFFFFFF)
+                            return process_status_failure(p, ec);
+                        if (ec)
+                            ec->clear();
+                        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+                            if (is_reparse_point_a_symlink(p))
+                                return file_status(symlink_file, make_permissions(p, attrs));
+                            else
+                                return file_status(reparse_file, make_permissions(p, attr));
+                        }
+                        if (attr & FILE_ATTRIBUTE_DIRECTORY)
+                            return file_status(directory_file, make_permissions(p, attr));
+                        else
+                            return file_status(regular_file, make_permissions(p, attr));
+                    #else
+                        using namespace std;
+                        struct stat st;
+                        if (stat(p.c_str(), &st)) {
+                            if (ec)
+                                *ec = errno;
+                            if (not_found_error(errno)) {
+                                return file_status(file_not_found, no_perms);
+                            }
+                            if (ec == NULL)
+                                throw filesystem_error("unboost::filesystem::status",
+                                                       p, errno);
+                            return file_status(status_error);
+                        }
+                        if (ec)
+                            ec->clear();
+                        perms masked = static_cast<perms>(st.st_mode) & perms_mask;
+                        if (S_ISREG(st.st_mode))
+                            return file_status(regular_file, masked);
+                        if (S_ISDIR(st.st_mode))
+                            return file_status(directory_file, masked);
+                        if (S_ISLNK(st.st_mode))
+                            return file_status(symlink_file, masked);
+                        if (S_ISBLK(st.st_mode))
+                            return file_status(block_file, masked);
+                        if (S_ISCHR(st.st_mode))
+                            return file_status(character_file, masked);
+                        if (S_ISFIFO(st.st_mode))
+                            return file_status(fifo_file, masked);
+                        if (S_ISSOCK(st.st_mode))
+                            return file_status(socket_file, masked);
+                        return file_status(type_unknown);
+                    #endif
                 }
                 inline file_status symlink_status(const path& p) {
                     error_code ec;
@@ -464,6 +746,8 @@
                 }
 
                 inline bool is_empty(const path& p, error_code *ec) {
+                    WIN32_FILE_ATTRIBUTE_DATA fad;
+                    GetFileAttributesExW(p.c_str(), ::GetFileExInfoStandard, &fad);
                     ...
                 }
                 inline bool is_empty(const path& p) {
