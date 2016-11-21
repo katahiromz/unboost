@@ -217,7 +217,7 @@
     #include "system_error.hpp"     // for unboost::system_error, error_code
     namespace unboost {
         namespace filesystem {
-            enum file_type {
+            struct file_type {
                 enum inner {
                     none = 0,
                     not_found = -1,
@@ -351,65 +351,8 @@
             }; // class copy_options
             typedef copy_options copy_option;
 
-            class filesystem_error {
-            public:
-                filesystem_error(const string& what_arg, error_code ec) {
-                    m_what = what_arg;
-                    m_code = ec;
-                }
-                filesystem_error(const string& what_arg, const path& p1, error_code ec) {
-                    m_what = what_arg;
-                    m_p1 = p1;
-                    m_code = ec;
-                }
-                filesystem_error(
-                    const string& what_arg, const path& p1, const path& p2, error_code ec)
-                {
-                    m_what = what_arg;
-                    m_p1 = p1;
-                    m_p2 = p2;
-                    m_code = ec;
-                }
-                const path& path1() const { return m_p1; }
-                const path& path2() const { return m_p2; }
-                const char *what() const {
-                    #ifdef _WIN32
-                        WCHAR buf[512];
-                        if (m_p1.empty() && m_p2.empty()) {
-                            ::wsprintfW(buf,
-                                L"%s: error_code: %d", m_what.c_str(), m_code);
-                        } else if (m_p2.empty()) {
-                            ::wsprintfW(buf, L"%s: error_code: %d",
-                                (m_what + L": " + m_p1.native()).c_str(),
-                                m_code);
-                        } else {
-                            ::wsprintfW(buf, L"%s: error_code: %d",
-                                (m_what + L": " + m_p1.native() + ", " +
-                                    m_p2.native()).c_str(), m_code);
-                        }
-                    #else
-                        using namespace std;
-                        char buf[512];
-                        if (m_p1.empty() && m_p2.empty()) {
-                            sprintf(buf,
-                                "%s: error_code: %d", m_what.c_str(), m_code);
-                        } else if (m_p2.empty()) {
-                            sprintf(buf, "%s: error_code: %d",
-                                (m_what + ": " + m_p1.native()).c_str(), m_code);
-                        } else {
-                            sprintf(buf, "%s: error_code: %d",
-                                (m_what + ": " + m_p1.native() + ", " +
-                                    m_p2.native()).c_str(), m_code);
-                        }
-                    #endif
-                    return buf;
-                } // what
-            protected:
-                path m_p1;
-                path m_p2;
-                std::string m_what;
-                error_code m_code;
-            }; // class filesystem_error
+            class filesystem_error;
+            class path;
 
             namespace detail {
                 #ifdef _WIN32
@@ -417,221 +360,43 @@
                         HANDLE m_h;
                         handle_wrapper(HANDLE h) : m_h(h) { }
                         ~handle_wrapper() {
-                            if (handle != INVALID_HANDLE_VALUE)
+                            if (m_h != INVALID_HANDLE_VALUE)
                                 ::CloseHandle(m_h);
                         }
                     };
 
                     inline bool not_found_error(int ev) {
-                        return ev == ERROR_FILE_NOT_FOUND ||
-                               ev == ERROR_PATH_NOT_FOUND ||
-                               ev == ERROR_INVALID_NAME ||
-                               ev == ERROR_INVALID_DRIVE ||
-                               ev == ERROR_NOT_READY ||
-                               ev == ERROR_INVALID_PARAMETER ||
-                               ev == ERROR_BAD_PATHNAME ||
-                               ev == ERROR_BAD_NETPATH;
-                    }
-
-                    inline file_status
-                    process_status_failure(const path& p, error_code *ec) {
-                        int ev = ::GetLastError();
-                        if (ec)
-                            ec = ev;
-                        if (not_found_error(ev)) {
-                            return file_status(file_not_found, no_perms);
-                        } else if (ev == ERROR_SHARING_VIOLATION) {
-                            return file_status(type_unknown);
-                        }
-                        if (ec == NULL)
-                            throw filesystem_erorr("unboost::filesystem::status", p, ev);
-                        return file_status(status_error);
-                    }
-                    inline perms
-                    make_permissions(const path& p, DWORD attr)
-                    {
-                        perms prms = fs::owner_read | fs::group_read | fs::others_read;
-                        if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
-                            prms |= fs::owner_write | fs::group_write | fs::others_write;
-                        if (::lstrcmpiA(p.extension().string().c_str(), ".exe") == 0 ||
-                            ::lstrcmpiA(p.extension().string().c_str(), ".com") == 0 ||
-                            ::lstrcmpiA(p.extension().string().c_str(), ".bat") == 0 ||
-                            ::lstrcmpiA(p.extension().string().c_str(), ".cmd") == 0)
-                        {
-                            prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
-                        }
-                        return prms;
-                    }
-
-                    inline bool
-                    is_reparse_point_a_symlink(const path& p) {
-                        HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                            NULL, OPEN_EXISTING,
-                            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
-                        handle_wrapper h(hFile);
-                        if (hFile == INVALID_HANDLE_VALUE)
+                        switch (ev) {
+                        case ERROR_FILE_NOT_FOUND:
+                        case ERROR_PATH_NOT_FOUND:
+                        case ERROR_INVALID_NAME:
+                        case ERROR_INVALID_DRIVE:
+                        case ERROR_NOT_READY:
+                        case ERROR_INVALID_PARAMETER:
+                        case ERROR_BAD_PATHNAME:
+                        case ERROR_BAD_NETPATH:
+                            return true;
+                        default:
                             return false;
-
-                        std::vector<BYTE> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
-
-                        DWORD dwRetLen;
-                        BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
-                            NULL, 0, buf.data(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
-                        if (!result)
-                            return false;
-
-                        REPARSE_DATA_BUFFER *pData;
-                        pData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buf.data());
-                        return pData->ReparseTag == IO_REPARSE_TAG_SYMLINK;
+                        }
                     }
 
+                    file_status process_status_failure(const path& p, error_code *ec);
+                    perms::inner make_permissions(const path& p, DWORD attr);
+                    bool is_reparse_point_a_symlink(const path& p);
                 #else   // ndef _WIN32
                     inline bool not_found_error(int errval) {
                         return errno == ENOENT || errno == ENOTDIR;
                     }
                 #endif  // ndef _WIN32
-
-                inline file_status status(const path& p, error_code *ec) {
-                    #ifdef _WIN32
-                        DWORD attrs = ::GetFileAttributesW(p.c_str());
-                        if (attrs == 0xFFFFFFFF) {
-                            return process_status_failure(p, &ec);
-                        }
-                        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                            HANDLE hFile = ::CreateFileW(p.c_str(), 0,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-                            handle_wrapper h(hFile);
-                            if (hFile == INVALID_HANDLE_VALUE) {
-                                return process_status_failure(p, ec);
-                            }
-                            if (!is_reparse_point_a_symlink(p))
-                                return file_status(reparse_file, make_permissions(p, attr));
-                        }
-                        if (ec)
-                            ec->clear();
-                        if (attr & FILE_ATTRIBUTE_DIRECTORY)
-                            return file_status(directory_file, make_permissions(p, attr));
-                        else
-                            return file_status(regular_file, make_permissions(p, attr));
-                    #else   // ndef _WIN32
-                        using namespace std;
-                        struct stat st;
-                        if (stat(p.c_str(), &st)) {
-                            if (ec)
-                                *ec = errno;
-                            if (not_found_error(errno)) {
-                                return file_status(file_not_found, no_perms);
-                            }
-                            if (ec == NULL)
-                                throw filesystem_error("unboost::filesystem::status",
-                                                       p, errno);
-                            return file_status(status_error);
-                        }
-                        if (ec)
-                            ec->clear();
-                        perms masked = static_cast<perms>(st.st_mode) & perms_mask;
-                        if (S_ISDIR(st.st_mode))
-                            return file_status(directory_file, masked);
-                        if (S_ISREG(st.st_mode))
-                            return file_status(regular_file, masked);
-                        if (S_ISBLK(st.st_mode))
-                            return file_status(block_file, masked);
-                        if (S_ISCHR(st.st_mode))
-                            return file_status(character_file, masked);
-                        if (S_ISFIFO(st.st_mode))
-                            return file_status(fifo_file, masked);
-                        if (S_ISSOCK(st.st_mode))
-                            return file_status(socket_file, masked);
-                        return file_status(type_unknown);
-                    #endif  // ndef _WIN32
-                } // status
-                inline file_status status(const path& p) {
-                    error_code ec;
-                    file_status ret = status(p, &ec);
-                    if (ec)
-                        throw system_error(ec);
-                    return ret;
-                }
-
-                inline file_status
-                symlink_status(const path& p, error_code *ec) {
-                    #ifdef _WIN32
-                        DWORD attrs = ::GetFileAttributesW(p.c_str());
-                        if (attrs == 0xFFFFFFFF)
-                            return process_status_failure(p, ec);
-                        if (ec)
-                            ec->clear();
-                        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                            if (is_reparse_point_a_symlink(p))
-                                return file_status(symlink_file, make_permissions(p, attrs));
-                            else
-                                return file_status(reparse_file, make_permissions(p, attr));
-                        }
-                        if (attr & FILE_ATTRIBUTE_DIRECTORY)
-                            return file_status(directory_file, make_permissions(p, attr));
-                        else
-                            return file_status(regular_file, make_permissions(p, attr));
-                    #else
-                        using namespace std;
-                        struct stat st;
-                        if (stat(p.c_str(), &st)) {
-                            if (ec)
-                                *ec = errno;
-                            if (not_found_error(errno)) {
-                                return file_status(file_not_found, no_perms);
-                            }
-                            if (ec == NULL)
-                                throw filesystem_error("unboost::filesystem::status",
-                                                       p, errno);
-                            return file_status(status_error);
-                        }
-                        if (ec)
-                            ec->clear();
-                        perms masked = static_cast<perms>(st.st_mode) & perms_mask;
-                        if (S_ISREG(st.st_mode))
-                            return file_status(regular_file, masked);
-                        if (S_ISDIR(st.st_mode))
-                            return file_status(directory_file, masked);
-                        if (S_ISLNK(st.st_mode))
-                            return file_status(symlink_file, masked);
-                        if (S_ISBLK(st.st_mode))
-                            return file_status(block_file, masked);
-                        if (S_ISCHR(st.st_mode))
-                            return file_status(character_file, masked);
-                        if (S_ISFIFO(st.st_mode))
-                            return file_status(fifo_file, masked);
-                        if (S_ISSOCK(st.st_mode))
-                            return file_status(socket_file, masked);
-                        return file_status(type_unknown);
-                    #endif
-                }
-                inline file_status symlink_status(const path& p) {
-                    error_code ec;
-                    file_status ret = symlink_status(p, &ec);
-                    if (ec)
-                        throw system_error(ec);
-                    return ret;
-                }
-
-                inline bool is_empty(const path& p, error_code *ec) {
-                    WIN32_FILE_ATTRIBUTE_DATA fad;
-                    GetFileAttributesExW(p.c_str(), ::GetFileExInfoStandard, &fad);
-                    ...
-                }
-                inline bool is_empty(const path& p) {
-                    error_code ec;
-                    if (is_empty(p, &ec)) {
-                        return true;
-                    }
-                    throw system_error(ec);
-                }
             } // namespace detail
 
-            using detail::status;
-            using detail::symlink_status;
-            using detail::is_empty;
+            file_status status(const path& p, error_code& ec);
+            file_status status(const path& p);
+            file_status symlink_status(const path& p, error_code& ec);
+            file_status symlink_status(const path& p);
+            bool is_empty(const path& p, error_code& ec);
+            bool is_empty(const path& p);
 
             inline bool status_known(file_status s) {
                 return s.type() != file_type::none;
@@ -640,96 +405,38 @@
             inline bool exists(file_status s) {
                 return status_known(s) && s.type() != file_type::not_found;
             }
-            inline bool exists(const path& p, error_code *ec) {
-                return exists(status(p, &ec));
-            }
-            inline bool exists(const path& p) {
-                error_code ec;
-                if (exists(p, &ec)) {
-                    return true;
-                }
-                throw system_error(ec);
-            }
 
             inline bool is_block_file(file_status s) {
                 return s.type() == file_type::block;
-            }
-            inline bool is_block_file(const path& p) {
-                return is_block_file(status(p));
-            }
-            inline bool is_block_file(const path& p, error_code *ec) {
-                return is_block_file(status(p, &ec));
             }
 
             inline bool is_character_file(file_status s) {
                 return s.type() == file_type::character;
             }
-            inline bool is_character_file(const path& p) {
-                return is_character_file(status(p));
-            }
-            inline bool is_character_file(const path& p, error_code *ec) {
-                return is_character_file(status(p, &ec));
-            }
 
             inline bool is_fifo(file_status s) {
                 return s.type() == file_type::fifo;
-            }
-            inline bool is_fifo(const path& p) {
-                return is_fifo(status(p));
-            }
-            inline bool is_fifo(const path& p, error_code *ec) {
-                return is_fifo(status(p, &ec));
             }
 
             inline bool is_regular_file(file_status s) {
                 return s.type() == file_type::regular;
             }
-            inline bool is_regular_file(const path& p) {
-                return is_regular_file(status(p));
-            }
-            inline bool is_regular_file(const path& p, error_code *ec) {
-                return is_regular_file(status(p, &ec));
-            }
 
             inline bool is_symlink(file_status s) {
-                return s.type() = file_type::symlink;
-            }
-            inline bool is_symlink(const path& p) {
-                return is_symlink(status(p));
-            }
-            inline bool is_symlink(const path& p, error_code *ec) {
-                return is_symlink(status(p, &ec));
+                return s.type() == file_type::symlink;
             }
 
             inline bool is_directory(file_status s) {
                 return s.type() == file_type::directory;
-            }
-            inline bool is_directory(const path& p) {
-                return is_directory(status(p));
-            }
-            inline bool is_directory(const path& p, error_code *ec) {
-                return is_directory(status(p, &ec));
             }
 
             inline bool is_other(file_status s) {
                 return exists(s) && !is_regular_file(s) && !is_directory(s) &&
                        !is_symlink(s);
             }
-            inline bool is_other(const path& p) {
-                return is_other(status(p));
-            }
-            inline bool is_other(const path& p, error_code *ec) {
-                return is_other(status(p, &ec));
-            }
 
             inline bool is_socket(file_status s) {
                 return s.type() == file_type::socket;
-            }
-            inline bool is_socket(const path& p) {
-                return is_socket(status(p));
-            }
-            inline bool is_socket(const path& p, error_code *ec) {
-                return is_socket(status(p, &ec));
             }
 
             class path {
@@ -1202,6 +909,133 @@
                 }
             }; // class path
 
+            class filesystem_error {
+            public:
+                filesystem_error(const string& what_arg, error_code ec) {
+                    m_what = what_arg;
+                    m_code = ec;
+                }
+                filesystem_error(const string& what_arg, const path& p1, error_code ec) {
+                    m_what = what_arg;
+                    m_p1 = p1;
+                    m_code = ec;
+                }
+                filesystem_error(
+                    const string& what_arg, const path& p1, const path& p2, error_code ec)
+                {
+                    m_what = what_arg;
+                    m_p1 = p1;
+                    m_p2 = p2;
+                    m_code = ec;
+                }
+                const path& path1() const { return m_p1; }
+                const path& path2() const { return m_p2; }
+                const char *what() const {
+                    #ifdef _WIN32
+                        WCHAR buf[512];
+                        if (m_p1.empty() && m_p2.empty()) {
+                            ::wsprintfW(buf,
+                                L"%s: error_code: %d", m_what.c_str(), m_code);
+                        } else if (m_p2.empty()) {
+                            ::wsprintfW(buf, L"%s: error_code: %d",
+                                (m_what + L": " + m_p1.native()).c_str(),
+                                m_code);
+                        } else {
+                            ::wsprintfW(buf, L"%s: error_code: %d",
+                                (m_what + L": " + m_p1.native() + ", " +
+                                    m_p2.native()).c_str(), m_code);
+                        }
+                    #else
+                        using namespace std;
+                        char buf[512];
+                        if (m_p1.empty() && m_p2.empty()) {
+                            sprintf(buf,
+                                "%s: error_code: %d", m_what.c_str(), m_code);
+                        } else if (m_p2.empty()) {
+                            sprintf(buf, "%s: error_code: %d",
+                                (m_what + ": " + m_p1.native()).c_str(), m_code);
+                        } else {
+                            sprintf(buf, "%s: error_code: %d",
+                                (m_what + ": " + m_p1.native() + ", " +
+                                    m_p2.native()).c_str(), m_code);
+                        }
+                    #endif
+                    return buf;
+                } // what
+            protected:
+                path m_p1;
+                path m_p2;
+                std::string m_what;
+                error_code m_code;
+            }; // class filesystem_error
+
+            inline bool exists(const path& p, error_code& ec) {
+                return exists(status(p, &ec));
+            }
+            inline bool exists(const path& p) {
+                error_code ec;
+                if (exists(p, &ec)) {
+                    return true;
+                }
+                throw system_error(ec);
+            }
+
+            inline bool is_block_file(const path& p) {
+                return is_block_file(status(p));
+            }
+            inline bool is_block_file(const path& p, error_code& ec) {
+                return is_block_file(status(p, &ec));
+            }
+
+            inline bool is_character_file(const path& p) {
+                return is_character_file(status(p));
+            }
+            inline bool is_character_file(const path& p, error_code& ec) {
+                return is_character_file(status(p, &ec));
+            }
+
+            inline bool is_fifo(const path& p) {
+                return is_fifo(status(p));
+            }
+            inline bool is_fifo(const path& p, error_code& ec) {
+                return is_fifo(status(p, &ec));
+            }
+
+            inline bool is_regular_file(const path& p) {
+                return is_regular_file(status(p));
+            }
+            inline bool is_regular_file(const path& p, error_code& ec) {
+                return is_regular_file(status(p, &ec));
+            }
+
+            inline bool is_symlink(const path& p) {
+                return is_symlink(status(p));
+            }
+            inline bool is_symlink(const path& p, error_code& ec) {
+                return is_symlink(status(p, &ec));
+            }
+
+            inline bool is_directory(const path& p) {
+                return is_directory(status(p));
+            }
+            inline bool is_directory(const path& p, error_code& ec) {
+                return is_directory(status(p, &ec));
+            }
+
+            inline bool is_other(const path& p) {
+                return is_other(status(p));
+            }
+            inline bool is_other(const path& p, error_code& ec) {
+                return is_other(status(p, &ec));
+            }
+
+            inline bool is_socket(const path& p) {
+                return is_socket(status(p));
+            }
+            inline bool is_socket(const path& p, error_code& ec) {
+                return is_socket(status(p, &ec));
+            }
+
             #ifdef _WIN32
                 /*static*/ const value_type path::preferred_separator = L'\\';
             #else
@@ -1332,7 +1166,7 @@
                         ...
                     }
                 }
-                directory_iterator(const path& p, error_code *ec) {
+                directory_iterator(const path& p, error_code& ec) {
                     if (is_directory(p, &ec)) {
                         ...
                     }
@@ -1392,11 +1226,11 @@
                     ...
                 }
                 recursive_directory_iterator(const path& p,
-                    directory_options::inner options, error_code *ec)
+                    directory_options::inner options, error_code& ec)
                 {
                     ...
                 }
-                recursive_directory_iterator(const path& p, error_code *ec) {
+                recursive_directory_iterator(const path& p, error_code& ec) {
                     ...
                 }
 
@@ -1459,7 +1293,7 @@
                 chrono::system_clock,
                 chrono::system_clock::duration> file_time_type;
 
-            inline void current_path(const path& p, error_code *ec) {
+            inline void current_path(const path& p, error_code& ec) {
                 if (::SetCurrentDirectoryW(p.c_str())) {
                     ec.clear();
                 } else {
@@ -1504,7 +1338,7 @@
                 }
             }
 
-            inline path system_complete(const path& p, error_code *ec) {
+            inline path system_complete(const path& p, error_code& ec) {
                 WCHAR sz[MAX_PATH * 2];
                 WCHAR *pch;
                 if (::GetFullPathNameW(p.c_str(), MAX_PATH * 2, sz, &pch)) {
@@ -1525,7 +1359,7 @@
             }
 
             inline path
-            canonical(const path& p, const path& base, error_code *ec) {
+            canonical(const path& p, const path& base, error_code& ec) {
                 ...
             }
             inline path
@@ -1534,13 +1368,13 @@
                 return absolute(p, base);
             }
             inline path
-            canonical(const path& p, error_code *ec) {
+            canonical(const path& p, error_code& ec) {
                 ...
                 return absolute(p);
             }
 
             inline bool
-            equivalent(const path& p1, const path& p2, error_code *ec) {
+            equivalent(const path& p1, const path& p2, error_code& ec) {
                 struct stat st1, st2;
                 if (stat(p1.c_str(), &st1) == 0 && stat(p2.c_str(), &st2) == 0) {
                     ec.clear();
@@ -1561,7 +1395,7 @@
             create_directory_symlink
 
             inline void
-            create_hard_link(const path& target, const path& link, error_code *ec) {
+            create_hard_link(const path& target, const path& link, error_code& ec) {
                 ...
             }
             inline void
@@ -1574,7 +1408,7 @@
             }
 
             inline void
-            copy_symlink(const path& from, const path& to, error_code *ec) {
+            copy_symlink(const path& from, const path& to, error_code& ec) {
                 if (is_directory(from)) {
                     create_directory_symlink(read_symlink(from), to);
                 } else {
@@ -1636,7 +1470,7 @@
             inline bool copy_file(const path& from, const path& to) {
                 return copy_file(from, to, copy_options::none);
             }
-            inline bool copy_file(const path& from, const path& to, error_code *ec) {
+            inline bool copy_file(const path& from, const path& to, error_code& ec) {
                 return copy_file(from, to, copy_options::none, ec);
             }
 
@@ -1713,15 +1547,15 @@
             inline void copy(const path& from, const path& to) {
                 copy(from, to, copy_options::none);
             }
-            inline void copy(const path& from, const path& to, error_code *ec) {
+            inline void copy(const path& from, const path& to, error_code& ec) {
                 copy(from, to, copy_options::none, ec);
             }
 
-            inline file_time_type last_write_time(const path& p, error_code *ec) {
+            inline file_time_type last_write_time(const path& p, error_code& ec) {
                 ...
             }
             inline void
-            last_write_time(const path& p, file_time_type new_time, error_code *ec) {
+            last_write_time(const path& p, file_time_type new_time, error_code& ec) {
                 ...
             }
             inline file_time_type last_write_time(const path& p) {
@@ -1742,7 +1576,7 @@
                 return ret;
             }
 
-            inline path read_symlink(const path& p, error_code *ec) {
+            inline path read_symlink(const path& p, error_code& ec) {
                 ...
             }
             inline path read_symlink(const path& p) {
@@ -1755,7 +1589,7 @@
             }
 
             inline bool
-            create_directory(const path& p, const path& existing_p, error_code *ec) {
+            create_directory(const path& p, const path& existing_p, error_code& ec) {
                 #ifdef _WIN32
                     if (::CreateDirectoryExW(existing_p.c_str(), p.c_str(), NULL)) {
                         ec.clear();
@@ -1778,7 +1612,7 @@
                 }
                 throw filesystem_error("unboost::filesystem::create_directory", p, ec);
             }
-            inline bool create_directory(const path& p, error_code *ec) {
+            inline bool create_directory(const path& p, error_code& ec) {
                 #ifdef _WIN32
                     if (::CreateDirectoryW(p.c_str(), NULL)) {
                         ec.clear();
@@ -1799,7 +1633,7 @@
                 throw filesystem_error("unboost::filesystem::create_directory", p, ec);
             }
 
-            inline bool create_directories(const path& p, error_code *ec) {
+            inline bool create_directories(const path& p, error_code& ec) {
                 ...
             }
             inline bool create_directories(const path& p) {
@@ -1810,7 +1644,7 @@
                 throw filesystem_error("unboost::filesystem::create_directories", p, ec);
             }
 
-            inline uintmax_t file_size(const path& p, error_code *ec) {
+            inline uintmax_t file_size(const path& p, error_code& ec) {
                 HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     NULL,
@@ -1837,7 +1671,7 @@
                 return siz;
             }
 
-            uintmax_t hard_link_count(const path& p, error_code *ec) {
+            uintmax_t hard_link_count(const path& p, error_code& ec) {
                 ...
             }
             uintmax_t hard_link_count(const path& p) {
@@ -1849,7 +1683,7 @@
                 return ret;
             }
 
-            inline void permissions(const path& p, perms::inner prms, error_code *ec) {
+            inline void permissions(const path& p, perms::inner prms, error_code& ec) {
                 path p0 = p;
                 if (prms & perms::resolve_symlinks)
                     p0 = ...
@@ -1873,7 +1707,7 @@
                 }
             }
 
-            inline bool remove(const path& p, error_code *ec) {
+            inline bool remove(const path& p, error_code& ec) {
                 BOOL result;
                 if (is_directory(p)) {
                     result = ::RemoveDirectoryW(p.c_str());
@@ -1896,7 +1730,7 @@
                 return true;
             }
 
-            uintmax_t remove_all(const path& p, error_code *ec) {
+            uintmax_t remove_all(const path& p, error_code& ec) {
                 ...
             }
             uintmax_t remove_all(const path& p) {
@@ -1909,7 +1743,7 @@
             }
 
             inline void
-            rename(const path& old_p, const path& new_p, error_code *ec) {
+            rename(const path& old_p, const path& new_p, error_code& ec) {
                 if (!is_directory(old_p)) {
                     if (equivalent(old_p, new_p, ec))
                         return;
@@ -1934,7 +1768,7 @@
             }
 
             inline void
-            resize_file(const path& p, uintmax_t new_size, error_code *ec) {
+            resize_file(const path& p, uintmax_t new_size, error_code& ec) {
                 ec = truncate(p.c_str(), new_size);
             }
             inline void
@@ -1946,7 +1780,7 @@
                 }
             }
 
-            inline space_info space(const path& p, error_code *ec) {
+            inline space_info space(const path& p, error_code& ec) {
                 space_info info;
                 ULARGE_INTEGER avail, capacity, free;
                 if (::GetDiskFreeSpaceExW(p.c_str(), &avail, &capacity, &free)) {
@@ -1986,6 +1820,198 @@
                     throw filesystem_error("unboost::filesystem::temp_directory_path", ec);
                 }
                 return p;
+            }
+
+            namespace detail {
+                inline file_status
+                process_status_failure(const path& p, error_code *ec) {
+                    int ev = ::GetLastError();
+                    if (ec)
+                        *ec = ev;
+                    if (not_found_error(ev)) {
+                        return file_status(file_not_found, no_perms);
+                    } else if (ev == ERROR_SHARING_VIOLATION) {
+                        return file_status(type_unknown);
+                    }
+                    if (ec == NULL)
+                        throw filesystem_erorr("unboost::filesystem::status", p, ev);
+                    return file_status(status_error);
+                }
+
+                inline perms::inner
+                make_permissions(const path& p, DWORD attr)
+                {
+                    unsigned int prms = owner_read | group_read | others_read;
+                    if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
+                        prms |= int(owner_write | group_write | others_write);
+                    if (::lstrcmpiA(p.extension().string().c_str(), ".exe") == 0 ||
+                        ::lstrcmpiA(p.extension().string().c_str(), ".com") == 0 ||
+                        ::lstrcmpiA(p.extension().string().c_str(), ".bat") == 0 ||
+                        ::lstrcmpiA(p.extension().string().c_str(), ".cmd") == 0)
+                    {
+                        prms |= int(owner_exe | group_exe | others_exe);
+                    }
+                    return static_cast<perms::inner>(prms);
+                }
+
+                inline bool
+                is_reparse_point_a_symlink(const path& p) {
+                    HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        NULL, OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                    handle_wrapper h(hFile);
+                    if (hFile == INVALID_HANDLE_VALUE)
+                        return false;
+
+                    std::vector<BYTE> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
+
+                    DWORD dwRetLen;
+                    BOOL result = ::DeviceIoControl(h.m_h, FSCTL_GET_REPARSE_POINT,
+                        NULL, 0, buf.data(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
+                    if (!result)
+                        return false;
+
+                    REPARSE_DATA_BUFFER *pData;
+                    pData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buf.data());
+                    return pData->ReparseTag == IO_REPARSE_TAG_SYMLINK;
+                }
+            } // namespace detail
+
+            inline file_status status(const path& p, error_code& ec) {
+                #ifdef _WIN32
+                    DWORD attrs = ::GetFileAttributesW(p.c_str());
+                    if (attrs == 0xFFFFFFFF) {
+                        return process_status_failure(p, &ec);
+                    }
+                    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+                        HANDLE hFile = ::CreateFileW(p.c_str(), 0,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                            NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                        handle_wrapper h(hFile);
+                        if (hFile == INVALID_HANDLE_VALUE) {
+                            return process_status_failure(p, &ec);
+                        }
+                        if (!is_reparse_point_a_symlink(p))
+                            return file_status(reparse_file, make_permissions(p, attrs));
+                    }
+                    if (ec)
+                        ec.clear();
+                    if (attrs & FILE_ATTRIBUTE_DIRECTORY)
+                        return file_status(directory_file, make_permissions(p, attrs));
+                    else
+                        return file_status(regular_file, make_permissions(p, attrs));
+                #else   // ndef _WIN32
+                    using namespace std;
+                    struct stat st;
+                    if (stat(p.c_str(), &st)) {
+                        if (ec)
+                            *ec = errno;
+                        if (not_found_error(errno)) {
+                            return file_status(file_not_found, no_perms);
+                        }
+                        if (ec == NULL)
+                            throw filesystem_error("unboost::filesystem::status",
+                                                   p, errno);
+                        return file_status(status_error);
+                    }
+                    if (ec)
+                        ec->clear();
+                    perms masked = static_cast<perms>(st.st_mode) & perms_mask;
+                    if (S_ISDIR(st.st_mode))
+                        return file_status(directory_file, masked);
+                    if (S_ISREG(st.st_mode))
+                        return file_status(regular_file, masked);
+                    if (S_ISBLK(st.st_mode))
+                        return file_status(block_file, masked);
+                    if (S_ISCHR(st.st_mode))
+                        return file_status(character_file, masked);
+                    if (S_ISFIFO(st.st_mode))
+                        return file_status(fifo_file, masked);
+                    if (S_ISSOCK(st.st_mode))
+                        return file_status(socket_file, masked);
+                    return file_status(type_unknown);
+                #endif  // ndef _WIN32
+            } // status
+            inline file_status status(const path& p) {
+                error_code ec;
+                file_status ret = status(p, &ec);
+                if (ec)
+                    throw system_error(ec);
+                return ret;
+            }
+
+            inline file_status
+            symlink_status(const path& p, error_code& ec) {
+                #ifdef _WIN32
+                    DWORD attrs = ::GetFileAttributesW(p.c_str());
+                    if (attrs == 0xFFFFFFFF)
+                        return process_status_failure(p, ec);
+                    if (ec)
+                        ec->clear();
+                    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
+                        if (is_reparse_point_a_symlink(p))
+                            return file_status(symlink_file, make_permissions(p, attrs));
+                        else
+                            return file_status(reparse_file, make_permissions(p, attrs));
+                    }
+                    if (attr & FILE_ATTRIBUTE_DIRECTORY)
+                        return file_status(directory_file, make_permissions(p, attrs));
+                    else
+                        return file_status(regular_file, make_permissions(p, attrs));
+                #else
+                    using namespace std;
+                    struct stat st;
+                    if (stat(p.c_str(), &st)) {
+                        if (ec)
+                            *ec = errno;
+                        if (not_found_error(errno)) {
+                            return file_status(file_not_found, no_perms);
+                        }
+                        if (ec == NULL)
+                            throw filesystem_error("unboost::filesystem::status",
+                                                   p, errno);
+                        return file_status(status_error);
+                    }
+                    if (ec)
+                        ec->clear();
+                    perms masked = static_cast<perms>(st.st_mode) & perms_mask;
+                    if (S_ISREG(st.st_mode))
+                        return file_status(regular_file, masked);
+                    if (S_ISDIR(st.st_mode))
+                        return file_status(directory_file, masked);
+                    if (S_ISLNK(st.st_mode))
+                        return file_status(symlink_file, masked);
+                    if (S_ISBLK(st.st_mode))
+                        return file_status(block_file, masked);
+                    if (S_ISCHR(st.st_mode))
+                        return file_status(character_file, masked);
+                    if (S_ISFIFO(st.st_mode))
+                        return file_status(fifo_file, masked);
+                    if (S_ISSOCK(st.st_mode))
+                        return file_status(socket_file, masked);
+                    return file_status(type_unknown);
+                #endif
+            }
+            inline file_status symlink_status(const path& p) {
+                error_code ec;
+                file_status ret = symlink_status(p, &ec);
+                if (ec)
+                    throw system_error(ec);
+                return ret;
+            }
+
+            inline bool is_empty(const path& p, error_code& ec) {
+                WIN32_FILE_ATTRIBUTE_DATA fad;
+                GetFileAttributesExW(p.c_str(), ::GetFileExInfoStandard, &fad);
+                ...
+            }
+            inline bool is_empty(const path& p) {
+                error_code ec;
+                if (is_empty(p, &ec)) {
+                    return true;
+                }
+                throw system_error(ec);
             }
         } // namespace filesystem
     } // namespace unboost

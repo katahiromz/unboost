@@ -55,10 +55,12 @@
     #undef UNBOOST_CXX11
 #endif
 
-#if (__cplusplus >= 201103L)
-    #define UNBOOST_NOEXCEPT noexcept
-#else
-    #define UNBOOST_NOEXCEPT
+#ifndef UNBOOST_NOEXCEPT
+    #if (__cplusplus >= 201103L)
+        #define UNBOOST_NOEXCEPT noexcept
+    #else
+        #define UNBOOST_NOEXCEPT
+    #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////

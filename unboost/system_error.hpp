@@ -240,7 +240,7 @@
                 return category().message(value());
             }
 
-            explicit operator bool() const {
+            operator bool() const {
                 return value() != 0;
             }
 
@@ -296,7 +296,7 @@
             std::string message() const {
                 return category().message(value());
             }
-            explicit operator bool() const {
+            operator bool() const {
                 return value() != 0;
             }
 
@@ -401,7 +401,7 @@
         class system_error : public std::runtime_error {
         public:
             system_error(long ec)
-                : runtime_error(error_code(ec).message()), m_code(error_code(ec)) { }
+                : runtime_error(error_code(ec).message()), m_code(ec) { }
 
             system_error(error_code ec = error_code())
                 : runtime_error(ec.message()), m_code(ec) { }
@@ -415,7 +415,10 @@
                   m_code(ec) { }
 
             system_error(int v, const error_category& ecat, const char* what)
-                : system_error(error_code(v, ecat), what) { }
+                : runtime_error(what)
+            {
+                m_code.assign(v, ecat);
+            }
 
             system_error(int v, const error_category& ecat)
                 : runtime_error(error_code(v, ecat).message()),
@@ -426,8 +429,6 @@
                 : runtime_error(what + ": " +
                                 error_code(v, ecat).message()),
                   m_code(v, ecat) { }
-
-            virtual ~system_error() UNBOOST_NOEXCEPT { }
 
             const error_code& code() const UNBOOST_NOEXCEPT {
                 return m_code;
