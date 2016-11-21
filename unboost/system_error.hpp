@@ -66,7 +66,7 @@
     } // namespace unboost;
 #elif defined(UNBOOST_USE_BOOST_SYSTEM)
     #include <boost/system/system_error.hpp>    // for boost::system::system_error
-    #include <boost/system/error_code.hpp>
+    #include <boost/system/error_code.hpp>      // for boost::system::error_code
     namespace unboost {
         namespace system {
             using boost::system::error_category;

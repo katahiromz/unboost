@@ -23,8 +23,8 @@
     #endif
 #endif
 
-#ifdef UNBOOST_USE_CXX17_SYSTEM
-    #include <filesystem>
+#ifdef UNBOOST_USE_CXX17_FILESYSTEM
+    #include <experimental/filesystem>
     namespace unboost {
         namespace filesystem {
             using std::filesystem::path;
@@ -37,12 +37,14 @@
             using std::filesystem::file_type;
             using std::filesystem::perms;
             using std::filesystem::copy_options;
+            typedef std::filesystem::copy_options copy_option;
             using std::filesystem::directory_options;
             using std::filesystem::file_time_type;
             using std::filesystem::absolute;
             using std::filesystem::system_complete;
             using std::filesystem::canonical;
             using std::filesystem::copy;
+            using std::filesystem::copy_directory;
             using std::filesystem::copy_file;
             using std::filesystem::copy_symlink;
             using std::filesystem::create_directory;
@@ -110,220 +112,16 @@
             static const perms add_perms = perms::add_perms;
             static const perms remove_perms = perms::remove_perms;
             static const perms symlink_perms = perms::resolve_symlinks;
-            //
-            inline path system_complete(const path& p, error_code *ec) {
-                if (ec)
-                    return system_complete(p, *ec);
-                return system_complete(p);
-            }
-            inline path canonical(const path& p, error_code *ec) {
-                if (ec)
-                    return canonical(p, *ec);
-                return canonical(p);
-            }
-            inline path canonical(const path& p, const path& base, error_code *ec) {
-                if (ec)
-                    return canonical(p, base, *ec);
-                return canonical(p, base);
-            }
-            inline void copy(const path& from, const path& to, error_code *ec) {
-                if (ec)
-                    return copy(from, to, *ec);
-                return copy(from, to);
-            }
-            inline void
-            copy(const path& from, const path& to, copy_options options,
-                 error_code *ec)
-            {
-                if (ec)
-                    return copy(from, to, options, *ec);
-                return copy(from, to, options);
-            }
-            inline bool copy_file(const path& from, const path& to, error_code *ec) {
-                if (ec)
-                    return copy_file(from, to, *ec);
-                return copy_file(from, to);
-            }
-            inline bool
-            copy_file(const path& from, const path& to, copy_options options,
-                      error_code *ec)
-            {
-                if (ec)
-                    return copy_file(from, to, options, *ec);
-                return copy_file(from, to, options);
-            }
-            inline void
-            copy_symlink(const path& from, const path& to, error_code *ec) {
-                if (ec)
-                    return copy_symlink(from, to, *ec);
-                return copy_symlink(from, to);
-            }
-            inline bool create_directory(const path& p, error_code *ec) {
-                if (ec)
-                    return create_directory(p, *ec);
-                return create_directory(p);
-            }
-            inline bool
-            create_directory(const path& p, const path& existing_p,
-                             error_code *ec)
-            {
-                if (ec)
-                    return create_directory(p, existing_p, *ec);
-                return create_directory(p, existing_p);
-            }
-            inline bool create_directories(const path& p, error_code *ec) {
-                if (ec)
-                    return create_directories(p, *ec);
-                return create_directories(p);
-            }
-            inline void
-            create_symlink(const path& to, const path& from, error_code *ec) {
-                if (ec)
-                    return create_symlink(to, from, *ec);
-                return create_symlink(to, from);
-            }
-            inline void
-            create_directory_symlink(const path& to, const path& from,
-                                     error_code *ec)
-            {
-                if (ec)
-                    return create_directory_symlink(to, from, *ec);
-                return create_directory_symlink(to, from);
-            }
-            inline void
-            create_hard_link(const path& target, const path& link,
-                             error_code *ec)
-            {
-                if (ec)
-                    return create_hard_link(target, link, *ec);
-                return create_hard_link(target, link);
-            }
-            inline path current_path(error_code *ec) {
-                if (ec)
-                    return current_path(*ec);
-                return current_path();
-            }
-            inline void current_path(const path& p, error_code *ec) {
-                if (ec)
-                    return current_path(p, *ec);
-                return current_path(p);
-            }
-            inline bool
-            equivalent(const path& p1, const path& p2, error_code *ec) {
-                if (ec)
-                    return equivalent(p1, p2, *ec);
-                return equivalent(p1, p2);
-            }
-            inline bool exists(const path& p, error_code *ec) {
-                if (ec)
-                    return exists(p, *ec);
-                return exists(p);
-            }
-            inline std::uintmax_t file_size(const path& p, error_code *ec) {
-                if (ec)
-                    return file_size(p, *ec);
-                return file_size(p);
-            }
-            inline std::uintmax_t
-            hard_link_count(const path& p, error_code *ec) {
-                if (ec)
-                    return hard_link_count(p, *ec);
-                return hard_link_count(p);
-            }
-            inline bool is_block_file(const path& p, error_code *ec) {
-                if (ec)
-                    return is_block_file(p, *ec);
-                return is_block_file(p);
-            }
-            inline bool is_character_file(const path& p, error_code *ec) {
-                if (ec)
-                    return is_character_file(p, *ec);
-                return is_character_file(p);
-            }
-            inline bool is_socket(const path& p, error_code *ec) {
-                if (ec)
-                    return is_socket(p, *ec);
-                return is_socket(p);
-            }
-            inline bool is_symlink(const path& p, error_code *ec) {
-                if (ec)
-                    return is_symlink(p, *ec);
-                return is_symlink(p);
-            }
-            inline file_time_type
-            last_write_time(const path& p, error_code *ec) {
-                if (ec)
-                    return last_write_time(p, *ec);
-                return last_write_time(p);
-            }
-            inline void
-            last_write_time(const path& p, file_time_type new_time,
-                            error_code *ec)
-            {
-                if (ec)
-                    return last_write_time(p, new_time, *ec);
-                return last_write_time(p, new_time);
-            }
-            inline void permissions(const path& p, perms prms, error_code *ec) {
-                if (ec)
-                    return permissions(p, prms, *ec);
-                return permissions(p, prms);
-            }
-            inline path read_symlink(const path& p, error_code *ec) {
-                if (ec)
-                    return read_symlink(p, *ec);
-                return read_symlink(p);
-            }
-            inline bool remove(const path& p, error_code *ec) {
-                if (ec)
-                    return remove(p, *ec);
-                return remove(p);
-            }
-            inline std::uintmax_t remove_all(const path& p, error_code *ec) {
-                if (ec)
-                    return remove_all(p, *ec);
-                return remove_all(p);
-            }
-            inline void
-            rename(const path& old_p, const path& new_p, std::error_code *ec) {
-                if (ec)
-                    return rename(old_p, new_p, *ec);
-                return rename(old_p, new_p);
-            }
-            inline void
-            resize_file(const path& p, std::uintmax_t new_size, error_code *ec) {
-                if (ec)
-                    return resize_file(p, new_size, *ec);
-                return resize_file(p, new_size);
-            }
-            inline space_info space(const path& p, error_code *ec) {
-                if (ec)
-                    return space(p, *ec);
-                return space(p);
-            }
-            inline file_status status(const path& p, error_code *ec) {
-                if (ec)
-                    return status(p, *ec);
-                return status(p);
-            }
-            inline file_status symlink_status(const path& p, error_code *ec) {
-                if (ec)
-                    return symlink_status(p, *ec);
-                return symlink_status(p);
-            }
-            inline path temp_directory_path(error_code *ec) {
-                if (ec)
-                    return temp_directory_path(*ec);
-                return temp_directory_path();
-            }
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_BOOST_FILESYSTEM)
     #include <boost/filesystem.hpp>
+    #include <boost/system/system_error.hpp>    // for boost::system::system_error
+    #include <boost/system/error_code.hpp>      // for boost::system::error_code
     namespace unboost {
         namespace filesystem {
             using boost::filesystem::path;
-            using boost::filesystem::filesystem_erorr;
+            using boost::filesystem::filesystem_error;
             using boost::filesystem::directory_entry;
             using boost::filesystem::directory_iterator;
             using boost::filesystem::recursive_directory_iterator;
@@ -331,13 +129,15 @@
             using boost::filesystem::space_info;
             using boost::filesystem::file_type;
             using boost::filesystem::perms;
-            using boost::filesystem::copy_options;
-            using boost::filesystem::directory_options;
-            using boost::filesystem::file_time_type;
+            using boost::filesystem::copy_option;
+            typedef boost::filesystem::copy_option copy_options;
+            //using boost::filesystem::directory_options;   // absent
+            typedef std::time_t file_time_type;
             using boost::filesystem::absolute;
             using boost::filesystem::system_complete;
             using boost::filesystem::canonical;
             using boost::filesystem::copy;
+            using boost::filesystem::copy_directory;
             using boost::filesystem::copy_file;
             using boost::filesystem::copy_symlink;
             using boost::filesystem::create_directory;
@@ -361,150 +161,48 @@
             using boost::filesystem::status;
             using boost::filesystem::symlink_status;
             using boost::filesystem::temp_directory_path;
-            using boost::filesystem::is_block_file;
-            using boost::filesystem::is_character_file;
+            inline bool is_block_file(file_status s) {
+                return s.type() == boost::filesystem::block_file;
+            }
+            inline bool is_block_file(const path& p) {
+                return is_block_file(status(p));
+            }
+            inline bool is_block_file(const path& p, boost::system::error_code& ec) {
+                return is_block_file(status(p, ec));
+            }
+            inline bool is_character_file(file_status s) {
+                return s.type() == boost::filesystem::character_file;
+            }
+            inline bool is_character_file(const path& p) {
+                return is_character_file(status(p));
+            }
+            inline bool is_character_file(const path& p, boost::system::error_code& ec) {
+                return is_character_file(status(p, ec));
+            }
             using boost::filesystem::is_directory;
             using boost::filesystem::is_empty;
-            using boost::filesystem::is_fifo;
+            inline bool is_fifo(file_status s) {
+                return s.type() == boost::filesystem::fifo_file;
+            }
+            inline bool is_fifo(const path& p) {
+                return is_fifo(status(p));
+            }
+            inline bool is_fifo(const path& p, boost::system::error_code& ec) {
+                return is_fifo(status(p, ec));
+            }
             using boost::filesystem::is_other;
             using boost::filesystem::is_regular_file;
-            using boost::filesystem::is_socket;
+            inline bool is_socket(file_status s) {
+                return s.type() == boost::filesystem::socket_file;
+            }
+            inline bool is_socket(const path& p) {
+                return is_socket(status(p));
+            }
+            inline bool is_socket(const path& p, boost::system::error_code& ec) {
+                return is_socket(status(p, ec));
+            }
             using boost::filesystem::is_symlink;
             using boost::filesystem::status_known;
-            //
-            inline path system_complete(const path& p, error_code& ec) {
-                return system_complete(p, &ec);
-            }
-            inline path canonical(const path& p, error_code& ec) {
-                return canonical(p, &ec);
-            }
-            inline path canonical(const path& p, const path& base, error_code& ec) {
-                return canonical(p, base, &ec);
-            }
-            inline void copy(const path& from, const path& to, error_code& ec) {
-                return copy(from, to, &ec);
-            }
-            inline void
-            copy(const path& from, const path& to, copy_options options,
-                 error_code& ec)
-            {
-                return copy(from, to, options, &ec);
-            }
-            inline bool copy_file(const path& from, const path& to, error_code& ec) {
-                return copy_file(from, to, &ec);
-            }
-            inline bool
-            copy_file(const path& from, const path& to, copy_options options,
-                      error_code& ec)
-            {
-                return copy_file(from, to, options, &ec);
-            }
-            inline void
-            copy_symlink(const path& from, const path& to, error_code& ec) {
-                return copy_symlink(from, to, &ec);
-            }
-            inline bool create_directory(const path& p, error_code& ec) {
-                return create_directory(p, &ec);
-            }
-            inline bool
-            create_directory(const path& p, const path& existing_p,
-                             error_code& ec)
-            {
-                return create_directory(p, existing_p, &ec);
-            }
-            inline bool create_directories(const path& p, error_code& ec) {
-                return create_directories(p, &ec);
-            }
-            inline void
-            create_symlink(const path& to, const path& from, error_code& ec) {
-                return create_symlink(to, from, &ec);
-            }
-            inline void
-            create_directory_symlink(const path& to, const path& from,
-                                     error_code& ec)
-            {
-                return create_directory_symlink(to, from, &ec);
-            }
-            inline void
-            create_hard_link(const path& target, const path& link,
-                             error_code& ec)
-            {
-                return create_hard_link(target, link, &ec);
-            }
-            inline path current_path(error_code& ec) {
-                return current_path(&ec);
-            }
-            inline void current_path(const path& p, error_code& ec) {
-                return current_path(p, &ec);
-            }
-            inline bool
-            equivalent(const path& p1, const path& p2, error_code& ec) {
-                return equivalent(p1, p2, &ec);
-            }
-            inline bool exists(const path& p, error_code& ec) {
-                return exists(p, &ec);
-            }
-            inline std::uintmax_t file_size(const path& p, error_code& ec) {
-                return file_size(p, &ec);
-            }
-            inline std::uintmax_t
-            hard_link_count(const path& p, error_code& ec) {
-                return hard_link_count(p, &ec);
-            }
-            inline bool is_block_file(const path& p, error_code& ec) {
-                return is_block_file(p, &ec);
-            }
-            inline bool is_character_file(const path& p, error_code& ec) {
-                return is_character_file(p, &ec);
-            }
-            inline bool is_socket(const path& p, error_code& ec) {
-                return is_socket(p, &ec);
-            }
-            inline bool is_symlink(const path& p, error_code& ec) {
-                return is_symlink(p, &ec);
-            }
-            inline file_time_type
-            last_write_time(const path& p, error_code& ec) {
-                return last_write_time(p, &ec);
-            }
-            inline void
-            last_write_time(const path& p, file_time_type new_time,
-                            error_code& ec)
-            {
-                return last_write_time(p, new_time, &ec);
-            }
-            inline void permissions(const path& p, perms prms, error_code& ec) {
-                return permissions(p, prms, &ec);
-            }
-            inline path read_symlink(const path& p, error_code& ec) {
-                return read_symlink(p, &ec);
-            }
-            inline bool remove(const path& p, error_code& ec) {
-                return remove(p, &ec);
-            }
-            inline std::uintmax_t remove_all(const path& p, error_code& ec) {
-                return remove_all(p, &ec);
-            }
-            inline void
-            rename(const path& old_p, const path& new_p, std::error_code& ec) {
-                return rename(old_p, new_p, &ec);
-            }
-            inline void
-            resize_file(const path& p, std::uintmax_t new_size, error_code& ec) {
-                return resize_file(p, new_size, &ec);
-            }
-            inline space_info space(const path& p, error_code& ec) {
-                return space(p, &ec);
-            }
-            inline file_status status(const path& p, error_code& ec) {
-                return status(p, &ec);
-            }
-            inline file_status symlink_status(const path& p, error_code& ec) {
-                return symlink_status(p, &ec);
-            }
-            inline path temp_directory_path(error_code& ec) {
-                return temp_directory_path(&ec);
-            }
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
