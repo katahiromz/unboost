@@ -23,7 +23,7 @@ namespace unboost {
         ENC_UTF7,
         ENC_UTF8,
         ENC_WIDE,
-        ENC_PATHNARROW,
+        ENC_PATHANSI,
         ENC_PATHWIDE
     };
 } // namespace unboost
@@ -65,6 +65,10 @@ namespace unboost {
             }
             void close() { }
 
+            bool is_open() const {
+                return true;
+            }
+
             ~text2text() {
                 close();
             }
@@ -84,7 +88,7 @@ namespace unboost {
                 DWORD dwFlags = 0;
                 if (m_throw_if_error)
                     dwFlags |= MB_ERR_INVALID_CHARS;
-                if (m_from == ENC_PATHNARROW)
+                if (m_from == ENC_PATHANSI)
                     dwFlags |= MB_PRECOMPOSED;
 
                 UINT nCP = _cp_from_encoding(m_from);
@@ -118,7 +122,7 @@ namespace unboost {
                 m_converted = 0;
 
                 DWORD dwFlags = WC_COMPOSITECHECK | WC_DEFAULTCHAR;
-                if (m_to == ENC_PATHNARROW)
+                if (m_to == ENC_PATHANSI)
                     dwFlags |= WC_NO_BEST_FIT_CHARS;
 
                 UINT nCP = _cp_from_encoding(m_to);
@@ -163,7 +167,7 @@ namespace unboost {
                 case ENC_UTF7:      return CP_UTF7;
                 case ENC_UTF8:      return CP_UTF8;
                 case ENC_WIDE:      return CP_ACP;
-                case ENC_PATHWIDE: case ENC_PATHNARROW:
+                case ENC_PATHWIDE: case ENC_PATHANSI:
                     if (::AreFileApisANSI())
                         return CP_ACP;
                     else
@@ -221,6 +225,9 @@ namespace unboost {
                     iconv_close(m_iconv);
                     m_iconv = iconv_t(-1);
                 }
+            }
+            bool is_open() const {
+                return m_iconv != iconv_t(-1);
             }
 
             ~text2text() {
@@ -356,7 +363,7 @@ namespace unboost {
                 case ENC_SJIS:          return "CP932";
                 case ENC_UTF7:          return "UTF-7";
                 case ENC_UTF8:          return "UTF-8";
-                case ENC_PATHNARROW:    return "UTF-8";
+                case ENC_PATHANSI:      return "UTF-8";
                 case ENC_WIDE: case ENC_PATHWIDE:
                     if (sizeof(wchar_t) == 2)
                         return "UTF-16LE";
