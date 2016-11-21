@@ -375,6 +375,42 @@
                 return s.type() == file_type::socket;
             }
 
+            namespace detail {
+                inline text2text& get_pathansi2pathwide(void) {
+                    static text2text pathansi2pathwide;
+                    if (!pathansi2pathwide.is_open())
+                        pathansi2pathwide.open(ENC_PATHANSI, ENC_PATHWIDE);
+                    return pathansi2pathwide;
+                }
+                inline text2text& get_pathwide2pathansi(void) {
+                    static text2text pathwide2pathansi;
+                    if (!pathwide2pathansi.is_open())
+                        pathwide2pathansi.open(ENC_PATHWIDE, ENC_PATHANSI);
+                    return pathwide2pathansi;
+                }
+                #ifdef _WIN32
+                    static const wchar_t dot = L'.';
+                    static const wchar_t colon = L':';
+                    static const wchar_t *dot_dot = L"..";
+                    inline bool is_separator(wchar_t ch) {
+                        return ch == L'\\' || ch == L'/';
+                    }
+                    inline bool is_dot(const std::wstring& str) {
+                        return str == L"." || str == L"..";
+                    }
+                #else
+                    static const char dot = '.';
+                    static const char colon = ':';
+                    static const char *dot_dot = "..";
+                    inline bool is_separator(char ch) {
+                        return ch == '/';
+                    }
+                    inline bool is_dot(const std::string& str) {
+                        return str == "." || str == "..";
+                    }
+                #endif
+            } // namespace detail
+
             class path {
             public:
                 #ifdef _WIN32
@@ -390,6 +426,7 @@
                 path(const path& p) : m_pathname(p.m_pathname) { }
                 path(path&& p) : m_pathname(std::move(p.m_pathname))
                 { }
+
                 template <class Source>
                 path(const Source& source) {
                     ...
@@ -401,20 +438,6 @@
                 template <class Source>
                 path(const Source& source, const std::locale& loc) {
                     ...
-                    switch (sizeof(Source::value_type)) {
-                    case 1:
-                        m_pathname = source.m_pathname;
-                        ...
-                        break;
-                    case 2:
-                        ...
-                        break;
-                    case 4:
-                        ...
-                        break;
-                    default:
-                        assert(0);
-                    }
                 }
                 template <typename InputIt>
                 path(InputIt first, InputIt last, const std::locale& loc) {
@@ -451,8 +474,8 @@
 
                 path& operator/=(const path& p) {
                     if (empty() || p.empty() ||
-                        _is_separator(native().back()) ||
-                        _is_separator(p.native().front())
+                        detail::is_separator(native().back()) ||
+                        detail::is_separator(p.native().front())
                     {
                         m_pathname += p.native();
                     } else {
@@ -570,8 +593,10 @@
                     if (!extension().empty()) {
                         _remove_extension();
                     }
-                    if (!replacement.empty() && replacement.native().front() != _dot()) {
-                        *this += _dot();
+                    if (!replacement.empty() &&
+                        replacement.native().front() != detail::dot)
+                    {
+                        *this += detail::dot;
                     }
                     *this += replacement;
                     return *this;
@@ -591,40 +616,11 @@
                     return m_pathname;
                 }
 
-                template <typename CharT, class Traits = std::char_traits<CharT> >
-                std::basic_string<CharT, Traits> string() const {
-                    std::basic_string<CharT, Traits> ret;
-                    switch (sizeof(CharT)) {
-                    case 1:
-                        ret = ...;
-                    case 2:
-                        ret = ...;
-                    case 4:
-                        ret = ...;
-                    default:
-                        assert(0);
-                    }
-                    return ret;
-                }
                 std::string string() const {
-                    return m_pathname;
+                    return m_ansi2wide.to_bytes(m_pathname);
                 }
                 std::wstring wstring() const {
-                    if (sizeof(wchar_t) == 2)
-                        return u16string();
-                    if (sizeof(wchar_t) == 4)
-                        return u32string();
-                    assert(0);
-                    return L"";
-                }
-                std::string u8string() const {
-                    ...
-                }
-                std::u16string u16string() const {
-                    ...
-                }
-                std::u32string u32string() const {
-                    ...
+                    return m_pathname;
                 }
 
                 template <typename CharT, class Traits = std::char_traits<CharT> >
@@ -649,15 +645,6 @@
                     ...
                 }
                 std::wstring generic_wstring() const {
-                    ...
-                }
-                std::string generic_u8string() const {
-                    ...
-                }
-                std::u16string generic_u16string() const {
-                    ...
-                }
-                std::u32string generic_u32string() const {
                     ...
                 }
 
@@ -749,10 +736,8 @@
 
                 path extension() const {
                     string_type fname = filename().native();
-                    size_t i = fname.rfind('.');
-                    if (i == string_type::npos ||
-                        fname == "." || fname == "..")
-                    {
+                    size_t i = fname.rfind(detail::dot);
+                    if (i == string_type::npos || detail::is_dot(fname)) {
                         path p;
                         return p;
                     } else {
@@ -765,30 +750,14 @@
                     return m_pathname.empty();
                 }
 
-                bool has_root_path() const {
-                    return !root_path().empty();
-                }
-                bool has_root_name() const {
-                    return !root_name().empty();
-                }
-                bool has_root_directory() const {
-                    return !root_directory().empty();
-                }
-                bool has_relative_path() const {
-                    return !relative_path().empty();
-                }
-                bool has_parent_path() const {
-                    return !parent_path().empty();
-                }
-                bool has_filename() const {
-                    return !filename().empty();
-                }
-                bool has_stem() const {
-                    return !stem().empty();
-                }
-                bool has_extension() const {
-                    return !extension().empty();
-                }
+                bool has_root_path() const      { return !root_path().empty(); }
+                bool has_root_name() const      { return !root_name().empty(); }
+                bool has_root_directory() const { return !root_directory().empty(); }
+                bool has_relative_path() const  { return !relative_path().empty(); }
+                bool has_parent_path() const    { return !parent_path().empty(); }
+                bool has_filename() const       { return !filename().empty(); }
+                bool has_stem() const           { return !stem().empty(); }
+                bool has_extension() const      { return !extension().empty(); }
 
                 bool is_absolute() const {
                     error_code ec;
@@ -801,41 +770,11 @@
 
             protected:
                 string_type                 m_pathname;
-                text2text                   m_ansi2wide;
-                text2text                   m_wide2ansi;
 
-                bool _open_text2text() {
-                    return (
-                        m_ansi2wide.open(ENC_PATHANSI, ENC_PATHWIDE) &&
-                        m_wide2ansi.open(ENC_PATHWIDE, ENC_PATHANSI)
-                    );
-                }
-
-                bool _is_separator(value_type ch) const {
-                    #ifdef _WIN32
-                        return ch == L'\\' || ch == L'/';
-                    #else
-                        return ch == '/';
-                    #endif
-                }
-                value_type _dot() const {
-                    #ifdef _WIN32
-                        return L'.';
-                    #else
-                        return '.';
-                    #endif
-                }
-                value_type _colon() const {
-                    #ifdef _WIN32
-                        return L':';
-                    #else
-                        return ':';
-                    #endif
-                }
                 void _remove_extension() {
                     if (extension().empty())
                         return;
-                    size_t i = p.m_pathname.rfind(_dot());
+                    size_t i = p.m_pathname.rfind(detail::dot);
                     if (i != string_type::npos) {
                         p.m_pathname = p.m_pathname.substr(0, i);
                     }
@@ -1007,9 +946,9 @@
             }
 
             #ifdef _WIN32
-                /*static*/ const value_type path::preferred_separator = L'\\';
+                /*static*/ const wchar_t path::preferred_separator = L'\\';
             #else
-                /*static*/ const value_type path::preferred_separator = '/';
+                /*static*/ const char    path::preferred_separator = '/';
             #endif
 
             template <class CharT, class Traits>
@@ -1027,15 +966,6 @@
             {
                 os << std::quoted(p.string<CharT, Traits>());
                 return os;
-            }
-
-            template <class Source>
-            inline path u8path(const Source& source) {
-                ...
-            }
-            template <typename InputIt>
-            inline path u8path(InputIt first, InputIt last) {
-                ...
             }
 
             template <>
