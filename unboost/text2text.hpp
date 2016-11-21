@@ -22,7 +22,9 @@ namespace unboost {
         ENC_SJIS,
         ENC_UTF7,
         ENC_UTF8,
-        ENC_WIDE
+        ENC_WIDE,
+        ENC_PATHNARROW,
+        ENC_PATHWIDE
     };
 } // namespace unboost
 
@@ -75,13 +77,18 @@ namespace unboost {
                 return from_bytes(&str[0], &str[str.size()]);
             }
             wide_string from_bytes(const char *first, const char *last) {
-                assert(m_to == ENC_WIDE);
+                assert(m_to == ENC_WIDE || m_to == ENC_PATHWIDE);
                 wide_string ret;
                 m_converted = 0;
 
+                DWORD dwFlags = 0;
+                if (m_throw_if_error)
+                    dwFlags |= MB_ERR_INVALID_CHARS;
+                if (m_from == ENC_PATHNARROW)
+                    dwFlags |= MB_PRECOMPOSED;
+
                 UINT nCP = _cp_from_encoding(m_from);
-                UINT nCount = ::MultiByteToWideChar(nCP,
-                    m_throw_if_error ? MB_ERR_INVALID_CHARS : 0,
+                UINT nCount = ::MultiByteToWideChar(nCP, dwFlags,
                     first, last - first, NULL, 0);
                 if (nCount == 0 && ::GetLastError() == ERROR_NO_UNICODE_TRANSLATION) {
                     if (m_throw_if_error) {
@@ -105,14 +112,18 @@ namespace unboost {
                 return to_bytes(&wstr[0], &wstr[wstr.size()]);
             }
             byte_string to_bytes(const wchar_t *first, const wchar_t *last) {
-                assert(m_from == ENC_WIDE);
+                assert(m_from == ENC_WIDE || m_from == ENC_PATHWIDE);
                 byte_string ret;
 
                 m_converted = 0;
+
+                DWORD dwFlags = WC_COMPOSITECHECK | WC_DEFAULTCHAR;
+                if (m_to == ENC_PATHNARROW)
+                    dwFlags |= WC_NO_BEST_FIT_CHARS;
+
                 UINT nCP = _cp_from_encoding(m_to);
                 BOOL UsedDefChar = FALSE;
-                UINT nCount = ::WideCharToMultiByte(nCP,
-                    WC_COMPOSITECHECK | WC_DEFAULTCHAR,
+                UINT nCount = ::WideCharToMultiByte(nCP, dwFlags,
                     first, last - first, NULL, 0, NULL, &UsedDefChar);
                 if (UsedDefChar) {
                     if (m_throw_if_error) {
@@ -122,8 +133,7 @@ namespace unboost {
                 }
 
                 ret.resize(nCount);
-                m_converted = ::WideCharToMultiByte(nCP,
-                    WC_COMPOSITECHECK | WC_DEFAULTCHAR,
+                m_converted = ::WideCharToMultiByte(nCP, dwFlags,
                     first, last - first, &ret[0], nCount, NULL, NULL);
                 return ret;
             } // to_bytes
@@ -148,11 +158,16 @@ namespace unboost {
 
             UINT _cp_from_encoding(encoding e) const {
                 switch (e) {
-                case ENC_ANSI:  return CP_ACP;
-                case ENC_SJIS:  return 932;
-                case ENC_UTF7:  return CP_UTF7;
-                case ENC_UTF8:  return CP_UTF8;
-                case ENC_WIDE:  return 1200;
+                case ENC_ANSI:      return CP_ACP;
+                case ENC_SJIS:      return 932;
+                case ENC_UTF7:      return CP_UTF7;
+                case ENC_UTF8:      return CP_UTF8;
+                case ENC_WIDE:      return CP_ACP;
+                case ENC_PATHWIDE: case ENC_PATHNARROW:
+                    if (::AreFileApisANSI())
+                        return CP_ACP;
+                    else
+                        return CP_OEM;
                 default:
                     assert(0);
                     return CP_ACP;
@@ -161,6 +176,7 @@ namespace unboost {
             bool _is_encoding_wide(encoding e) const {
                 switch (e) {
                 case ENC_WIDE:
+                case ENC_PATHWIDE:
                     return true;
                 default:
                     return false;
@@ -219,7 +235,7 @@ namespace unboost {
                 return from_bytes(&str[0], &str[str.size()]);
             }
             wide_string from_bytes(const char *first, const char *last) {
-                assert(m_to == ENC_WIDE);
+                assert(m_to == ENC_WIDE || m_to == ENC_PATHWIDE);
 
                 wide_string ret;
                 m_converted = 0;
@@ -272,7 +288,7 @@ namespace unboost {
                 return to_bytes(&wstr[0], &wstr[wstr.size()]);
             }
             byte_string to_bytes(const wchar_t *first, const wchar_t *last) {
-                assert(m_from == ENC_WIDE);
+                assert(m_from == ENC_WIDE || m_from == ENC_PATHWIDE);
 
                 byte_string ret;
                 m_converted = 0;
@@ -336,11 +352,12 @@ namespace unboost {
 
             const char *_code_from_encoding(encoding e) const {
                 switch (e) {
-                case ENC_ANSI:  return "CP1252";
-                case ENC_SJIS:  return "CP932";
-                case ENC_UTF7:  return "UTF-7";
-                case ENC_UTF8:  return "UTF-8";
-                case ENC_WIDE:
+                case ENC_ANSI:          return "CP1252";
+                case ENC_SJIS:          return "CP932";
+                case ENC_UTF7:          return "UTF-7";
+                case ENC_UTF8:          return "UTF-8";
+                case ENC_PATHNARROW:    return "UTF-8";
+                case ENC_WIDE: case ENC_PATHWIDE:
                     if (sizeof(wchar_t) == 2)
                         return "UTF-16LE";
                     if (sizeof(wchar_t) == 4)
@@ -354,6 +371,7 @@ namespace unboost {
             bool _is_encoding_wide(encoding e) const {
                 switch (e) {
                 case ENC_WIDE:
+                case ENC_PATHWIDE:
                     return true;
                 default:
                     return false;
