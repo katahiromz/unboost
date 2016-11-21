@@ -409,32 +409,25 @@
             inline bool is_block_file(file_status s) {
                 return s.type() == file_type::block;
             }
-
             inline bool is_character_file(file_status s) {
                 return s.type() == file_type::character;
             }
-
             inline bool is_fifo(file_status s) {
                 return s.type() == file_type::fifo;
             }
-
             inline bool is_regular_file(file_status s) {
                 return s.type() == file_type::regular;
             }
-
             inline bool is_symlink(file_status s) {
                 return s.type() == file_type::symlink;
             }
-
             inline bool is_directory(file_status s) {
                 return s.type() == file_type::directory;
             }
-
             inline bool is_other(file_status s) {
                 return exists(s) && !is_regular_file(s) && !is_directory(s) &&
                        !is_symlink(s);
             }
-
             inline bool is_socket(file_status s) {
                 return s.type() == file_type::socket;
             }
