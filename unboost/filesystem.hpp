@@ -110,7 +110,7 @@
             static const perms add_perms = perms::add_perms;
             static const perms remove_perms = perms::remove_perms;
             static const perms symlink_perms = perms::resolve_symlinks;
-            // 
+            //
             inline path system_complete(const path& p, error_code *ec) {
                 if (ec)
                     return system_complete(p, *ec);
@@ -357,6 +357,130 @@
             using boost::filesystem::is_socket;
             using boost::filesystem::is_symlink;
             using boost::filesystem::status_known;
+            //
+            inline path system_complete(const path& p, error_code& ec) {
+                return system_complete(p, &ec);
+            }
+            inline path canonical(const path& p, error_code& ec) {
+                return canonical(p, &ec);
+            }
+            inline path canonical(const path& p, const path& base, error_code& ec) {
+                return canonical(p, base, &ec);
+            }
+            inline void copy(const path& from, const path& to, error_code& ec) {
+                return copy(from, to, &ec);
+            }
+            inline void
+            copy(const path& from, const path& to, copy_options options,
+                 error_code& ec)
+            {
+                return copy(from, to, options, &ec);
+            }
+            inline bool copy_file(const path& from, const path& to, error_code& ec) {
+                return copy_file(from, to, &ec);
+            }
+            inline bool
+            copy_file(const path& from, const path& to, copy_options options,
+                      error_code& ec)
+            {
+                return copy_file(from, to, options, &ec);
+            }
+            inline void
+            copy_symlink(const path& from, const path& to, error_code& ec) {
+                return copy_symlink(from, to, &ec);
+            }
+            inline bool create_directory(const path& p, error_code& ec) {
+                return create_directory(p, &ec);
+            }
+            inline bool
+            create_directory(const path& p, const path& existing_p,
+                             error_code& ec)
+            {
+                return create_directory(p, existing_p, &ec);
+            }
+            inline bool create_directories(const path& p, error_code& ec) {
+                return create_directories(p, &ec);
+            }
+            inline void
+            create_hard_link(const path& target, const path& link,
+                             error_code& ec)
+            {
+                return create_hard_link(target, link, &ec);
+            }
+            inline path current_path(error_code& ec) {
+                return current_path(&ec);
+            }
+            inline void current_path(const path& p, error_code& ec) {
+                return current_path(p, &ec);
+            }
+            inline bool
+            equivalent(const path& p1, const path& p2, error_code& ec) {
+                return equivalent(p1, p2, &ec);
+            }
+            inline bool exists(const path& p, error_code& ec) {
+                return exists(p, &ec);
+            }
+            inline std::uintmax_t file_size(const path& p, error_code& ec) {
+                return file_size(p, &ec);
+            }
+            inline std::uintmax_t
+            hard_link_count(const path& p, error_code& ec) {
+                return hard_link_count(p, &ec);
+            }
+            inline bool is_block_file(const path& p, error_code& ec) {
+                return is_block_file(p, &ec);
+            }
+            inline bool is_character_file(const path& p, error_code& ec) {
+                return is_character_file(p, &ec);
+            }
+            inline bool is_socket(const path& p, error_code& ec) {
+                return is_socket(p, &ec);
+            }
+            inline bool is_symlink(const path& p, error_code& ec) {
+                return is_symlink(p, &ec);
+            }
+            inline file_time_type
+            last_write_time(const path& p, error_code& ec) {
+                return last_write_time(p, &ec);
+            }
+            inline void
+            last_write_time(const path& p, file_time_type new_time,
+                            error_code& ec)
+            {
+                return last_write_time(p, new_time, &ec);
+            }
+            inline void permissions(const path& p, perms prms, error_code& ec) {
+                return permissions(p, prms, &ec);
+            }
+            inline path read_symlink(const path& p, error_code& ec) {
+                return read_symlink(p, &ec);
+            }
+            inline bool remove(const path& p, error_code& ec) {
+                return remove(p, &ec);
+            }
+            inline std::uintmax_t remove_all(const path& p, error_code& ec) {
+                return remove_all(p, &ec);
+            }
+            inline void
+            rename(const path& old_p, const path& new_p, std::error_code& ec) {
+                return rename(old_p, new_p, &ec);
+            }
+            inline void
+            resize_file(const path& p, std::uintmax_t new_size, error_code& ec) {
+                return resize_file(p, new_size, &ec);
+            }
+            inline space_info space(const path& p, error_code& ec) {
+                return space(p, &ec);
+            }
+            inline file_status status(const path& p, error_code& ec) {
+                return status(p, &ec);
+            }
+            inline file_status symlink_status(const path& p, error_code& ec) {
+                return symlink_status(p, &ec);
+            }
+            inline path temp_directory_path(error_code& ec) {
+                return temp_directory_path(&ec);
+            }
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
