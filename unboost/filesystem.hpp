@@ -177,6 +177,20 @@
                 return create_directories(p);
             }
             inline void
+            create_symlink(const path& to, const path& from, error_code *ec) {
+                if (ec)
+                    return create_symlink(to, from, *ec);
+                return create_symlink(to, from);
+            }
+            inline void
+            create_directory_symlink(const path& to, const path& from,
+                                     error_code *ec)
+            {
+                if (ec)
+                    return create_directory_symlink(to, from, *ec);
+                return create_directory_symlink(to, from);
+            }
+            inline void
             create_hard_link(const path& target, const path& link,
                              error_code *ec)
             {
@@ -400,6 +414,16 @@
             }
             inline bool create_directories(const path& p, error_code& ec) {
                 return create_directories(p, &ec);
+            }
+            inline void
+            create_symlink(const path& to, const path& from, error_code& ec) {
+                return create_symlink(to, from, &ec);
+            }
+            inline void
+            create_directory_symlink(const path& to, const path& from,
+                                     error_code& ec)
+            {
+                return create_directory_symlink(to, from, &ec);
             }
             inline void
             create_hard_link(const path& target, const path& link,
