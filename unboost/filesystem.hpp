@@ -132,6 +132,7 @@
             using boost::filesystem::copy_option;
             typedef boost::filesystem::copy_option copy_options;
             //using boost::filesystem::directory_options;   // absent
+            using boost::filesystem::symlink_option;
             typedef std::time_t file_time_type;
             using boost::filesystem::absolute;
             using boost::filesystem::system_complete;
@@ -161,6 +162,7 @@
             using boost::filesystem::status;
             using boost::filesystem::symlink_status;
             using boost::filesystem::temp_directory_path;
+
             inline bool is_block_file(file_status s) {
                 return s.type() == boost::filesystem::block_file;
             }
@@ -170,6 +172,7 @@
             inline bool is_block_file(const path& p, boost::system::error_code& ec) {
                 return is_block_file(status(p, ec));
             }
+
             inline bool is_character_file(file_status s) {
                 return s.type() == boost::filesystem::character_file;
             }
@@ -179,8 +182,10 @@
             inline bool is_character_file(const path& p, boost::system::error_code& ec) {
                 return is_character_file(status(p, ec));
             }
+
             using boost::filesystem::is_directory;
             using boost::filesystem::is_empty;
+
             inline bool is_fifo(file_status s) {
                 return s.type() == boost::filesystem::fifo_file;
             }
@@ -190,8 +195,10 @@
             inline bool is_fifo(const path& p, boost::system::error_code& ec) {
                 return is_fifo(status(p, ec));
             }
+
             using boost::filesystem::is_other;
             using boost::filesystem::is_regular_file;
+
             inline bool is_socket(file_status s) {
                 return s.type() == boost::filesystem::socket_file;
             }
@@ -201,6 +208,7 @@
             inline bool is_socket(const path& p, boost::system::error_code& ec) {
                 return is_socket(status(p, ec));
             }
+
             using boost::filesystem::is_symlink;
             using boost::filesystem::status_known;
         } // namespace filesystem
@@ -326,6 +334,22 @@
                 file_type::inner    m_type;
                 perms::inner        m_permissions;
             }; // struct file_status
+
+            struct copy_options {
+                enum inner {
+                    none = 0,
+                    skip_existing = 1,
+                    overwrite_existing = 2,
+                    update_existing = 4,
+                    recursive = 8,
+                    copy_symlinks = 16,
+                    skip_symlinks = 32,
+                    directories_only = 64,
+                    create_symlinks = 128,
+                    create_hard_links = 256
+                };
+            }; // class copy_options
+            typedef copy_options copy_option;
 
             class filesystem_error {
             public:
@@ -1430,21 +1454,6 @@
                 uintmax_t free;
                 uintmax_t available;
             }; // struct space_info
-
-            struct copy_options {
-                enum {
-                    none = 0,
-                    skip_existing = 1,
-                    overwrite_existing = 2,
-                    update_existing = 4,
-                    recursive = 8,
-                    copy_symlinks = 16,
-                    skip_symlinks = 32,
-                    directories_only = 64,
-                    create_symlinks = 128,
-                    create_hard_links = 256
-                };
-            }; // class copy_options
 
             typedef chrono::time_point<
                 chrono::system_clock,
