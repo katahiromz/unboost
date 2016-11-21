@@ -492,7 +492,7 @@
                 }
                 template <class Source>
                 path& operator+=(const Source& source) {
-                    assert(path_traits::is_pathable<source>::value);
+                    assert(path_traits::is_pathable<Source>::value);
                     return concat(source);
                 }
                 template <class CharT>
@@ -504,6 +504,7 @@
                 }
                 template <class Source>
                 path& concat(const Source& source) {
+                    assert(path_traits::is_pathable<Source>::value);
                     path_traits::dispatch(source, m_pathname);
                     return *this;
                 }
@@ -515,49 +516,66 @@
                     return *this;
                 }
 
-                ...
-
-                path(path&& p);
-                path& operator=(path&& p);
-
                 path& operator/=(const path& p) {
-                    if (empty() || p.empty() ||
-                        detail::is_separator(native().back()) ||
-                        detail::is_separator(p.native().front())
-                    {
-                        m_pathname += p.native();
+                    if (empty())
+                        return *this;
+                    if (this == &p) {
+                        path rhs(p);
+                        if (!detail::is_separator(rhs.m_pathname[0]))
+                            _append_separator_if_needed();
+                        m_pathname += rhs.m_pathname;
                     } else {
-                        m_pathname += preferred_separator;
-                        m_pathname += p.native();
+                        if (!detail::is_separator(p.m_pathname[0]))
+                            _append_separator_if_needed();
+                        m_pathname += p.m_pathname;
+                    }
+                    return *this;
+                }
+                path& operator/=(const value_type *ptr) {
+                    if (*ptr == 0)
+                        return *this;
+                    if (m_pathname.data() <= ptr &&
+                        ptr < m_pathname.data() + m_pathname.size())
+                    {
+                        path rhs(ptr);
+                        if (!detail::is_separator(rhs.m_pathname[0]))
+                            _append_separator_if_needed();
+                        m_pathname += rhs.m_pathname;
+                    } else {
+                        if (!detail::is_separator(*ptr))
+                            _append_separator_if_needed();
+                        m_pathname += ptr;
                     }
                     return *this;
                 }
                 template <class Source>
+                path& operator/=(const Source& source) {
+                    return append(source);
+                }
+                template <class Source>
                 path& append(const Source& source) {
-                    *this /= path(source);
+                    assert(path_traits::is_pathable<Source>::value);
+                    if (path_traits::empty(source))
+                        return *this;
+                    string_type::size_type sep_pos = _append_separator_if_needed();
+                    path_traits::dispatch(source, m_pathname);
+                    if (sep_pos)
+                        _erase_redundant_separator(sep_pos);
                     return *this;
                 }
                 template <typename InputIt>
                 path& append(InputIt first, InputIt last) {
-                    *this /= path(first, last);
-                    return *this;
-                }
-                template <class Source>
-                path& operator/=(const Source& source) {
-                    *this /= path(source);
+                    if (first == last)
+                        return *this;
+                    string_type::size_type sep_pos = _append_separator_if_needed();
+                    path_traits::convert(first, last, m_pathname);
+                    if (sep_pos)
+                        _erase_redundant_separator(sep_pos);
                     return *this;
                 }
 
-                iterator begin() const {
-                    ...
-                }
-                iterator end() const {
-                    ...
-                }
+                void clear() { m_pathname.clear(); }
 
-                void clear() {
-                    m_pathname.clear();
-                }
                 path& make_preferred() {
                     #ifdef _WIN32
                         unboost::replace_all(m_pathname, L'/', L'\\');
@@ -567,123 +585,77 @@
 
                 path& remove_filename() {
                     assert(has_filename());
-                    #ifdef _WIN32
-                        size_t m, n;
-                        m = m_pathname.rfind(L'/');
-                        n = m_pathname.rfind(L'\\');
-                        if (m != string_type::npos && n != string_type::npos) {
-                            if (m < n) {
-                                m_pathname = m_pathname.substr(0, n);
-                            } else {
-                                m_pathname = m_pathname.substr(0, m);
-                            }
-                        } else if (m != string_type::npos) {
-                            m_pathname = m_pathname.substr(0, m);
-                        } else if (n != string_type::npos) {
-                            m_pathname = m_pathname.substr(0, n);
-                        }
-                    #else
-                        size_t m = m_pathname.rfind(L'/');
-                        if (m != string_type::npos) {
-                            m_pathname = m_pathname.substr(0, m);
-                        }
-                    #endif
+                    m_pathname.erase(_parent_path_end());
                     return *this;
                 }
-
                 path& replace_filename(const path& replacement) {
                     assert(has_filename());
                     remove_filename();
                     *this /= replacement;
                     return *this;
                 }
-
                 path& replace_extension(const path& replacement = path()) {
-                    if (!extension().empty()) {
-                        _remove_extension();
+                    m_pathname.erase(m_pathname.size() - extension().m_pathname.size());
+                    if (replacement.size()) {
+                        if (replacement.m_pathname[0] != detail::dot)
+                            m_pathname.push_back(detail::dot);
+                        m_pathname.append(replacement.m_pathname);
                     }
-                    if (!replacement.empty() &&
-                        replacement.native().front() != detail::dot)
-                    {
-                        *this += detail::dot;
-                    }
-                    *this += replacement;
                     return *this;
                 }
-
                 void swap(path& other) {
                     std::swap(m_pathname, other.m_pathname);
                 }
 
-                const value_type *c_str() const {
-                    return native().c_str();
+                const string_type& native() const { return m_pathname; }
+                const value_type *c_str() const   { return m_pathname.c_str(); }
+
+                std::string string() const {
+                    #ifdef _WIN32
+                        return get_pathwide2pathansi.to_bytes(m_pathname);
+                    #else
+                        return m_pathname;
+                    #endif
                 }
-                const string_type& native() const {
-                    return m_pathname;
+                std::wstring wstring() const {
+                    #ifdef _WIN32
+                        return m_pathname;
+                    #else
+                        return get_pathansi2pathwide.from_bytes(m_pathname);
+                    #endif
                 }
+
+                std::string generic_string() const {
+                    return string();
+                }
+                std::wstring generic_wstring() const {
+                    return wstring();
+                }
+
                 operator string_type() const {
                     return m_pathname;
                 }
 
-                std::string string() const {
-                    return m_ansi2wide.to_bytes(m_pathname);
-                }
-                std::wstring wstring() const {
-                    return m_pathname;
-                }
-
-                template <typename CharT, class Traits = std::char_traits<CharT> >
-                std::basic_string<CharT, Traits> generic_string() const {
-                    std::basic_string<CharT, Traits> ret;
-                    switch (sizeof(CharT)) {
-                    case 1:
-                        ret = m_pathname;
-                        break;
-                    case 2:
-                        ret = m_pathname;
-                        break;
-                    case 4:
-                        ret = m_pathname;
-                        break;
-                    default:
-                        assert(0);
-                    }
-                    return ret;
-                }
-                std::string generic_string() const {
-                    ...
-                }
-                std::wstring generic_wstring() const {
-                    ...
-                }
-
                 int compare(const path& p) const {
-                    string_type::const_iterator it1, end1, it2, end2;
-                    it1 = native().begin();
-                    end1 = native().end();
-                    it2 = p.native().begin();
-                    end2 = p.native().end();
-                    for (;;) {
-                        if (it1 == end1 || it2 == end2)
-                            break;
-                        if (*it1 < *it2)
-                            return -1;
-                        if (*it1 > *it2)
-                            return 1;
-                        ++it1;
-                        ++it2;
-                    }
-                    if (it1 == end1 && it2 == end2)
-                        return 0;
-                    if (it1 == end1)
-                        return -1;
-                    return 1;
+                    ...
                 }
                 int compare(const string_type& str) const {
                     return compare(path(str));
                 }
-                int compare(const value_type *s) const {
-                    return compare(path(s));
+                int compare(const value_type *ptr) const {
+                    return compare(path(ptr));
+                }
+
+                ...
+
+                path(path&& p);
+                path& operator=(path&& p);
+
+                iterator begin() const {
+                    ...
+                }
+                iterator end() const {
+                    ...
                 }
 
                 path root_name() const {
