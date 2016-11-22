@@ -217,6 +217,17 @@
     #include <vector>               // for std::vector
     #include <list>                 // for std::list
     #include <ctime>                // for std::time_t
+    #ifdef _WIN32
+        #ifndef NOMINMAX
+            #define NOMINMAX
+        #endif
+        #ifndef _INC_WINDOWS
+            #include <windows.h>
+        #endif
+    #else
+        #include <sys/types.h>
+        #include <sys/stat.h>
+    #endif
     #include "system_error.hpp"     // for unboost::system_error, error_code
     #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
