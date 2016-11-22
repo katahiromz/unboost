@@ -1506,6 +1506,18 @@
                         ...
                     }
                 }
+
+                directory_iterator& increment() {
+                    ++m_index;
+                    if (m_entries.size() <= m_index)
+                        m_index = 0;
+                    return *this;
+                }
+                directory_iterator& increment(error_code& ec) {
+                    ec.clear();
+                    return increment();
+                }
+
                 const directory_entry& operator*() const {
                     return m_entries[m_index];
                 }
@@ -1521,16 +1533,7 @@
                     increment();
                     return it;
                 }
-                directory_iterator& increment() {
-                    ++m_index;
-                    if (m_entries.size() <= m_index)
-                        m_index = 0;
-                    return *this;
-                }
-                directory_iterator& increment(error_code& ec) {
-                    ec.clear();
-                    return increment();
-                }
+
             protected:
                 size_t                      m_index;
                 std::vector<value_type>     m_entries;
@@ -1724,8 +1727,21 @@
                 throw filesystem_error("unboost::filesystem::equivalent", p1, p2, ec);
             }
 
-            create_symlink
-            create_directory_symlink
+            inline void create_symlink(const path& target, const path& link) {
+                ...
+            }
+            inline void
+            create_symlink(const path& target, const path& link, error_code& ec) {
+
+            }
+            inline void
+            create_directory_symlink(const path& target, const path& link) {
+                ...
+            }
+            inline void
+            create_directory_symlink(const path& target, const path& link, error_code& ec) {
+                ...
+            }
 
             inline void
             create_hard_link(const path& target, const path& link, error_code& ec) {
@@ -1739,6 +1755,12 @@
                     throw filesystem_error("unboost::filesystem::create_hard_link", target, link, ec);
             }
 
+            inline path read_symlink(const path& p) {
+                ...
+            }
+            inline path read_symlink(const path& p, error_code& ec) {
+                ...
+            }
             inline void
             copy_symlink(const path& from, const path& to, error_code& ec) {
                 if (is_directory(from)) {
