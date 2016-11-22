@@ -24,7 +24,7 @@
 #endif
 
 #ifdef UNBOOST_USE_CXX17_FILESYSTEM
-    #include <experimental/filesystem>
+    #include <filesystem>
     namespace unboost {
         namespace filesystem {
             using std::filesystem::path;
@@ -1512,24 +1512,23 @@
                     return &m_entries[m_index];
                 }
                 directory_iterator& operator++() {
-                    ++m_index;
-                    if (m_entries.size() <= m_index)
-                        m_index = 0;
+                    increment();
                     return *this;
                 }
                 directory_iterator operator++(int) {
                     directory_iterator it = *this;
-                    ++m_index;
-                    if (m_entries.size() <= m_index)
-                        m_index = 0;
+                    increment();
                     return it;
                 }
-                directory_iterator& increment(error_code& ec) {
-                    ec.clear();
+                directory_iterator& increment() {
                     ++m_index;
                     if (m_entries.size() <= m_index)
                         m_index = 0;
                     return *this;
+                }
+                directory_iterator& increment(error_code& ec) {
+                    ec.clear();
+                    return increment();
                 }
             protected:
                 size_t                      m_index;
