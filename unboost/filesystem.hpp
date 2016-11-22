@@ -391,7 +391,8 @@
                 #ifdef _WIN32
                     static const wchar_t dot = L'.';
                     static const wchar_t colon = L':';
-                    static const wchar_t *dot_dot_path = L"..";
+                    static const wchar_t *dot_str = L".";
+                    static const wchar_t *dot_dot_str = L"..";
                     inline bool is_separator(wchar_t ch) {
                         return ch == L'\\' || ch == L'/';
                     }
@@ -401,7 +402,8 @@
                 #else
                     static const char dot = '.';
                     static const char colon = ':';
-                    static const char *dot_dot_path = "..";
+                    static const char *dot_str = ".";
+                    static const char *dot_dot_str = "..";
                     inline bool is_separator(char ch) {
                         return ch == '/';
                     }
@@ -426,6 +428,8 @@
 
                 static const value_type     preferred_separator;
 
+                // constructors
+                //
                 path() { }
                 path(const path& p) : m_pathname(p.m_pathname) { }
 
@@ -445,6 +449,8 @@
                     }
                 }
 
+                // assignments
+                //
                 path& operator=(const path& p) {
                     m_pathname = p.m_pathname;
                     return *this;
@@ -474,6 +480,8 @@
                     return *this;
                 }
 
+                // concatenation
+                //
                 path& operator+=(const path& p) {
                     m_pathname += p.m_pathname;
                     return *this;
@@ -516,6 +524,8 @@
                     return *this;
                 }
 
+                // appends
+                //
                 path& operator/=(const path& p) {
                     if (empty())
                         return *this;
@@ -574,6 +584,8 @@
                     return *this;
                 }
 
+                // modifiers
+                //
                 void clear() { m_pathname.clear(); }
 
                 path& make_preferred() {
@@ -607,6 +619,8 @@
                     std::swap(m_pathname, other.m_pathname);
                 }
 
+                // observers
+                //
                 const string_type& native() const { return m_pathname; }
                 const value_type *c_str() const   { return m_pathname.c_str(); }
 
@@ -625,17 +639,25 @@
                     #endif
                 }
 
+                // generic format observers
+                //
                 std::string generic_string() const {
-                    return string();
+                    path tmp(*this);
+                    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
+                    return tmp.string();
                 }
                 std::wstring generic_wstring() const {
-                    return wstring();
+                    path tmp(*this);
+                    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
+                    return tmp.wstring();
                 }
 
                 operator string_type() const {
                     return m_pathname;
                 }
 
+                // compare
+                //
                 int compare(const path& p) const {
                     ...
                 }
@@ -646,91 +668,85 @@
                     return compare(path(ptr));
                 }
 
-                ...
-
-                path(path&& p);
-                path& operator=(path&& p);
-
-                iterator begin() const {
-                    ...
+                // decomposition
+                //
+                path root_path() const {
+                    path tmp(root_name());
+                    if (!root_directory().empty())
+                        tmp.m_pathname += root_directory().c_str();
+                    return tmp;
                 }
-                iterator end() const {
-                    ...
-                }
-
                 path root_name() const {
-                    if (empty()) {
-                        path p;
-                        return p;
+                    iterator it = begin();
+                    if (it.m_pos != m_pathname.size() &&
+                        ((it.m_element.m_pathname.size() > 1 &&
+                         detail::is_separator(it.m_element.m_pathname[0]) &&
+                         detail::is_separator(it.m_element.m_pathname[1]))
+#ifdef _WIN32
+                         || it.m_element.m_pathname.back() == detail::colon
+#endif
+                        ))
+                    {
+                        return it.m_element;
                     }
-                    #ifdef _WIN32
-                        // C:
-                        if (m_pathname[1] == L':' &&
-                            std::isalpha(m_pathname[0]))
-                        {
-                            path p(m_pathname.substr(0, 2));
-                            return p;
-                        }
-                        // \\server
-                        if (m_pathname.substr(0, 2) == L"\\\\") {
-                            size_t i = 2;
-                            while (std::is_alnum(m_pathname[i])) {
-                                ++i;
-                            }
-                            path p(m_pathname.substr(0, i));
-                            return p;
-                        }
-                    #else
-                        if (m_pathname[0] == '/') {
-                            return path("/");
-                        }
-                    #endif
+                    return path();
                 }
                 path root_directory() const {
-                    ...
-                }
-                path root_path() const {
-                    return root_name() / root_directory();
-                }
-
-                path relative_path() const {
-                    path p(++begin(), end());
-                    return p;
-                }
-
-                path parent_path() const {
-                    if (empty() || begin() == --end())
+                    size_type pos = _root_directory_start(m_pathname, m_pathname.size());
+                    if (pos == string_type::npos)
                         return path();
-                    path p(begin(), --end());
-                    return p;
+                    return path(m_pathname.c_str() + pos, m_pathname.c_str() + pos + 1);
                 }
-
-                path filename() const {
-                    return empty() ? path() : *--end();
-                }
-
-                path stem() const {
-                    path p = filename();
-                    p._remove_extension();
-                    return p;
-                }
-
-                path extension() const {
-                    string_type fname = filename().native();
-                    size_t i = fname.rfind(detail::dot);
-                    if (i == string_type::npos || detail::is_dot(fname)) {
-                        path p;
-                        return p;
-                    } else {
-                        path p(&fname[i]);
-                        return p;
+                path relative_path() const {
+                    iterator it = begin();
+                    for (; it.m_pos != m_pathname.size() && (
+                        detail::is_separator(it.m_element.m_pathname[0])
+#ifdef _WIN32
+                        || it.m_element.m_pathname.back() == detail::colon
+#endif
+                        ); ++it)
+                    {
                     }
+                    return path(m_pathname.c_str() + it.m_pos);
+                }
+                path parent_path() const {
+                    size_type end_pos = _parent_path_end();
+                    if (end_pos == string_type::npos)
+                        return path();
+                    return path(m_pathname.c_str(), m_pathname.c_str() + end_pos);
+                }
+                path filename() const {
+                    size_type pos = _filename_pos(m_pathname, m_pathname.size());
+                    if (m_pathname.size() && pos &&
+                        detail::is_separator(m_pathname[pos]) &&
+                        !detail::is_root_separator(m_pathname, pos))
+                    {
+                        return path(detail::dot_str);
+                    }
+                    return path(m_pathname.c_str() + pos);
+                }
+                path stem() const {
+                    path name(filename());
+                    if (name._is_dot())
+                        return name;
+                    size_type pos = name.m_pathname.rfind(detail::dot);
+                    if (pos == string_type::npos)
+                        return name;
+                    return path(name.m_pathname.c_str(), name.m_pathname.c_str() + pos);
+                }
+                path extension() const {
+                    path name(filename());
+                    if (name._is_dot())
+                        return path();
+                    size_type pos = name.m_pathname.rfind(detail::dot);
+                    if (pos == string_type::npos)
+                        return path();
+                    return path(name.m_pathname.c_str() + pos);
                 }
 
-                bool empty() const {
-                    return m_pathname.empty();
-                }
-
+                // query
+                //
+                bool empty() const { return m_pathname.empty(); }
                 bool has_root_path() const      { return !root_path().empty(); }
                 bool has_root_name() const      { return !root_name().empty(); }
                 bool has_root_directory() const { return !root_directory().empty(); }
@@ -739,26 +755,31 @@
                 bool has_filename() const       { return !filename().empty(); }
                 bool has_stem() const           { return !stem().empty(); }
                 bool has_extension() const      { return !extension().empty(); }
-
                 bool is_absolute() const {
-                    error_code ec;
-                    return exists(root_path(), ec);
+                    #ifdef _WIN32
+                        return has_root_name() && has_root_directory();
+                    #else
+                        return has_root_directory();
+                    #endif
                 }
+                bool is_relative() const        { return !is_absolute(); }
 
-                bool is_relative() const {
-                    return !is_absolute();
-                }
+                // iterators
+                //
+                class iterator;
+                typedef iterator const_iterator;
+
+                iterator begin() const;
+                iterator end() const;
+
+                path(path&& p);
+                path& operator=(path&& p);
 
             protected:
                 string_type                 m_pathname;
 
-                void _remove_extension() {
-                    if (extension().empty())
-                        return;
-                    size_t i = p.m_pathname.rfind(detail::dot);
-                    if (i != string_type::npos) {
-                        p.m_pathname = p.m_pathname.substr(0, i);
-                    }
+                bool _is_dot() const {
+                    return detail::is_dot(m_pathname);
                 }
             }; // class path
 
