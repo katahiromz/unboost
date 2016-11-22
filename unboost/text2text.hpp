@@ -171,7 +171,7 @@ namespace unboost {
                     if (::AreFileApisANSI())
                         return CP_ACP;
                     else
-                        return CP_OEM;
+                        return CP_OEMCP;
                 default:
                     assert(0);
                     return CP_ACP;

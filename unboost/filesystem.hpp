@@ -214,6 +214,8 @@
         } // namespace filesystem
     } // namespace unboost
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
+    #include <vector>               // for std::vector
+    #include <list>                 // for std::list
     #include "system_error.hpp"     // for unboost::system_error, error_code
     #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
@@ -393,28 +395,282 @@
                     static const wchar_t colon = L':';
                     static const wchar_t *dot_str = L".";
                     static const wchar_t *dot_dot_str = L"..";
-                    inline bool is_separator(wchar_t ch) {
+                    static const wchar_t sep = L'/';
+                    static const wchar_t *sep_str = L"/";
+                    static const wchar_t preferred_sep = L'\\';
+                    static const wchar_t *preferred_sep_str = L"\\";
+                    static const wchar_t question_mark = L'?';
+                    static const wchar_t *seps = L"\\/";
+                    typedef std::wstring string_type;
+                    typedef string_type::size_type size_type;
+                    inline bool _is_sep(wchar_t ch) {
                         return ch == L'\\' || ch == L'/';
                     }
-                    inline bool is_dot(const std::wstring& str) {
+                    inline bool _is_dot(const std::wstring& str) {
                         return str == L"." || str == L"..";
+                    }
+                    inline bool _is_letter(wchar_t c) {
+                        return (L'a' <= c && c <= L'z') || (L'A' <= c && c <= L'Z');
                     }
                 #else
                     static const char dot = '.';
                     static const char colon = ':';
                     static const char *dot_str = ".";
                     static const char *dot_dot_str = "..";
-                    inline bool is_separator(char ch) {
+                    static const char sep = '/';
+                    static const char *sep_str = "/";
+                    static const char preferred_sep = '/';
+                    static const char *preferred_sep_str = "/";
+                    static const char *seps = "\\/";
+                    typedef std::string string_type;
+                    typedef string_type::size_type size_type;
+                    inline bool _is_sep(char ch) {
                         return ch == '/';
                     }
-                    inline bool is_dot(const std::string& str) {
+                    inline bool _is_dot(const std::string& str) {
                         return str == "." || str == "..";
                     }
                 #endif
+
+                inline size_t
+                _root_dir_start(const string_type& path, size_type size) {
+#ifdef _WIN32
+                    // case "c:/"
+                    if (size > 2 && path[1] == detail::colon && _is_sep(path[2]))
+                        return 2;
+#endif
+                    // case "//"
+                    if (size == 2 && _is_sep(path[0]) && _is_sep(path[1])) {
+                        return string_type::npos;
+                    }
+#ifdef _WIN32
+                    // case "\\?\"
+                    if (size > 4 && _is_sep(path[0]) && _is_sep(path[1]) &&
+                        path[2] == detail::question_mark && _is_sep(path[3]))
+                    {
+                        size_type pos = path.find_first_of(detail::seps, 4);
+                        if (pos < size)
+                            return pos;
+                        return string_type::npos;
+                    }
+#endif
+                    // case "//net {/}"
+                    if (size > 3 && _is_sep(path[0]) && _is_sep(path[1]) && !_is_sep(path[2]))
+                    {
+                        size_type pos = path.find_first_of(detail::seps, 2);
+                        if (pos < size)
+                            return pos;
+                        return string_type::npos;
+                    }
+                    // case "/"
+                    if (size > 0 && _is_sep(path[0]))
+                        return 0;
+
+                    return string_type::npos;
+                } // _root_dir_start
+
+                inline bool
+                _is_root_sep(const string_type & str, size_type pos) {
+                    assert(!str.empty() && _is_sep(str[pos]));
+
+                    while (pos > 0 && _is_sep(str[pos - 1]))
+                        --pos;
+
+                    if (pos == 0)
+                        return true;
+
+#ifdef _WIN32
+                    if (pos == 2 && _is_letter(str[0]) && str[1] == colon) {
+                        return true;
+                    }
+#endif
+                    if (pos < 3 || !_is_sep(str[0]) || !_is_sep(str[1]))
+                        return false;
+
+                    return str.find_first_of(seps, 2) == pos;
+                } // _is_root_sep
+
+                inline size_type
+                _filename_pos(const string_type& str, size_type end_pos)
+                {
+                    // case: "//"
+                    if (end_pos == 2  && _is_sep(str[0]) && _is_sep(str[1]))
+                        return 0;
+
+                    // case: ends in "/"
+                    if (end_pos && _is_sep(str[end_pos - 1]))
+                        return end_pos-1;
+    
+                    size_type pos = str.find_last_of(detail::seps, end_pos - 1);
+
+#ifdef _WIN32
+                    if (pos == string_type::npos)
+                        pos = str.find_last_of(detail::colon, end_pos - 2);
+#endif
+                    if (pos == string_type::npos ||
+                        (pos == 1 && _is_sep(str[0])))
+                    {
+                        return 0;
+                    }
+                    return pos + 1; 
+                } // _filename_pos
             } // namespace detail
 
+            struct directory_entry;
+
             namespace path_traits {
-                is_pathable
+                // empty
+                //
+                template <typename Container>
+                inline bool
+                empty(const Container & c) {
+                    return std::begin(c) == end(c);
+                }
+
+                template <typename T>
+                inline bool
+                empty(T * const & c_str) {
+                    assert(c_str);
+                    return !*c_str;
+                }
+
+                // pathable
+                //
+                template <typename T>
+                struct is_pathable { enum { value = 0 }; };
+                template <>
+                struct is_pathable<char*>                  { enum { value = 1 }; };
+                template <>
+                struct is_pathable<const char*>            { enum { value = 1 }; };
+                template <>
+                struct is_pathable<wchar_t*>               { enum { value = 1 }; };
+                template <>
+                struct is_pathable<const wchar_t*>         { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::string>            { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::wstring>           { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::vector<char> >     { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::vector<wchar_t> >  { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::list<char> >       { enum { value = 1 }; };
+                template <>
+                struct is_pathable<std::list<wchar_t> >    { enum { value = 1 }; };
+                template <>
+                struct is_pathable<directory_entry>        { enum { value = 1 }; };
+
+                // convert
+                //
+                inline void
+                convert(const char* from, const char* from_end,
+                        std::wstring& to)
+                {
+                    assert(from);
+                    if (from_end)
+                        to = detail::get_pathansi2pathwide().from_bytes(from, from_end);
+                    else
+                        to = detail::get_pathansi2pathwide().from_bytes(from);
+                }
+                inline void
+                convert(const wchar_t* from, const wchar_t* from_end,
+                        std::string& to)
+                {
+                    assert(from);
+                    if (from_end)
+                        to = detail::get_pathwide2pathansi().to_bytes(from, from_end);
+                    else
+                        to = detail::get_pathwide2pathansi().to_bytes(from);
+                }
+                inline 
+                void convert(const char* from, std::wstring& to) {
+                    assert(from);
+                    to = detail::get_pathansi2pathwide().from_bytes(from);
+                }
+                inline void
+                convert(const wchar_t* from, std::string& to) {
+                    assert(from);
+                    to = detail::get_pathwide2pathansi().to_bytes(from);
+                }
+
+                inline void
+                convert(const char* from, const char* from_end,
+                        std::string& to)
+                {
+                    assert(from);
+                    assert(from_end);
+                    to.append(from, from_end);
+                }
+                inline void
+                convert(const char* from, std::string& to) {
+                    assert(from);
+                    to += from;
+                }
+                inline void
+                convert(const wchar_t* from, const wchar_t* from_end,
+                       std::wstring& to)
+                {
+                    assert(from);
+                    assert(from_end);
+                    to.append(from, from_end);
+                }
+                inline void
+                convert(const wchar_t* from, std::wstring & to) {
+                    assert(from);
+                    to += from;
+                }
+
+                // dispatch
+                //
+                template <typename U>
+                inline void
+                dispatch(const std::string& c, U& to) {
+                    if (c.size())
+                        convert(&*c.begin(), &*c.begin() + c.size(), to);
+                }
+                template <typename U>
+                inline void
+                dispatch(const std::wstring& c, U& to) {
+                    if (c.size())
+                        convert(&*c.begin(), &*c.begin() + c.size(), to);
+                }
+                template <typename U>
+                inline void
+                dispatch(const std::vector<char>& c, U& to) {
+                    if (c.size())
+                        convert(&*c.begin(), &*c.begin() + c.size(), to);
+                }
+                template <typename U>
+                inline void
+                dispatch(const std::vector<wchar_t>& c, U& to) {
+                    if (c.size())
+                        convert(&*c.begin(), &*c.begin() + c.size(), to);
+                }
+
+                template <typename Container, typename U>
+                inline void
+                dispatch(const Container & c, U& to) {
+                    if (c.size()) {
+                        std::basic_string<typename Container::value_type>
+                            s(c.begin(), c.end());
+                        convert(s.c_str(), s.c_str() + s.size(), to);
+                    }
+                }
+                template <typename T, typename U>
+                inline void
+                dispatch(T * const & c_str, U& to) {
+                    assert(c_str);
+                    convert(c_str, to);
+                }
+                inline void
+                dispatch(const directory_entry& de,
+#ifdef _WIN32
+                    std::wstring& to
+#else
+                    std::string& to
+#endif
+                );
             } // namespace path_traits
 
             class path {
@@ -433,7 +689,7 @@
                 path() { }
                 path(const path& p) : m_pathname(p.m_pathname) { }
 
-                template <class Source>
+                template <typename Source>
                 path(const Source& source) {
                     assert(path_traits::is_pathable<Source>::value);
                     path_traits::dispatch(source, m_pathname);
@@ -459,13 +715,13 @@
                     m_pathname = str;
                     return *this;
                 }
-                template <class Source>
+                template <typename Source>
                 path& operator=(const Source& source) {
                     m_pathname.clear();
                     path_traits::dispatch(source, m_pathname);
                     return *this;
                 }
-                template <class Source>
+                template <typename Source>
                 path& assign(const Source& source) {
                     m_pathname.clear();
                     path_traits::dispatch(source, m_pathname);
@@ -498,19 +754,19 @@
                     m_pathname += x;
                     return *this;
                 }
-                template <class Source>
+                template <typename Source>
                 path& operator+=(const Source& source) {
                     assert(path_traits::is_pathable<Source>::value);
                     return concat(source);
                 }
-                template <class CharT>
+                template <typename CharT>
                 path& operator+=(CharT x) {
                     CharT tmp[2];
                     tmp[0] = x;
                     tmp[1] = 0;
                     return concat(tmp);
                 }
-                template <class Source>
+                template <typename Source>
                 path& concat(const Source& source) {
                     assert(path_traits::is_pathable<Source>::value);
                     path_traits::dispatch(source, m_pathname);
@@ -531,12 +787,12 @@
                         return *this;
                     if (this == &p) {
                         path rhs(p);
-                        if (!detail::is_separator(rhs.m_pathname[0]))
-                            _append_separator_if_needed();
+                        if (!_is_sep(rhs.m_pathname[0]))
+                            _append_sep_if_needed();
                         m_pathname += rhs.m_pathname;
                     } else {
-                        if (!detail::is_separator(p.m_pathname[0]))
-                            _append_separator_if_needed();
+                        if (!_is_sep(p.m_pathname[0]))
+                            _append_sep_if_needed();
                         m_pathname += p.m_pathname;
                     }
                     return *this;
@@ -548,39 +804,39 @@
                         ptr < m_pathname.data() + m_pathname.size())
                     {
                         path rhs(ptr);
-                        if (!detail::is_separator(rhs.m_pathname[0]))
-                            _append_separator_if_needed();
+                        if (!_is_sep(rhs.m_pathname[0]))
+                            _append_sep_if_needed();
                         m_pathname += rhs.m_pathname;
                     } else {
-                        if (!detail::is_separator(*ptr))
-                            _append_separator_if_needed();
+                        if (!_is_sep(*ptr))
+                            _append_sep_if_needed();
                         m_pathname += ptr;
                     }
                     return *this;
                 }
-                template <class Source>
+                template <typename Source>
                 path& operator/=(const Source& source) {
                     return append(source);
                 }
-                template <class Source>
+                template <typename Source>
                 path& append(const Source& source) {
                     assert(path_traits::is_pathable<Source>::value);
                     if (path_traits::empty(source))
                         return *this;
-                    string_type::size_type sep_pos = _append_separator_if_needed();
+                    size_type sep_pos = _append_sep_if_needed();
                     path_traits::dispatch(source, m_pathname);
                     if (sep_pos)
-                        _erase_redundant_separator(sep_pos);
+                        _erase_redundant_sep(sep_pos);
                     return *this;
                 }
                 template <typename InputIt>
                 path& append(InputIt first, InputIt last) {
                     if (first == last)
                         return *this;
-                    string_type::size_type sep_pos = _append_separator_if_needed();
+                    size_type sep_pos = _append_sep_if_needed();
                     path_traits::convert(first, last, m_pathname);
                     if (sep_pos)
-                        _erase_redundant_separator(sep_pos);
+                        _erase_redundant_sep(sep_pos);
                     return *this;
                 }
 
@@ -590,7 +846,7 @@
 
                 path& make_preferred() {
                     #ifdef _WIN32
-                        unboost::replace_all(m_pathname, L'/', L'\\');
+                        std::replace(m_pathname.begin(), m_pathname.end(), L'/', L'\\');
                     #endif
                     return *this;
                 }
@@ -608,7 +864,7 @@
                 }
                 path& replace_extension(const path& replacement = path()) {
                     m_pathname.erase(m_pathname.size() - extension().m_pathname.size());
-                    if (replacement.size()) {
+                    if (!replacement.empty()) {
                         if (replacement.m_pathname[0] != detail::dot)
                             m_pathname.push_back(detail::dot);
                         m_pathname.append(replacement.m_pathname);
@@ -626,7 +882,7 @@
 
                 std::string string() const {
                     #ifdef _WIN32
-                        return get_pathwide2pathansi.to_bytes(m_pathname);
+                        return detail::get_pathwide2pathansi().to_bytes(m_pathname);
                     #else
                         return m_pathname;
                     #endif
@@ -635,8 +891,18 @@
                     #ifdef _WIN32
                         return m_pathname;
                     #else
-                        return get_pathansi2pathwide.from_bytes(m_pathname);
+                        return detail::get_pathansi2pathwide().from_bytes(m_pathname);
                     #endif
+                }
+                template <typename CharT, typename Traits>
+                std::basic_string<CharT, Traits>
+                string() const {
+                    if (sizeof(CharT) == 1)
+                        return string();
+                    if (sizeof(CharT) == 2)
+                        return wstring();
+                    assert(0);
+                    return std::basic_string<CharT, Traits>();
                 }
 
                 // generic format observers
@@ -659,7 +925,8 @@
                 // compare
                 //
                 int compare(const path& p) const {
-                    ...
+                    //...
+                    return 0;
                 }
                 int compare(const string_type& str) const {
                     return compare(path(str));
@@ -676,39 +943,14 @@
                         tmp.m_pathname += root_directory().c_str();
                     return tmp;
                 }
-                path root_name() const {
-                    iterator it = begin();
-                    if (it.m_pos != m_pathname.size() &&
-                        ((it.m_element.m_pathname.size() > 1 &&
-                         detail::is_separator(it.m_element.m_pathname[0]) &&
-                         detail::is_separator(it.m_element.m_pathname[1]))
-#ifdef _WIN32
-                         || it.m_element.m_pathname.back() == detail::colon
-#endif
-                        ))
-                    {
-                        return it.m_element;
-                    }
-                    return path();
-                }
+                path root_name() const;
                 path root_directory() const {
-                    size_type pos = _root_directory_start(m_pathname, m_pathname.size());
+                    size_type pos = detail::_root_dir_start(m_pathname, m_pathname.size());
                     if (pos == string_type::npos)
                         return path();
                     return path(m_pathname.c_str() + pos, m_pathname.c_str() + pos + 1);
                 }
-                path relative_path() const {
-                    iterator it = begin();
-                    for (; it.m_pos != m_pathname.size() && (
-                        detail::is_separator(it.m_element.m_pathname[0])
-#ifdef _WIN32
-                        || it.m_element.m_pathname.back() == detail::colon
-#endif
-                        ); ++it)
-                    {
-                    }
-                    return path(m_pathname.c_str() + it.m_pos);
-                }
+                path relative_path() const;
                 path parent_path() const {
                     size_type end_pos = _parent_path_end();
                     if (end_pos == string_type::npos)
@@ -716,10 +958,10 @@
                     return path(m_pathname.c_str(), m_pathname.c_str() + end_pos);
                 }
                 path filename() const {
-                    size_type pos = _filename_pos(m_pathname, m_pathname.size());
+                    size_type pos = detail::_filename_pos(m_pathname, m_pathname.size());
                     if (m_pathname.size() && pos &&
-                        detail::is_separator(m_pathname[pos]) &&
-                        !detail::is_root_separator(m_pathname, pos))
+                        _is_sep(m_pathname[pos]) && !
+                        detail::_is_root_sep(m_pathname, pos))
                     {
                         return path(detail::dot_str);
                     }
@@ -766,7 +1008,7 @@
 
                 // iterators
                 //
-                class iterator;
+                struct iterator;
                 typedef iterator const_iterator;
 
                 iterator begin() const;
@@ -776,26 +1018,222 @@
                 path& operator=(path&& p);
 
             protected:
+                typedef string_type::size_type          size_type;
+                typedef string_type::value_type         char_type;
                 string_type                 m_pathname;
 
-                bool _is_dot() const {
-                    return detail::is_dot(m_pathname);
+                bool _is_sep(char_type ch) const {
+                    return detail::_is_sep(ch);
                 }
+                bool _is_dot() const {
+                    return detail::_is_dot(m_pathname);
+                }
+                size_type _append_sep_if_needed() {
+                    if (!m_pathname.empty() &&
+#ifdef _WIN32
+                        m_pathname.back() != detail::colon &&
+#endif
+                        !_is_sep(m_pathname.back())
+                    )
+                    {
+                        size_type tmp = m_pathname.size();
+                        m_pathname += detail::preferred_sep;
+                        return tmp;
+                    }
+                    return 0;
+                } // _append_sep_if_needed
+
+                void _erase_redundant_sep(size_type sep_pos) {
+                    if (sep_pos && sep_pos < m_pathname.size() &&
+                        _is_sep(m_pathname[sep_pos + 1]))
+                    {
+                        m_pathname.erase(sep_pos, 1);
+                    }
+                } // _erase_redundant_sep
+
+                size_type _parent_path_end() const {
+                    size_type end_pos =
+                        detail::_filename_pos(m_pathname, m_pathname.size());
+
+                    bool filename_was_separator =
+                        m_pathname.size() && _is_sep(m_pathname[end_pos]);
+
+                    size_type root_dir_pos =
+                        detail::_root_dir_start(m_pathname, end_pos);
+
+                    for (; end_pos > 0 && (end_pos - 1) != root_dir_pos &&
+                         _is_sep(m_pathname[end_pos - 1]);
+                         --end_pos)
+                    {
+                    }
+
+                    if (end_pos == 1 && root_dir_pos == 0 && filename_was_separator)
+                        return string_type::npos;
+                    return end_pos;
+                } // _parent_path_end
             }; // class path
+
+            struct path::iterator {
+                typedef iterator                        self_type;
+                typedef path                            value_type;
+                typedef const path&                     reference;
+                typedef const path *                    pointer;
+                typedef ptrdiff_t                       difference_type;
+                typedef std::bidirectional_iterator_tag iterator_category;
+
+                reference operator*() const { return m_element; }
+                pointer operator->() const  { return &m_element; }
+
+                void increment();
+                void decrement();
+
+                self_type& operator++() {
+                    increment();
+                    return *this;
+                }
+                self_type operator++(int) {
+                    self_type temp(*this);
+                    increment();
+                    return temp;
+                }
+                self_type& operator-() {
+                    decrement();
+                    return *this;
+                }
+                self_type operator--(int) {
+                    self_type temp(*this);
+                    decrement();
+                    return temp;
+                }
+
+                path                m_element;
+                const path*         m_path_ptr;
+                size_type           m_pos;
+            protected:
+                bool _is_sep(char_type ch) const {
+                    return detail::_is_sep(ch);
+                }
+            }; // path::iterator
+
+            inline path path::root_name() const {
+                iterator it = begin();
+                if (it.m_pos != m_pathname.size() &&
+                    ((it.m_element.m_pathname.size() > 1 &&
+                     _is_sep(it.m_element.m_pathname[0]) &&
+                     _is_sep(it.m_element.m_pathname[1]))
+#ifdef _WIN32
+                     || it.m_element.m_pathname.back() == detail::colon
+#endif
+                    ))
+                {
+                    return it.m_element;
+                }
+                return path();
+            } // path path::root_name
+            inline path path::relative_path() const {
+                iterator it = begin();
+                for (; it.m_pos != m_pathname.size() && (
+                    _is_sep(it.m_element.m_pathname[0])
+#ifdef _WIN32
+                    || it.m_element.m_pathname.back() == detail::colon
+#endif
+                    ); ++it)
+                {
+                }
+                return path(m_pathname.c_str() + it.m_pos);
+            } // path::relative_path
+
+            inline void path::iterator::increment() {
+                assert(m_pos < m_path_ptr->m_pathname.size());
+
+                m_pos += m_element.m_pathname.size();
+
+                if (m_pos == m_path_ptr->m_pathname.size()) {
+                    m_element.clear();
+                    return;
+                }
+
+                bool was_net = m_element.m_pathname.size() > 2 &&
+                  _is_sep(m_element.m_pathname[0]) &&
+                  _is_sep(m_element.m_pathname[1]) &&
+                  !_is_sep(m_element.m_pathname[2]);
+
+                if (_is_sep(m_path_ptr->m_pathname[m_pos])) {
+                    if (was_net
+#ifdef _WIN32
+                        || m_element.m_pathname.back() == detail::colon
+#endif
+                    )
+                    {
+                        m_element.m_pathname = detail::sep;
+                        return;
+                    }
+
+                    while (m_pos != m_path_ptr->m_pathname.size() &&
+                           _is_sep(m_path_ptr->m_pathname[m_pos]))
+                    {
+                        ++m_pos;
+                    }
+
+                    if (m_pos == m_path_ptr->m_pathname.size() &&
+                        detail::_is_root_sep(m_path_ptr->m_pathname, m_pos - 1))
+                    {
+                        --m_pos;
+                        m_element = detail::dot_str;
+                    }
+                }
+
+                size_type end_pos =
+                    m_path_ptr->m_pathname.find_first_of(detail::seps, m_pos);
+                if (end_pos == string_type::npos)
+                    end_pos = m_path_ptr->m_pathname.size();
+                m_element = m_path_ptr->m_pathname.substr(m_pos, end_pos - m_pos);
+            } // path::iterator::increment
+
+            inline void path::iterator::decrement() {
+                assert(m_pos > 0);
+
+                size_type end_pos(m_pos);
+                if (m_pos == m_path_ptr->m_pathname.size() &&
+                    m_path_ptr->m_pathname.size() > 1 &&
+                    _is_sep(m_path_ptr->m_pathname.back()) && 
+                    !detail::_is_root_sep(m_path_ptr->m_pathname, m_pos - 1))
+                {
+                    --m_pos;
+                    m_element = detail::dot_str;
+                    return;
+                }
+
+                size_type root_dir_pos =
+                    detail::_root_dir_start(m_path_ptr->m_pathname, end_pos);
+                for (; end_pos > 0 && (end_pos - 1) != root_dir_pos &&
+                     _is_sep(m_path_ptr->m_pathname[end_pos - 1]);
+                     --end_pos)
+                {
+                    ;
+                }
+
+                m_pos = detail::_filename_pos(m_path_ptr->m_pathname, end_pos);
+                m_element = m_path_ptr->m_pathname.substr(m_pos, end_pos - m_pos);
+                if (m_element.m_pathname == detail::preferred_sep_str)
+                    m_element.m_pathname = detail::sep_str;
+            } // path::iterator::decrement
 
             class filesystem_error {
             public:
-                filesystem_error(const string& what_arg, error_code ec) {
+                filesystem_error(const std::string& what_arg, error_code ec) {
                     m_what = what_arg;
                     m_code = ec;
                 }
-                filesystem_error(const string& what_arg, const path& p1, error_code ec) {
+                filesystem_error(const std::string& what_arg,
+                                 const path& p1, error_code ec)
+                {
                     m_what = what_arg;
                     m_p1 = p1;
                     m_code = ec;
                 }
-                filesystem_error(
-                    const string& what_arg, const path& p1, const path& p2, error_code ec)
+                filesystem_error(const std::string& what_arg, const path& p1,
+                                 const path& p2, error_code ec)
                 {
                     m_what = what_arg;
                     m_p1 = p1;
@@ -805,35 +1243,20 @@
                 const path& path1() const { return m_p1; }
                 const path& path2() const { return m_p2; }
                 const char *what() const {
-                    #ifdef _WIN32
-                        WCHAR buf[512];
-                        if (m_p1.empty() && m_p2.empty()) {
-                            ::wsprintfW(buf,
-                                L"%s: error_code: %d", m_what.c_str(), m_code);
-                        } else if (m_p2.empty()) {
-                            ::wsprintfW(buf, L"%s: error_code: %d",
-                                (m_what + L": " + m_p1.native()).c_str(),
-                                m_code);
-                        } else {
-                            ::wsprintfW(buf, L"%s: error_code: %d",
-                                (m_what + L": " + m_p1.native() + ", " +
-                                    m_p2.native()).c_str(), m_code);
-                        }
-                    #else
-                        using namespace std;
-                        char buf[512];
-                        if (m_p1.empty() && m_p2.empty()) {
-                            sprintf(buf,
-                                "%s: error_code: %d", m_what.c_str(), m_code);
-                        } else if (m_p2.empty()) {
-                            sprintf(buf, "%s: error_code: %d",
-                                (m_what + ": " + m_p1.native()).c_str(), m_code);
-                        } else {
-                            sprintf(buf, "%s: error_code: %d",
-                                (m_what + ": " + m_p1.native() + ", " +
-                                    m_p2.native()).c_str(), m_code);
-                        }
-                    #endif
+                    using namespace std;
+                    static char buf[512];
+                    if (m_p1.empty() && m_p2.empty()) {
+                        sprintf(buf,
+                            "%s: error_code: %d", m_what.c_str(), m_code);
+                    } else if (m_p2.empty()) {
+                        sprintf(buf, "%s: error_code: %d",
+                            (m_what + ": " + m_p1.string()).c_str(),
+                            m_code);
+                    } else {
+                        sprintf(buf, "%s: error_code: %d",
+                            (m_what + ": " + m_p1.string() + ", " +
+                                m_p2.string()).c_str(), m_code);
+                    }
                     return buf;
                 } // what
             protected:
@@ -880,12 +1303,17 @@
                 #endif  // ndef _WIN32
             } // namespace detail
 
+            file_status status(const path& p);
+            file_status status(const path& p, error_code& ec);
+            file_status symlink_status(const path& p);
+            file_status symlink_status(const path& p, error_code& ec);
+
             inline bool exists(const path& p, error_code& ec) {
-                return exists(status(p, &ec));
+                return exists(status(p, ec));
             }
             inline bool exists(const path& p) {
                 error_code ec;
-                if (exists(p, &ec)) {
+                if (exists(p, ec)) {
                     return true;
                 }
                 throw system_error(ec);
@@ -895,56 +1323,56 @@
                 return is_block_file(status(p));
             }
             inline bool is_block_file(const path& p, error_code& ec) {
-                return is_block_file(status(p, &ec));
+                return is_block_file(status(p, ec));
             }
 
             inline bool is_character_file(const path& p) {
                 return is_character_file(status(p));
             }
             inline bool is_character_file(const path& p, error_code& ec) {
-                return is_character_file(status(p, &ec));
+                return is_character_file(status(p, ec));
             }
 
             inline bool is_fifo(const path& p) {
                 return is_fifo(status(p));
             }
             inline bool is_fifo(const path& p, error_code& ec) {
-                return is_fifo(status(p, &ec));
+                return is_fifo(status(p, ec));
             }
 
             inline bool is_regular_file(const path& p) {
                 return is_regular_file(status(p));
             }
             inline bool is_regular_file(const path& p, error_code& ec) {
-                return is_regular_file(status(p, &ec));
+                return is_regular_file(status(p, ec));
             }
 
             inline bool is_symlink(const path& p) {
                 return is_symlink(status(p));
             }
             inline bool is_symlink(const path& p, error_code& ec) {
-                return is_symlink(status(p, &ec));
+                return is_symlink(status(p, ec));
             }
 
             inline bool is_directory(const path& p) {
                 return is_directory(status(p));
             }
             inline bool is_directory(const path& p, error_code& ec) {
-                return is_directory(status(p, &ec));
+                return is_directory(status(p, ec));
             }
 
             inline bool is_other(const path& p) {
                 return is_other(status(p));
             }
             inline bool is_other(const path& p, error_code& ec) {
-                return is_other(status(p, &ec));
+                return is_other(status(p, ec));
             }
 
             inline bool is_socket(const path& p) {
                 return is_socket(status(p));
             }
             inline bool is_socket(const path& p, error_code& ec) {
-                return is_socket(status(p, &ec));
+                return is_socket(status(p, ec));
             }
 
             #ifdef _WIN32
@@ -953,24 +1381,22 @@
                 /*static*/ const char    path::preferred_separator = '/';
             #endif
 
-            template <class CharT, class Traits>
+            template <typename CharT, typename Traits>
             inline std::basic_istream<CharT, Traits>&
             operator>>(std::basic_istream<CharT, Traits>& is, path& p) {
                 std::basic_string<CharT, Traits> t;
-                is >> std::quoted(t);
+                is >> t;
                 p = t;
                 return is;
             }
 
-            template <class CharT, class Traits>
+            template <typename CharT, typename Traits>
             inline std::basic_ostream<CharT, Traits>&
-            operator<<(std::basic_ostream<CharT, Traits>& os, const path& p)
-            {
-                os << std::quoted(p.string<CharT, Traits>());
+            operator<<(std::basic_ostream<CharT, Traits>& os, const path& p) {
+                os << p.string<CharT, Traits>();
                 return os;
             }
 
-            template <>
             inline void swap(path& lhs, path& rhs) {
                 lhs.swap(rhs);
             }
@@ -982,25 +1408,20 @@
             inline bool operator<(const path& lhs, const path& rhs) {
                 return lhs.compare(rhs) < 0;
             }
-
             inline bool operator==(const path& lhs, const path& rhs) {
                 return !(lhs < rhs) && !(rhs < lhs);
             }
-
             inline bool operator!=(const path& lhs, const path& rhs) {
                 return !(lhs == rhs);
             }
-
             inline bool operator<=(const path& lhs, const path& rhs) {
                 return !(rhs < lhs);
             }
-
             inline bool operator>(const path& lhs, const path& rhs) {
                 return rhs < lhs;
             }
-
             inline bool operator>=(const path& lhs, const path& rhs) {
-                return !(lhs < rhs)
+                return !(lhs < rhs);
             }
 
             struct directory_entry {
@@ -1015,20 +1436,17 @@
                 const path& path() const {
                     return m_path;
                 }
-                operator const path&() const {
-                    return m_path;
-                }
                 file_status status() const {
-                    return status(m_path);
+                    return unboost::filesystem::status(m_path);
                 }
                 file_status status(error_code& ec) const {
-                    return status(m_path, ec);
+                    return unboost::filesystem::status(m_path, ec);
                 }
                 file_status symlink_status() const {
-                    return symlink_status(m_path);
+                    return unboost::filesystem::symlink_status(m_path);
                 }
                 file_status symlink_status(error_code& ec) const {
-                    return symlink_status(m_path, ec);
+                    return unboost::filesystem::symlink_status(m_path, ec);
                 }
                 bool operator==(const directory_entry& rhs) {
                     return path() == rhs.path();
@@ -1049,10 +1467,24 @@
                     return path() >= rhs.path();
                 }
             protected:
-                path            m_path;
-                file_status     m_status1;
-                file_status     m_status2;
+                unboost::filesystem::path   m_path;
+                file_status                 m_status1;
+                file_status                 m_status2;
             }; // struct directory_entry
+
+            namespace detail {
+                inline void
+                dispatch(const directory_entry& de,
+#ifdef _WIN32
+                    std::wstring& to
+#else
+                    std::string& to
+#endif
+                )
+                {
+                    to = de.path().native();
+                }
+            } // namespace detail
 
             struct directory_iterator {
                 typedef directory_entry             value_type;
@@ -1064,12 +1496,12 @@
                 directory_iterator() : m_index(0) { }
                 explicit directory_iterator(const path& p) : m_index(0) {
                     error_code ec;
-                    if (is_directory(p, &ec)) {
+                    if (is_directory(p, ec)) {
                         ...
                     }
                 }
                 directory_iterator(const path& p, error_code& ec) {
-                    if (is_directory(p, &ec)) {
+                    if (is_directory(p, ec)) {
                         ...
                     }
                 }
@@ -1837,7 +2269,7 @@
             } // status
             inline file_status status(const path& p) {
                 error_code ec;
-                file_status ret = status(p, &ec);
+                file_status ret = status(p, ec);
                 if (ec)
                     throw system_error(ec);
                 return ret;
@@ -1897,7 +2329,7 @@
             }
             inline file_status symlink_status(const path& p) {
                 error_code ec;
-                file_status ret = symlink_status(p, &ec);
+                file_status ret = symlink_status(p, ec);
                 if (ec)
                     throw system_error(ec);
                 return ret;
