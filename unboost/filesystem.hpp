@@ -216,6 +216,7 @@
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
     #include <vector>               // for std::vector
     #include <list>                 // for std::list
+    #include <ctime>                // for std::time_t
     #include "system_error.hpp"     // for unboost::system_error, error_code
     #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
@@ -1055,7 +1056,7 @@
                     size_type end_pos =
                         detail::_filename_pos(m_pathname, m_pathname.size());
 
-                    bool filename_was_separator =
+                    bool filename_was_sep =
                         m_pathname.size() && _is_sep(m_pathname[end_pos]);
 
                     size_type root_dir_pos =
@@ -1067,11 +1068,17 @@
                     {
                     }
 
-                    if (end_pos == 1 && root_dir_pos == 0 && filename_was_separator)
+                    if (end_pos == 1 && root_dir_pos == 0 && filename_was_sep)
                         return string_type::npos;
                     return end_pos;
                 } // _parent_path_end
             }; // class path
+
+            #ifdef _WIN32
+                /*static*/ const wchar_t path::preferred_separator = L'\\';
+            #else
+                /*static*/ const char    path::preferred_separator = '/';
+            #endif
 
             struct path::iterator {
                 typedef iterator                        self_type;
@@ -1375,12 +1382,6 @@
                 return is_socket(status(p, ec));
             }
 
-            #ifdef _WIN32
-                /*static*/ const wchar_t path::preferred_separator = L'\\';
-            #else
-                /*static*/ const char    path::preferred_separator = '/';
-            #endif
-
             template <typename CharT, typename Traits>
             inline std::basic_istream<CharT, Traits>&
             operator>>(std::basic_istream<CharT, Traits>& is, path& p) {
@@ -1576,7 +1577,7 @@
                 const directory_entry *operator->() const {
                     return ...;
                 }
-                options
+
                 int depth() const {
                     return m_depth;
                 }
@@ -1622,15 +1623,13 @@
                 uintmax_t available;
             }; // struct space_info
 
-            typedef chrono::time_point<
-                chrono::system_clock,
-                chrono::system_clock::duration> file_time_type;
+            typedef std::time_t file_time_type;
 
             inline void current_path(const path& p, error_code& ec) {
                 if (::SetCurrentDirectoryW(p.c_str())) {
                     ec.clear();
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                 }
             }
             inline path current_path(error_code& ec) {
@@ -1639,7 +1638,7 @@
                     path = sz;
                     ec.clear();
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                 }
             }
             inline path current_path() {
@@ -1651,7 +1650,7 @@
             }
             inline void current_path(const path& p) {
                 error_code ec;
-                if (current_path(p, &ec)) {
+                if (current_path(p, ec)) {
                     return true;
                 }
                 throw filesystem_error("unboost::filesystem::current_path", p, ec);
@@ -1678,13 +1677,13 @@
                     ec.clear();
                     return path(sz);
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                     return path();
                 }
             }
             inline path system_complete(const path& p) {
                 error_code ec;
-                path new_p = system_complete(p, &ec);
+                path new_p = system_complete(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::system_complete", p, ec);
                 }
@@ -1708,6 +1707,7 @@
 
             inline bool
             equivalent(const path& p1, const path& p2, error_code& ec) {
+                using namespace std;
                 struct stat st1, st2;
                 if (stat(p1.c_str(), &st1) == 0 && stat(p2.c_str(), &st2) == 0) {
                     ec.clear();
@@ -1734,10 +1734,9 @@
             inline void
             create_hard_link(const path& target, const path& link) {
                 error_code ec;
-                if (create_hard_link(target, link, ec)) {
-                    return true;
-                }
-                throw filesystem_error("unboost::filesystem::create_hard_link", target, link, ec);
+                create_hard_link(target, link, ec);
+                if (ec)
+                    throw filesystem_error("unboost::filesystem::create_hard_link", target, link, ec);
             }
 
             inline void
@@ -1750,10 +1749,9 @@
             }
             inline void copy_symlink(const path& from, const path& to) {
                 error_code ec;
-                if (copy_symlink(from, to, ec)) {
-                    return true;
-                }
-                throw filesystem_error("unboost::filesystem::copy_symlink", from, to, ec);
+                copy_symlink(from, to, ec);
+                if (ec)
+                    throw filesystem_error("unboost::filesystem::copy_symlink", from, to, ec);
             }
 
             inline bool
@@ -1893,7 +1891,7 @@
             }
             inline file_time_type last_write_time(const path& p) {
                 error_code ec;
-                file_time_type ret = last_write_time(p, &ec);
+                file_time_type ret = last_write_time(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::last_write_time", p, ec);
                 }
@@ -1914,7 +1912,7 @@
             }
             inline path read_symlink(const path& p) {
                 error_code ec;
-                path ret = read_symlink(p, &ec);
+                path ret = read_symlink(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::read_symlink", p, ec);
                 }
@@ -1928,7 +1926,7 @@
                         ec.clear();
                         return true;
                     }
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                     return false;
                 #else
                     struct stat st;
@@ -1951,7 +1949,7 @@
                         ec.clear();
                         return true;
                     }
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                     return false;
                 #else
                     ec = mkdir(p.c_str());
@@ -1960,7 +1958,7 @@
             }
             inline bool create_directory(const path& p) {
                 error_code ec;
-                if (create_directory(p, &ec)) {
+                if (create_directory(p, ec)) {
                     return true;
                 }
                 throw filesystem_error("unboost::filesystem::create_directory", p, ec);
@@ -1971,7 +1969,7 @@
             }
             inline bool create_directories(const path& p) {
                 error_code ec;
-                if (create_directories(p, &ec)) {
+                if (create_directories(p, ec)) {
                     return true;
                 }
                 throw filesystem_error("unboost::filesystem::create_directories", p, ec);
@@ -1997,7 +1995,7 @@
             }
             inline uintmax_t file_size(const path& p) {
                 error_code ec;
-                uintmax_t siz = file_size(p, &ec);
+                uintmax_t siz = file_size(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::file_size", p, ec);
                 }
@@ -2009,7 +2007,7 @@
             }
             uintmax_t hard_link_count(const path& p) {
                 error_code ec;
-                uintmax_t ret = hard_link_count(p, &ec);
+                uintmax_t ret = hard_link_count(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::hard_link_count", p, ec);
                 }
@@ -2051,13 +2049,13 @@
                     ec.clear();
                     return true;
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                     return false;
                 }
             }
             inline bool remove(const path& p) {
                 error_code ec;
-                if (!remove(p, &ec)) {
+                if (!remove(p, ec)) {
                     throw filesystem_error("unboost::filesystem::remove", p, ec);
                 }
                 return true;
@@ -2068,7 +2066,7 @@
             }
             uintmax_t remove_all(const path& p) {
                 error_code ec;
-                uintmax_t count = remove_all(p, &ec);
+                uintmax_t count = remove_all(p, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::remove_all", p, ec);
                 }
@@ -2122,7 +2120,7 @@
                     info.capacity = capacity.QuadPart;
                     info.free = free.QuadPart;
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                     info.available = static_cast<uintmax_t>(-1);
                     info.capacity = static_cast<uintmax_t>(-1);
                     info.free = static_cast<uintmax_t>(-1);
@@ -2131,7 +2129,7 @@
             }
             inline space_info space(const path& p) {
                 error_code ec;
-                space_info info = space(p, &ec);
+                space_info info = space(p, ec);
                 if (info.capacity == static_cast<uintmax_t>(-1)) {
                     throw filesystem_error("unboost::filesystem::space", p, ec);
                 }
@@ -2143,7 +2141,7 @@
                 if (::GetTempPathW(MAX_PATH * 2, sz)) {
                     ec.clear();
                 } else {
-                    ec = ::GetLastError();
+                    ec = (int)::GetLastError();
                 }
             }
             inline path temp_directory_path() {
@@ -2215,7 +2213,7 @@
                 #ifdef _WIN32
                     DWORD attrs = ::GetFileAttributesW(p.c_str());
                     if (attrs == 0xFFFFFFFF) {
-                        return process_status_failure(p, &ec);
+                        return process_status_failure(p, ec);
                     }
                     if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
                         HANDLE hFile = ::CreateFileW(p.c_str(), 0,
@@ -2223,7 +2221,7 @@
                             NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
                         handle_wrapper h(hFile);
                         if (hFile == INVALID_HANDLE_VALUE) {
-                            return process_status_failure(p, &ec);
+                            return process_status_failure(p, ec);
                         }
                         if (!is_reparse_point_a_symlink(p))
                             return file_status(reparse_file, make_permissions(p, attrs));
@@ -2341,7 +2339,7 @@
             }
             inline bool is_empty(const path& p) {
                 error_code ec;
-                if (is_empty(p, &ec)) {
+                if (is_empty(p, ec)) {
                     return true;
                 }
                 throw system_error(ec);
