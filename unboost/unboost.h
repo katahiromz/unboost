@@ -4,6 +4,10 @@
 #ifndef UNBOOST_CORE_H_
 #define UNBOOST_CORE_H_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #define UNBOOST_VERSION             36
 #define UNBOOST_VERSION_STRING      "Unboost 36 by Katayama Hirofumi MZ"
 

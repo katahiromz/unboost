@@ -4,9 +4,11 @@
 #ifndef UNBOOST_FILESYSTEM_HPP_
 #define UNBOOST_FILESYSTEM_HPP_
 
-#include "unboost.h"
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
 
-#include <iterator>     // for std::input_iterator_tag
+#include "unboost.h"
 
 // If not choosed, choose one
 #if (defined(UNBOOST_USE_CXX17_FILESYSTEM) + defined(UNBOOST_USE_BOOST_FILESYSTEM) + defined(UNBOOST_USE_UNBOOST_FILESYSTEM) == 0)
@@ -217,6 +219,7 @@
     #include <vector>               // for std::vector
     #include <list>                 // for std::list
     #include <ctime>                // for std::time_t
+    #include <iterator>             // for std::input_iterator_tag
     #ifdef _WIN32
         #ifndef NOMINMAX
             #define NOMINMAX

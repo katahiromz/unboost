@@ -4,6 +4,10 @@
 #ifndef UNBOOST_THREAD_HPP
 #define UNBOOST_THREAD_HPP
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include "unboost.h"
 #include "chrono.hpp"           // for unboost::chrono
 #include "system_error.hpp"     // for unboost::system_error

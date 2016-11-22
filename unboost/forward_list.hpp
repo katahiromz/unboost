@@ -4,6 +4,10 @@
 #ifndef UNBOOST_FORWARD_LIST_HPP_
 #define UNBOOST_FORWARD_LIST_HPP_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include "unboost.h"
 #include "rv_ref.hpp"   // for rvalue reference
 

@@ -4,6 +4,10 @@
 #ifndef UNBOOST_CONVERSION_HPP_
 #define UNBOOST_CONVERSION_HPP_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include <cstdlib>
 #include <string>       // for std::string, std::wstring, std::to_string
 #include <sstream>      // for std::stringstream

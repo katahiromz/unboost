@@ -4,6 +4,10 @@
 #ifndef UNBOOST_CHRONO_HPP_
 #define UNBOOST_CHRONO_HPP_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include "unboost.h"
 #include "ratio.hpp"        // for unboost::ratio, ...
 #include "type_traits.hpp"  // for unboost::common_type

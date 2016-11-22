@@ -4,6 +4,10 @@
 #ifndef UNBOOST_UNORDERED_SET_HPP_
 #define UNBOOST_UNORDERED_SET_HPP_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include "unboost.h"
 
 // If not choosed, choose one

@@ -4,6 +4,10 @@
 #ifndef UNBOOST_UNORDERED_MAP_HPP_
 #define UNBOOST_UNORDERED_MAP_HPP_
 
+#if (_MSC_VER > 1000)
+    #pragma once
+#endif
+
 #include "unboost.h"
 #include "rv_ref.hpp"   // for unboost::move, UNBOOST_RV_REF, ...
 
