@@ -15,6 +15,12 @@
     #else
         #ifdef UNBOOST_CXX11   // C++11
             #define UNBOOST_USE_CXX11_STATIC_ASSERT
+        #elif (defined(_MSC_VER) && _MSC_VER >= 1600)
+            #ifndef UNBOOST_NO_CXX11
+                #define UNBOOST_USE_CXX11_STATIC_ASSERT
+            #else
+                #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
+            #endif
         #else
             #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
         #endif
