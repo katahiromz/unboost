@@ -218,6 +218,7 @@
 #elif defined(UNBOOST_USE_UNBOOST_FILESYSTEM)
     #include <vector>               // for std::vector
     #include <list>                 // for std::list
+    #include <stack>                // for std::stack
     #include <ctime>                // for std::time_t
     #include <iterator>             // for std::input_iterator_tag
     #ifdef _WIN32
@@ -231,10 +232,20 @@
         #include <sys/types.h>
         #include <sys/stat.h>
     #endif
+    #include "shared_ptr.hpp"       // for unboost::shared_ptr
     #include "system_error.hpp"     // for unboost::system_error, error_code
     #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
         namespace filesystem {
+            struct symlink_option {
+                enum inner {
+                    none,
+                    no_recurse = none,
+                    recurse,
+                    _detail_no_push = recurse << 1
+                };
+            };
+
             struct file_type {
                 enum inner {
                     none = 0,
@@ -246,7 +257,8 @@
                     character = 5,
                     fifo = 6,
                     socket = 7,
-                    unknown = 8
+                    unknown = 8,
+                    reparse = 9
                 };
             }; // struct file_type
             static const file_type::inner status_error = file_type::none;
@@ -258,6 +270,7 @@
             static const file_type::inner character_file = file_type::character;
             static const file_type::inner fifo_file = file_type::fifo;
             static const file_type::inner socket_file = file_type::socket;
+            static const file_type::inner reparse_file = file_type::reparse;
             static const file_type::inner type_unknown = file_type::unknown;
 
             struct perms {
@@ -1440,6 +1453,7 @@
             }
 
             struct directory_entry {
+                  directory_entry() { }
                 explicit directory_entry(const path& p) : m_path(p) { }
                 ~directory_entry() { }
                 void assign(const path& p) {
@@ -1487,6 +1501,8 @@
                 file_status                 m_status2;
             }; // struct directory_entry
 
+            struct directory_iterator;
+
             namespace detail {
                 inline void
                 dispatch(const directory_entry& de,
@@ -1499,6 +1515,239 @@
                 {
                     to = de.path().native();
                 }
+
+                inline error_code
+                dir_itr_close(void *& handle
+#ifndef _WIN32
+                    , void *& buffer
+#endif
+                )
+                {
+#ifdef WIN32
+                    if (handle != NULL) {
+                        ::FindClose(handle);
+                        handle = NULL;
+                    }
+                    return error_code(0, system_category());
+#else
+                    std::free(buffer);
+                    buffer = NULL;
+                    if (handle == NULL)
+                        return ok;
+                    DIR * h = static_cast<DIR*>(handle);
+                    handle = NULL;
+                    if (::closedir(h) == 0)
+                        return error_code(0, system_category());
+                    return error_code(errno, system_category());
+#endif
+                } // dir_itr_close
+
+#ifdef _WIN32
+                inline error_code
+                dir_itr_first(void *& handle, const path& dir,
+                    std::wstring& target,
+                    file_status & sf, file_status & symlink_sf)
+                {
+                    std::wstring dirpath = dir.wstring();
+                    if (dirpath.empty() ||
+                        (!_is_sep(dirpath.back()) != L'\\' &&
+                         dirpath.back() != L':'))
+                    {
+                        dirpath += L"\\*";
+                    } else {
+                        dirpath += L"*";
+                    }
+
+                    WIN32_FIND_DATAW data;
+                    handle = ::FindFirstFileW(dirpath.c_str(), &data);
+                    if (handle == INVALID_HANDLE_VALUE) { 
+                        handle = NULL;
+                        if (::GetLastError() == ERROR_FILE_NOT_FOUND ||
+                            ::GetLastError() == ERROR_NO_MORE_FILES)
+                        {
+                            return error_code(0, unboost::system_category());
+                        }
+                        return error_code(::GetLastError(), unboost::system_category());
+                    }
+                    target = data.cFileName;
+                    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                        sf.type(status_error);
+                        symlink_sf.type(status_error);
+                    } else {
+                        if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                            sf.type(directory_file);
+                            symlink_sf.type(directory_file);
+                        } else {
+                            sf.type(regular_file);
+                            symlink_sf.type(regular_file);
+                        }
+                        sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+                        symlink_sf.permissions(sf.permissions());
+                    }
+                    return error_code();
+                } // dir_itr_first
+
+                inline error_code
+                dir_itr_increment(void *& handle, std::wstring& target,
+                    file_status& sf, file_status& symlink_sf)
+                {
+                    WIN32_FIND_DATAW data;
+                    if (!::FindNextFileW(handle, &data)) {
+                        int error = ::GetLastError();
+                        dir_itr_close(handle);
+                        if (error == ERROR_NO_MORE_FILES)
+                            return error_code(0, unboost::system_category());
+                        return error_code(error, system_category());
+                    }
+                    target = data.cFileName;
+                    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                        sf.type(status_error);
+                        symlink_sf.type(status_error);
+                    } else {
+                        if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                            sf.type(directory_file);
+                            symlink_sf.type(directory_file);
+                        } else {
+                            sf.type(regular_file);
+                            symlink_sf.type(regular_file);
+                        }
+                        sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+                        symlink_sf.permissions(sf.permissions());
+                    }
+                    return error_code();
+                }
+#else   // ndef _WIN32
+                inline error_code
+                path_max(size_t& result) {
+                    #ifdef PATH_MAX
+                        static size_t max = PATH_MAX;
+                    #else
+                        static size_t max = 0;
+                    #endif
+                    if (max == 0) {
+                        errno = 0;
+                        long tmp = ::pathconf("/", _PC_NAME_MAX);
+                        if (tmp < 0) {
+                            if (errno == 0)
+                                max = 4096;
+                            else
+                                return error_code(errno, system_category);
+                        } else {
+                            max = static_cast<size_t>(tmp + 1);
+                        }
+                    }
+                    result = max;
+                    return ok;
+                } // path_max
+
+# if defined(__PGI) && defined(__USE_FILE_OFFSET64)
+# define dirent dirent64
+# endif
+                inline error_code
+                dir_itr_first(void *& handle, void *& buffer,
+                    const char* dir, std::string& target,
+                    file_status&, file_status&)
+                {
+                    handle = ::opendir(dir);
+                    if (handle == NULL)
+                        return error_code(errno, system_category());
+                    target = ".";
+                    size_t path_size = 0;
+                    error_code ec = path_max(path_size);
+                    if (ec)
+                        return ec;
+                    dirent de;
+                    buffer = std::malloc((sizeof(dirent) - sizeof(de.d_name))
+                        + path_size + 1);
+                    return ok;
+                }
+                inline int
+                readdir_r_simulator(DIR *dirp, struct dirent * entry,
+                    struct dirent ** result)
+                {
+                    errno = 0;
+# if !defined(__CYGWIN__) && \
+    defined(_POSIX_THREAD_SAFE_FUNCTIONS) && \
+    defined(_SC_THREAD_SAFE_FUNCTIONS) && \
+    (_POSIX_THREAD_SAFE_FUNCTIONS + 0 >= 0) && \
+    (!defined(__hpux) || defined(_REENTRANT)) && \
+    (!defined(_AIX) || defined(__THREAD_SAFE))
+                    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0) {
+                        return ::readdir_r(dirp, entry, result);
+                    }
+# endif
+
+                    struct dirent * p;
+                    *result = NULL;
+                    p = ::readdir(dirp)
+                    if (p == NULL)
+                        return errno;
+                    std::strcpy(entry->d_name, p->d_name);
+                    *result = entry;
+                    return 0;
+                } // readdir_r_simulator
+
+                inline error_code
+                dir_itr_increment(void *& handle, void *& buffer,
+                    std::string& target,
+                    file_status & sf, file_status & symlink_sf)
+                {
+                    assert(buffer != 0);
+                    dirent *entry = static_cast<dirent *>(buffer);
+                    dirent *result;
+                    int return_code =
+                        readdir_r_simulator(static_cast<DIR*>(handle), entry, &result)
+                    if (return_code != 0)
+                        return error_code(errno, system_category());
+                    if (result == 0)
+                        return dir_itr_close(handle, buffer);
+                    target = entry->d_name;
+# ifdef BOOST_FILESYSTEM_STATUS_CACHE
+                    if (entry->d_type == DT_UNKNOWN) {
+                        sf = symlink_sf = file_status(status_error);
+                    } else {
+                        if (entry->d_type == DT_DIR) {
+                            sf = symlink_sf = file_status(directory_file);
+                        } else if (entry->d_type == DT_REG) {
+                            sf = symlink_sf = file_status(regular_file);
+                        } else if (entry->d_type == DT_LNK) {
+                            sf = file_status(status_error);
+                            symlink_sf = file_status(symlink_file);
+                        } else {
+                            sf = symlink_sf = file_status(status_error);
+                        }
+                    }
+# else
+                    sf = symlink_sf = file_status(status_error);
+# endif
+                    return ok;
+                } // dir_itr_increment
+#endif  // ndef _WIN32
+
+                void directory_iterator_construct(directory_iterator& it,
+                    const path& p, system::error_code* ec);
+                void directory_iterator_increment(directory_iterator& it,
+                    system::error_code* ec);
+
+                struct dir_itr_imp {
+                    directory_entry  dir_entry;
+                    void*            handle;
+#ifndef _WIN32
+                    void*            buffer;
+#endif
+                    dir_itr_imp() : handle(0)
+#ifndef _WIN32
+      , buffer(0)
+#endif
+                    {}
+                    ~dir_itr_imp() {
+                        dir_itr_close(handle
+#ifndef _WIN32
+                            , buffer
+#endif
+                        );
+                    }
+                }; // dir_itr_imp
             } // namespace detail
 
             struct directory_iterator {
@@ -1508,35 +1757,32 @@
                 typedef directory_entry&            reference;
                 typedef std::input_iterator_tag     iterator_category;
 
-                directory_iterator() : m_index(0) { }
-                explicit directory_iterator(const path& p) : m_index(0) {
-                    error_code ec;
-                    if (is_directory(p, ec)) {
-                        ...
-                    }
-                }
-                directory_iterator(const path& p, error_code& ec) {
-                    if (is_directory(p, ec)) {
-                        ...
-                    }
-                }
+                directory_iterator() { }
 
+                explicit directory_iterator(const path& p)
+                    : m_imp(new detail::dir_itr_imp)
+                {
+                    detail::directory_iterator_construct(*this, p, 0);
+                }
+                directory_iterator(const path& p, error_code& ec)
+                    : m_imp(new detail::dir_itr_imp)
+                {
+                    detail::directory_iterator_construct(*this, p, &ec);
+                }
                 directory_iterator& increment() {
-                    ++m_index;
-                    if (m_entries.size() <= m_index)
-                        m_index = 0;
-                    return *this;
+                    detail::directory_iterator_increment(*this, NULL);
                 }
                 directory_iterator& increment(error_code& ec) {
-                    ec.clear();
-                    return increment();
+                    detail::directory_iterator_increment(*this, &ec);
                 }
 
                 const directory_entry& operator*() const {
-                    return m_entries[m_index];
+                    assert(m_imp.get());
+                    return m_imp->dir_entry;
                 }
                 const directory_entry *operator->() const {
-                    return &m_entries[m_index];
+                    assert(m_imp.get());
+                    return &m_imp->dir_entry;
                 }
                 directory_iterator& operator++() {
                     increment();
@@ -1549,8 +1795,7 @@
                 }
 
             protected:
-                size_t                      m_index;
-                std::vector<value_type>     m_entries;
+                unboost::shared_ptr<detail::dir_itr_imp>  m_imp;
             }; // class directory_iterator
 
             inline directory_iterator begin(directory_iterator it) {
@@ -1561,67 +1806,195 @@
                 return it;
             }
 
-            struct recursive_directory_iterator {
-                typedef directory_entry             value_type;
-                typedef ptrdiff_t                   difference_type;
-                typedef const directory_entry *     pointer;
-                typedef const directory_entry&      reference;
-                typedef std::input_iterator_tag     iterator_category;
+            namespace detail {
+                struct recur_dir_itr_imp {
+                    typedef directory_iterator element_type;
+                    std::stack<element_type, std::vector<element_type> > m_stack;
+                    int     m_level;
+                    int     m_options;
 
-                recursive_directory_iterator() {
-                    ...
+                    recur_dir_itr_imp() :
+                        m_level(0), m_options(symlink_option::none) { }
+
+                    void increment(system::error_code* ec);
+                    void pop();
+                };
+
+                inline void
+                recur_dir_itr_imp::increment(system::error_code* ec) {
+                    if ((m_options & symlink_option::_detail_no_push) ==
+                        symlink_option::_detail_no_push)
+                    {
+                        m_options &= ~symlink_option::_detail_no_push;
+                    } else {
+                        bool or_pred = (m_options & symlink_option::recurse) == symlink_option::recurse
+                                       || (ec == 0 ? !is_symlink(m_stack.top()->symlink_status()) : !is_symlink(m_stack.top()->symlink_status(*ec)));
+                        if (ec != 0 && *ec)
+                            return;
+                        bool and_pred = or_pred && (ec == 0 ? is_directory(m_stack.top()->status())
+                            : is_directory(m_stack.top()->status(*ec)));
+                        if (ec != 0 && *ec)
+                            return;
+
+                        if (and_pred) {
+                            if (ec == 0) {
+                                m_stack.push(directory_iterator(m_stack.top()->path()));
+                            } else {
+                                m_stack.push(directory_iterator(m_stack.top()->path(), *ec));
+                                if (*ec)
+                                    return;
+                            }
+                            if (m_stack.top() != directory_iterator()) {
+                                ++m_level;
+                                return;
+                            }
+                            m_stack.pop();
+                        }
+                    }
+
+                    while (!m_stack.empty() && ++m_stack.top() == directory_iterator()) {
+                        m_stack.pop();
+                        --m_level;
+                    }
                 }
+
+                inline void
+                recur_dir_itr_imp::pop() {
+                    assert(m_level > 0);
+                    do {
+                        m_stack.pop();
+                        --m_level;
+                    } while (!m_stack.empty() && ++m_stack.top() == directory_iterator());
+                }
+            } // namespace detail
+
+            struct recursive_directory_iterator {
+                typedef recursive_directory_iterator    self_type;
+                typedef directory_entry                 value_type;
+                typedef ptrdiff_t                       difference_type;
+                typedef const directory_entry *         pointer;
+                typedef const directory_entry&          reference;
+                typedef std::input_iterator_tag         iterator_category;
+
+                recursive_directory_iterator() { }
                 explicit recursive_directory_iterator(const path& p,
                     directory_options::inner options = directory_options::none)
+                    : m_imp(new detail::recur_dir_itr_imp)
                 {
-                    ...
+                    m_imp->m_options = options;
+                    m_imp->m_stack.push(directory_iterator(p));
+                    if (m_imp->m_stack.top() == directory_iterator()) {
+                        m_imp.reset();
+                    }
                 }
                 recursive_directory_iterator(const path& p,
                     directory_options::inner options, error_code& ec)
+                    : m_imp(new detail::recur_dir_itr_imp)
                 {
-                    ...
+                    m_imp->m_options = options;
+                    m_imp->m_stack.push(directory_iterator(p, ec));
+                    if (m_imp->m_stack.top() == directory_iterator()) {
+                        m_imp.reset();
+                    }
                 }
-                recursive_directory_iterator(const path& p, error_code& ec) {
-                    ...
+                recursive_directory_iterator(const path& p, error_code& ec)
+                    : m_imp(new detail::recur_dir_itr_imp)
+                {
+                    m_imp->m_options = symlink_option::none;
+                    m_imp->m_stack.push(directory_iterator(p, ec));
+                    if (m_imp->m_stack.top() == directory_iterator()) {
+                        m_imp.reset();
+                    }
                 }
 
-                ~recursive_directory_iterator() {
+                int level() const {
+                    assert(m_imp.get());
+                    return m_imp->m_level;
+                }
+                int depth() const {
+                    return level();
+                }
+
+                bool no_push_pending() const {
+                    assert(m_imp.get());
+                    return (m_imp->m_options & symlink_option::_detail_no_push) ==
+                            symlink_option::_detail_no_push;
+                }
+                bool recursion_pending() const {
+                    return !no_push_pending();
+                }
+
+                void no_push(bool value = true) {
+                    assert(m_imp.get());
+                    if (value)
+                        m_imp->m_options |= symlink_option::_detail_no_push;
+                    else
+                        m_imp->m_options &= ~symlink_option::_detail_no_push;
+                }
+                void disable_recursion_pending() {
+                    no_push();
+                }
+
+                file_status status() const {
+                    assert(m_imp.get());
+                    return m_imp->m_stack.top()->status();
+                }
+
+                file_status symlink_status() const {
+                    assert(m_imp.get());
+                    return m_imp->m_stack.top()->symlink_status();
                 }
 
                 const directory_entry& operator*() const {
-                    return ...;
+                    return dereference();
                 }
                 const directory_entry *operator->() const {
-                    return ...;
-                }
-
-                int depth() const {
-                    return m_depth;
-                }
-
-                bool recursion_pending() const {
-                    ...
-                }
-
-                recursive_directory_iterator& increment(error_code& ec) {
-                    ...
-                    return *this;
+                    return &dereference();
                 }
 
                 recursive_directory_iterator& operator++() {
-                    ...;
+                    increment();
                     return *this;
+                }
+                recursive_directory_iterator operator++(int) {
+                    self_type tmp = *this;
+                    increment();
+                    return tmp;
                 }
 
                 void pop() {
-                    ...
+                    assert(m_imp.get());
+                    m_imp->pop();
+                    if (m_imp->m_stack.empty())
+                        m_imp.reset();
                 }
 
-                void disable_recursion_pending() {
-                    ...
-                }
             protected:
-                int m_depth;
+                unboost::shared_ptr<detail::recur_dir_itr_imp>  m_imp;
+
+                reference dereference() const {
+                    assert(m_imp.get());
+                    return *m_imp->m_stack.top();
+                }
+
+                recursive_directory_iterator& increment(error_code& ec) {
+                    assert(m_imp.get());
+                    m_imp->increment(&ec);
+                    if (m_imp->m_stack.empty())
+                        m_imp.reset();
+                    return *this;
+                }
+                recursive_directory_iterator& increment() {
+                    assert(m_imp.get());
+                    m_imp->increment(NULL);
+                    if (m_imp->m_stack.empty())
+                        m_imp.reset();
+                    return *this;
+                }
+
+                bool equal(const recursive_directory_iterator& rhs) const {
+                    return m_imp == rhs.m_imp;
+                }
             }; // class recursive_directory_iterator
 
             inline recursive_directory_iterator
@@ -1646,31 +2019,33 @@
                 if (::SetCurrentDirectoryW(p.c_str())) {
                     ec.clear();
                 } else {
-                    ec = (int)::GetLastError();
+                    ec.assign(::GetLastError(), system_category());
                 }
             }
             inline path current_path(error_code& ec) {
+                path p;
                 WCHAR sz[MAX_PATH * 2];
                 if (::GetCurrentDirectoryW(MAX_PATH * 2, sz)) {
-                    path = sz;
+                    p = sz;
                     ec.clear();
                 } else {
-                    ec = (int)::GetLastError();
+                    ec.assign(::GetLastError(), system_category());
                 }
+                return p;
             }
             inline path current_path() {
                 error_code ec;
-                if (current_path(ec)) {
-                    return true;
+                current_path(ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::current_path", ec);
                 }
-                throw filesystem_error("unboost::filesystem::current_path", ec);
             }
             inline void current_path(const path& p) {
                 error_code ec;
-                if (current_path(p, ec)) {
-                    return true;
+                current_path(p, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::current_path", p, ec);
                 }
-                throw filesystem_error("unboost::filesystem::current_path", p, ec);
             }
 
             inline path
@@ -1694,7 +2069,7 @@
                     ec.clear();
                     return path(sz);
                 } else {
-                    ec = (int)::GetLastError();
+                    ec.assign(::GetLastError(), system_category());
                     return path();
                 }
             }
@@ -1707,19 +2082,206 @@
                 return new_p;
             }
 
+            namespace detail {
+                inline file_status
+                symlink_status(const path& p, error_code* ec = NULL) {
+#ifdef _WIN32
+                    DWORD attr = ::GetFileAttributesW(p.c_str());
+                    if (attr == 0xFFFFFFFF) {
+                        return process_status_failure(p, ec);
+                    }
+                    if (ec != NULL)
+                        ec->clear();
+
+                    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+                        return is_reparse_point_a_symlink(p)
+                            ? file_status(symlink_file, make_permissions(p, attr))
+                            : file_status(reparse_file, make_permissions(p, attr));
+                    return (attr & FILE_ATTRIBUTE_DIRECTORY)
+                        ? file_status(directory_file, make_permissions(p, attr))
+                        : file_status(regular_file, make_permissions(p, attr));
+#else
+                    using namespace std;
+                    struct stat st;
+                    if (lstat(p.c_str(), &st) != 0) {
+                        if (ec != 0)
+                            ec->assign(errno, system_category());
+                        if (errno == ENOENT || errno == ENOTDIR) {
+                            return file_status(file_not_found, no_perms);
+                        }
+                        if (ec == NULL)
+                            throw filesystem_error(
+                                "unboost::filesystem::status",
+                                p, error_code(errno, system_category()));
+                        return file_status(status_error);
+                    }
+                    if (ec != NULL)
+                        ec->clear();
+                    if (S_ISREG(st.st_mode))
+                        return file_status(regular_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISDIR(st.st_mode))
+                        return file_status(directory_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISLNK(st.st_mode))
+                        return file_status(symlink_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISBLK(st.st_mode))
+                        return file_status(block_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISCHR(st.st_mode))
+                        return file_status(character_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISFIFO(st.st_mode))
+                        return file_status(fifo_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    if (S_ISSOCK(st.st_mode))
+                        return file_status(socket_file, static_cast<perms::inner>(st.st_mode & perms_mask));
+                    return file_status(type_unknown);
+#endif
+                } // detail::symlink_status
+
+                inline path
+                read_symlink(const path& p, system::error_code* ec = NULL) {
+                    path symlink_path;
+#ifdef _WIN32
+# if _WIN32_WINNT < 0x0600
+                    throw filesystem_error("boost::filesystem::read_symlink",
+                        p, error_code(ERROR_NOT_SUPPORTED, system_category()));
+# else
+                    union info_t {
+                        char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+                        REPARSE_DATA_BUFFER rdb;
+                    } info;
+
+                    HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ, 0, 0, OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0);
+                    handle_wrapper h(hFile);
+                    if (hFile == INVALID_HANDLE_VALUE) {
+                        return symlink_path;
+                    }
+
+                    DWORD sz;
+                    if (!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
+                        0, 0, info.buf, sizeof(info), &sz, 0) == 0, p, ec,
+                        "boost::filesystem::read_symlink")
+
+                    symlink_path.assign(
+                        static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
+                        + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(wchar_t),
+                        static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
+                        + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(wchar_t)
+                        + info.rdb.SymbolicLinkReparseBuffer.PrintNameLength / sizeof(wchar_t));
+# endif
+#else
+                    using namespace std;
+                    for (size_t path_max = 64;; path_max *= 2) {
+                        std::vector<char> buf(path_max);
+                        ssize_t result;
+                        result = readlink(p.c_str(), buf.get(), path_max);
+                        if (result == -1) {
+                            if (ec == NULL)
+                                throw filesystem_error("boost::filesystem::read_symlink",
+                                    p, error_code(errno, system_category()));
+                            else
+                                ec->assign(errno, system_category());
+                            break;
+                        } else {
+                            if (result != static_cast<ssize_t>(path_max)) {
+                                symlink_path.assign(buf.get(), buf.get() + result);
+                            if (ec != 0)
+                                ec->clear();
+                            break;
+                        }
+                    }
+#endif
+                    return symlink_path;
+                }
+
+                inline path
+                canonical(const path& p, const path& base, system::error_code* ec = NULL) {
+                    path result;
+                    path source = (p.is_absolute() ? p : absolute(p, base));
+
+                    system::error_code local_ec;
+                    file_status stat(status(source, local_ec));
+
+                    if (stat.type() == file_not_found) {
+                        error_code code;
+                        #ifdef _WIN32
+                            code.assign(ERROR_PATH_NOT_FOUND, system_category());
+                        #else
+                            code.assign(ENOENT, system_category());
+                        #endif
+                        if (ec == NULL)  {
+                            throw filesystem_error(
+                                "unboost::filesystem::canonical", source, code);
+                        } else {
+                            *ec = code;
+                        }
+                        return result;
+                    } else if (local_ec) {
+                        if (ec == 0) {
+                            throw filesystem_error(
+                                "unboost::filesystem::canonical", source, local_ec);
+                        }
+                        *ec = local_ec;
+                        return result;
+                    }
+
+                    bool scan = true;
+                    while (scan) {
+                        scan = false;
+                        result.clear();
+                        for (path::iterator itr = source.begin(); itr != source.end(); ++itr) {
+                            if (*itr == detail::dot_str)
+                                continue;
+                            if (*itr == detail::dot_dot_str) {
+                                result.remove_filename();
+                                continue;
+                            }
+
+                            result /= *itr;
+                            bool is_sym = is_symlink(detail::symlink_status(result, ec));
+                            if (ec && *ec)
+                                return path();
+
+                            if (is_sym) {
+                                path link(read_symlink(result, ec));
+                                if (ec && *ec)
+                                    return path();
+                                result.remove_filename();
+
+                                if (link.is_absolute()) {
+                                    for (++itr; itr != source.end(); ++itr) {
+                                        link /= *itr;
+                                    }
+                                    source = link;
+                                } else {
+                                    path new_source(result);
+                                    new_source /= link;
+                                    for (++itr; itr != source.end(); ++itr) {
+                                        new_source /= *itr;
+                                    }
+                                    source = new_source;
+                                }
+                                scan = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (ec != 0)
+                        ec->clear();
+                    assert(result.is_absolute());
+                    return result;
+                } // detail::canonical
+            } // namespace detail
+
             inline path
             canonical(const path& p, const path& base, error_code& ec) {
-                ...
+                return detail::canonical(p, base, &ec);
             }
             inline path
             canonical(const path& p, const path& base = current_path()) {
-                assert(exists(p));
-                return absolute(p, base);
+                return detail::canonical(p, base);
             }
             inline path
             canonical(const path& p, error_code& ec) {
-                ...
-                return absolute(p);
+                return detail::canonical(p, current_path(), &ec);
             }
 
             inline bool
@@ -1770,10 +2332,10 @@
             }
 
             inline path read_symlink(const path& p) {
-                ...
+                return detail::read_symlink(p);
             }
             inline path read_symlink(const path& p, error_code& ec) {
-                ...
+                return detail::read_symlink(p, &ec);
             }
             inline void
             copy_symlink(const path& from, const path& to, error_code& ec) {
@@ -2310,62 +2872,10 @@
 
             inline file_status
             symlink_status(const path& p, error_code& ec) {
-                #ifdef _WIN32
-                    DWORD attrs = ::GetFileAttributesW(p.c_str());
-                    if (attrs == 0xFFFFFFFF)
-                        return process_status_failure(p, ec);
-                    if (ec)
-                        ec->clear();
-                    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                        if (is_reparse_point_a_symlink(p))
-                            return file_status(symlink_file, make_permissions(p, attrs));
-                        else
-                            return file_status(reparse_file, make_permissions(p, attrs));
-                    }
-                    if (attr & FILE_ATTRIBUTE_DIRECTORY)
-                        return file_status(directory_file, make_permissions(p, attrs));
-                    else
-                        return file_status(regular_file, make_permissions(p, attrs));
-                #else
-                    using namespace std;
-                    struct stat st;
-                    if (stat(p.c_str(), &st)) {
-                        if (ec)
-                            *ec = errno;
-                        if (not_found_error(errno)) {
-                            return file_status(file_not_found, no_perms);
-                        }
-                        if (ec == NULL)
-                            throw filesystem_error("unboost::filesystem::status",
-                                                   p, errno);
-                        return file_status(status_error);
-                    }
-                    if (ec)
-                        ec->clear();
-                    perms masked = static_cast<perms>(st.st_mode) & perms_mask;
-                    if (S_ISREG(st.st_mode))
-                        return file_status(regular_file, masked);
-                    if (S_ISDIR(st.st_mode))
-                        return file_status(directory_file, masked);
-                    if (S_ISLNK(st.st_mode))
-                        return file_status(symlink_file, masked);
-                    if (S_ISBLK(st.st_mode))
-                        return file_status(block_file, masked);
-                    if (S_ISCHR(st.st_mode))
-                        return file_status(character_file, masked);
-                    if (S_ISFIFO(st.st_mode))
-                        return file_status(fifo_file, masked);
-                    if (S_ISSOCK(st.st_mode))
-                        return file_status(socket_file, masked);
-                    return file_status(type_unknown);
-                #endif
+                return detail::symlink_status(p, &ec);
             }
             inline file_status symlink_status(const path& p) {
-                error_code ec;
-                file_status ret = symlink_status(p, ec);
-                if (ec)
-                    throw system_error(ec);
-                return ret;
+                return detail::symlink_status(p);
             }
 
             inline bool is_empty(const path& p, error_code& ec) {
