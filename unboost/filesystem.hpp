@@ -425,12 +425,12 @@
                     }
                     return (*api)(to, from, NULL);
                 }
-#else
+#else   // POSIX
                 inline bool create_hard_link_api(const char *to, const char *from) {
                     errno = 0;
                     return ::symlink(to, from) == 0;
                 }
-#endif
+#endif  // POSIX
 
 #ifdef _WIN32
                 typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)
@@ -449,11 +449,45 @@
                     }
                     return (*api)(to, from, flags);
                 }
-#else
+#else   // POSIX
                 inline bool create_symbolic_link_api(const char *to, const char *from, int flags) {
                     return ::symlink(to, from) == 0;
                 }
-#endif
+#endif  // POSIX
+
+#ifdef _WIN32
+                bool copy_file_api(LPCWSTR from, LPCWSTR to, bool fail_if_exists) {
+                    return ::CopyFileW(from, to, fail_if_exists) != 0;
+                }
+#else   // POSIX
+                bool copy_file_api(const char *from, const char *to, bool fail_if_exists) {
+                    char buf[512];
+                    int has_error = 1;
+                    FILE *checkf = fopen(to, "rb");
+                    fclose(checkf);
+                    if (checkf && fail_if_exists) {
+                        return false;
+                    }
+                    FILE *inf = fopen(from, "rb");
+                    if (inf) {
+                        FILE *outf = fopen(to, "wb");
+                        if (outf) {
+                            for (;;) {
+                                int count = fread(buf, 1, 512, inf);
+                                if (!count)
+                                    break;
+                                if (!fwrite(buf, count, 1, outf))
+                                    break;
+                            }
+                            has_error = ferror(inf) || ferror(outf);
+                            fclose(outf);
+                        }
+                        fclose(inf);
+                    }
+                    return !has_error;
+                } // copy_file_api
+#endif  // POSIX
+
         } // namespace detail
 
             namespace detail {
