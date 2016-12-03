@@ -228,9 +228,11 @@
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
+        #define UNBOOST_ERRNO  GetLastError()
     #else
         #include <sys/types.h>
         #include <sys/stat.h>
+        #define UNBOOST_ERRNO  errno
     #endif
     #include "shared_ptr.hpp"       // for unboost::shared_ptr
     #include "system_error.hpp"     // for unboost::system_error, error_code
@@ -2134,7 +2136,7 @@
                 if (::SetCurrentDirectoryW(p.c_str())) {
                     ec.clear();
                 } else {
-                    ec.assign(::GetLastError(), system_category());
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
             }
             inline path current_path(error_code& ec) {
@@ -2144,7 +2146,7 @@
                     p = sz;
                     ec.clear();
                 } else {
-                    ec.assign(::GetLastError(), system_category());
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
                 return p;
             }
@@ -2184,7 +2186,7 @@
                     ec.clear();
                     return path(sz);
                 } else {
-                    ec.assign(::GetLastError(), system_category());
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return path();
                 }
             }
@@ -2459,26 +2461,11 @@
 
             inline void
             create_symlink(const path& to, const path& from, error_code& ec) {
-#ifdef _WIN32
-# if (_WIN32_WINNT < 0x0600)
-                detail::error(true, error_code(ERROR_NOT_SUPPORTED, system_category()),
-                      to, from, &ec, "unboost::filesystem::create_directory_symlink");
-# else
-                if (detail::error(!create_symbolic_link_api(),
-                        error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
-                        to, from, &ec, "boost::filesystem::create_symlink"))
-                {
-                    return;
+                if (create_symbolic_link_api()(from.c_str(), to.c_str(), 0)) {
+                    ec.clear();
+                } else {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
-                error(!create_symbolic_link_api()(from.c_str(), to.c_str(), 0),
-                       to, from, &ec, "boost::filesystem::create_symlink");
-# endif
-#else
-                detail::error(!
-                    create_symbolic_link_api()(from.c_str(), to.c_str(),
-                                             SYMBOLIC_LINK_FLAG_DIRECTORY),
-                    to, from, &ec, "boost::filesystem::create_directory_symlink");
-#endif
             }
             inline void create_symlink(const path& to, const path& from) {
                 error_code ec;
@@ -2488,24 +2475,11 @@
             }
             inline void
             create_directory_symlink(const path& to, const path& from, error_code& ec) {
-#ifdef _WIN32
-# if (_WIN32_WINNT < 0x0600)
-                detail::error(true, error_code(ERROR_NOT_SUPPORTED, system_category()),
-                    to, from, &ec, "unboost::filesystem::create_directory_symlink");
-# else
-                if (detail::error(!create_symbolic_link_api(),
-                        error_code(ERROR_NOT_SUPPORTED, system_category()),
-                        to, from, &ec, "unboost::filesystem::create_directory_symlink"))
-                {
-                    return;
+                if (create_symbolic_link_api()(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY)) {
+                    ec.clear();
+                } else {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
-                detail::error(!detail::create_symbolic_link_api()(
-                    from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY),
-                to, from, ec, "unboost::filesystem::create_directory_symlink");
-# endif
-#else
-                ...
-#endif
             }
             inline void
             create_directory_symlink(const path& to, const path& from) {
@@ -2517,21 +2491,11 @@
 
             inline void
             create_hard_link(const path& to, const path& from, error_code& ec) {
-#ifdef _WIN32
-# if (_WIN32_WINNT < 0x0500)
-                detail::error(true, error_code(ERROR_NOT_SUPPORTED, system_category()),
-                     to, from, ec, "unboost::filesystem::create_hard_link");
-# else
-                if (detail::error(!detail::create_hard_link_api(),
-                        error_code(ERROR_NOT_SUPPORTED, system_category()),
-                        to, from, &ec, "unboost::filesystem::create_hard_link"))
-                {
-                    return;
+                if (create_hard_link_api(from, to, 0)) {
+                    ec.clear();
+                } else {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
-# endif
-#endif
-                detail::error(!detail::create_hard_link_api()(from.c_str(), to.c_str(), NULL),
-                      to, from, &ec, "unboost::filesystem::create_hard_link");
             }
             inline void
             create_hard_link(const path& to, const path& from) {
@@ -2734,7 +2698,7 @@
                         ec.clear();
                         return true;
                     }
-                    ec = (int)::GetLastError();
+                    ec = (int)UNBOOST_ERRNO;
                     return false;
                 #else
                     struct stat st;
@@ -2757,7 +2721,7 @@
                         ec.clear();
                         return true;
                     }
-                    ec = (int)::GetLastError();
+                    ec = (int)UNBOOST_ERRNO;
                     return false;
                 #else
                     ec = mkdir(p.c_str());
@@ -2857,7 +2821,7 @@
                     ec.clear();
                     return true;
                 } else {
-                    ec = (int)::GetLastError();
+                    ec = (int)UNBOOST_ERRNO;
                     return false;
                 }
             }
@@ -2928,7 +2892,7 @@
                     info.capacity = capacity.QuadPart;
                     info.free = free.QuadPart;
                 } else {
-                    ec = (int)::GetLastError();
+                    ec = (int)UNBOOST_ERRNO;
                     info.available = static_cast<uintmax_t>(-1);
                     info.capacity = static_cast<uintmax_t>(-1);
                     info.free = static_cast<uintmax_t>(-1);
@@ -2949,7 +2913,7 @@
                 if (::GetTempPathW(MAX_PATH * 2, sz)) {
                     ec.clear();
                 } else {
-                    ec = (int)::GetLastError();
+                    ec = (int)UNBOOST_ERRNO;
                 }
             }
             inline path temp_directory_path() {
@@ -2964,7 +2928,7 @@
             namespace detail {
                 inline file_status
                 process_status_failure(const path& p, error_code *ec) {
-                    int ev = ::GetLastError();
+                    int ev = UNBOOST_ERRNO;
                     if (ec)
                         *ec = ev;
                     if (not_found_error(ev)) {
