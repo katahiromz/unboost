@@ -409,19 +409,23 @@
 #ifdef _WIN32
                 typedef BOOL (WINAPI *PtrCreateHardLinkW)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
-                inline PtrCreateHardLinkW
-                create_hard_link_api(void) {
+                inline BOOL
+                create_hard_link_api(LPCWSTR to, LPCWSTR from) {
                     static PtrCreateHardLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateHardLinkW(::GetProcAddress(
                             ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW")
                         );
                     }
-                    return api;
+                    if (api == NULL) {
+                        ::SetLastError(ERROR_NOT_SUPPORTED);
+                        return FALSE;
+                    }
+                    return (*api)(to, from, NULL);
                 }
 #else
-                inline bool
-                create_hard_link_api(const char *to, const char *from) {
+                inline bool create_hard_link_api(const char *to, const char *from) {
+                    errno = 0;
                     return ::symlink(to, from) == 0;
                 }
 #endif
@@ -430,23 +434,25 @@
                 typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)
                     (LPCWSTR, LPCWSTR, DWORD);
 
-                inline PtrCreateSymbolicLinkW
-                create_symbolic_link_api(void) {
+                inline BOOLEAN
+                create_symbolic_link_api(LPCWSTR to, LPCWSTR from, DWORD flags) {
                     static PtrCreateSymbolicLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateSymbolicLinkW(::GetProcAddress(
                           ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
                     }
-                    return api;
+                    if (api == NULL) {
+                        ::SetLastError(ERROR_NOT_SUPPORTED);
+                        return FALSE;
+                    }
+                    return (*api)(to, from, flags);
                 }
 #else
-                inline bool
-                create_symbolic_link_api(const char *to, const char *from) {
+                inline bool create_symbolic_link_api(const char *to, const char *from, int flags) {
                     return ::symlink(to, from) == 0;
                 }
 #endif
-        }
-
+        } // namespace detail
 
             namespace detail {
                 inline text2text& get_pathansi2pathwide(void) {
@@ -2469,7 +2475,7 @@
 # endif
 #else
                 detail::error(!
-                    create_symbolic_link_api(from.c_str(), to.c_str(),
+                    create_symbolic_link_api()(from.c_str(), to.c_str(),
                                              SYMBOLIC_LINK_FLAG_DIRECTORY),
                     to, from, &ec, "boost::filesystem::create_directory_symlink");
 #endif
