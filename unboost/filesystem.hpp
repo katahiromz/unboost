@@ -228,11 +228,9 @@
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
-        #define UNBOOST_ERRNO int(::GetLastError())
     #else
         #include <sys/types.h>
         #include <sys/stat.h>
-        #define UNBOOST_ERRNO  errno
     #endif
     #include "shared_ptr.hpp"       // for unboost::shared_ptr
     #include "system_error.hpp"     // for unboost::system_error, error_code
@@ -407,6 +405,21 @@
                 return s.type() == file_type::socket;
             }
 
+            namespace detail {
+                inline text2text& get_pathansi2pathwide(void) {
+                    static text2text pathansi2pathwide;
+                    if (!pathansi2pathwide.is_open())
+                        pathansi2pathwide.open(ENC_PATHANSI, ENC_PATHWIDE);
+                    return pathansi2pathwide;
+                }
+                inline text2text& get_pathwide2pathansi(void) {
+                    static text2text pathwide2pathansi;
+                    if (!pathwide2pathansi.is_open())
+                        pathwide2pathansi.open(ENC_PATHWIDE, ENC_PATHANSI);
+                    return pathwide2pathansi;
+                }
+            } // namespace detail
+
             // file APIs
             //
             namespace detail {
@@ -419,6 +432,28 @@
 #endif
 
 #ifdef _WIN32
+                inline HANDLE
+                open_file(LPCWSTR filename, DWORD access, DWORD share,
+                    DWORD dist, DWORD flags_and_attrs)
+                {
+                    return ::CreateFileW(filename, access, share, NULL,
+                        dist, flags_and_attrs, NULL);
+                }
+                struct handle_wrapper {
+                    HANDLE m_h;
+                    handle_wrapper(HANDLE h) : m_h(h) { }
+                    ~handle_wrapper() {
+                        close();
+                    }
+                    bool close() {
+                        if (m_h != INVALID_HANDLE_VALUE)
+                            return ::CloseHandle(m_h) != 0;
+                        return false;
+                    }
+                }; // struct handle_wrapper
+#endif  // def _WIN32
+
+#ifdef _WIN32
                 typedef BOOL (WINAPI *PtrCreateHardLinkW)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
                 inline BOOL
@@ -426,8 +461,8 @@
                     static PtrCreateHardLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateHardLinkW(::GetProcAddress(
-                            ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW")
-                        );
+                            ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW"
+                        ));
                     }
                     if (api == NULL) {
                         ::SetLastError(ERROR_NOT_SUPPORTED);
@@ -451,7 +486,8 @@
                     static PtrCreateSymbolicLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateSymbolicLinkW(::GetProcAddress(
-                          ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
+                          ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"
+                        ));
                     }
                     if (api == NULL) {
                         ::SetLastError(ERROR_NOT_SUPPORTED);
@@ -511,26 +547,12 @@
 #endif  // POSIX
 
 #ifdef _WIN32
-                struct handle_wrapper {
-                    HANDLE m_h;
-                    handle_wrapper(HANDLE h) : m_h(h) { }
-                    ~handle_wrapper() {
-                        close();
-                    }
-                    bool close() {
-                        if (m_h != INVALID_HANDLE_VALUE)
-                            return ::CloseHandle(m_h) != 0;
-                        return false;
-                    }
-                };
-#endif  // def _WIN32
-
-#ifdef _WIN32
                 inline bool
                 resize_file(LPCWSTR file, _uint64_t siz) {
-                    HANDLE hFile = ::CreateFileW(file, GENERIC_READ | GENERIC_WRITE,
+                    HANDLE hFile = detail::open_file(file,
+                        GENERIC_READ | GENERIC_WRITE,
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        NULL, OPEN_EXISTING, 0, NULL);
+                        OPEN_EXISTING, 0);
                     handle_wrapper h(hFile);
                     ULARGE_INTEGER uli;
                     uli.QuadPart = siz;
@@ -634,7 +656,7 @@
                 }
 
                 inline void
-                to_FILETIME(time_t t, FILETIME & ft) {
+                to_FILETIME(time_t t, FILETIME& ft) {
                     _uint64_t temp = t;
                     temp *= 10000000;
                     #if !defined(_MSC_VER) || _MSC_VER > 1300
@@ -649,18 +671,6 @@
             } // namespace detail
 
             namespace detail {
-                inline text2text& get_pathansi2pathwide(void) {
-                    static text2text pathansi2pathwide;
-                    if (!pathansi2pathwide.is_open())
-                        pathansi2pathwide.open(ENC_PATHANSI, ENC_PATHWIDE);
-                    return pathansi2pathwide;
-                }
-                inline text2text& get_pathwide2pathansi(void) {
-                    static text2text pathwide2pathansi;
-                    if (!pathwide2pathansi.is_open())
-                        pathwide2pathansi.open(ENC_PATHWIDE, ENC_PATHANSI);
-                    return pathwide2pathansi;
-                }
                 #ifdef _WIN32
                     static const wchar_t dot = L'.';
                     static const wchar_t colon = L':';
@@ -917,8 +927,8 @@
 
                 template <typename Container, typename U>
                 inline void
-                dispatch(const Container & c, U& to) {
-                    if (c.size()) {
+                dispatch(const Container& c, U& to) {
+                    if (!c.empty()) {
                         std::basic_string<typename Container::value_type>
                             s(c.begin(), c.end());
                         convert(s.c_str(), s.c_str() + s.size(), to);
@@ -950,14 +960,14 @@
                 path() { }
                 path(const path& p) : m_pathname(p.m_pathname) { }
 
+                path(const value_type *str) : m_pathname(str) { }
+                path(const std::basic_string<value_type>& str)
+                    : m_pathname(str) {}
                 template <typename Source>
                 path(const Source& source) {
                     assert(path_traits::is_pathable<Source>::value);
                     path_traits::dispatch(source, m_pathname);
                 }
-                path(const value_type *str) : m_pathname(str) { }
-                path(const std::basic_string<value_type>& str)
-                    : m_pathname(str) {}
 
                 template <typename InputIt>
                 path(InputIt first, InputIt last) {
@@ -2320,7 +2330,7 @@
             }
             inline path current_path(error_code& ec) {
                 path p(detail::get_current_directory(p.c_str()));
-                if (p.size()) {
+                if (!p.empty()) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2442,8 +2452,8 @@
                         REPARSE_DATA_BUFFER rdb;
                     } info;
 
-                    HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ, 0, 0, OPEN_EXISTING,
-                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0);
+                    HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ, 0, OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
                     detail::handle_wrapper h(hFile);
                     if (hFile == INVALID_HANDLE_VALUE) {
                         return symlink_path;
@@ -2580,13 +2590,12 @@
             inline bool
             equivalent(const path& p1, const path& p2, error_code& ec) {
 #ifdef WIN32
-                HANDLE hFile1, hFile2;
-                hFile2 = CreateFileW(p2.c_str(), 0,
+                HANDLE hFile2 = detail::open_file(p2.c_str(), 0,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-                hFile1 = CreateFileW(p1.c_str(), 0,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+                HANDLE hFile1 = detail::open_file(p1.c_str(), 0,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
                 detail::handle_wrapper h2(hFile2), h1(hFile1);
                 if (hFile1 == INVALID_HANDLE_VALUE || hFile2 == INVALID_HANDLE_VALUE) {
                     detail::error(
@@ -2634,7 +2643,6 @@
                 }
                 throw filesystem_error("unboost::filesystem::equivalent", p1, p2, ec);
             }
-            
 
             inline void
             create_symlink(const path& to, const path& from, error_code& ec) {
@@ -2706,11 +2714,12 @@
                     throw filesystem_error("unboost::filesystem::copy_symlink", from, to, ec);
             }
 
+            // ...
             inline bool
             copy_file(const path& from, const path& to, copy_options::inner options,
                       error_code& ec)
             {
-                if (to.exists()) {
+                if (exists(to)) {
                     if (equivalent(to, from, ec)) {
                         ec = ...;
                         return false;
@@ -2761,9 +2770,8 @@
             copy(const path& from, const path& to, copy_options::inner options,
                  error_code& ec)
             {
-                file_status s1 = status(from, ec);
-                file_status s2 = status(to, ec);
-                if (!exists(s1, ec))
+                file_status s1 = status(from, ec), s2 = status(to, ec);
+                if (!exists(from, ec))
                     throw filesystem_error("unboost::filesystem::copy", from, to, ec);
                 if (equivalent(from, to, ec)) {
                     ec = ...;
@@ -2836,9 +2844,9 @@
 
             inline file_time_type last_write_time(const path& p, error_code& ec) {
 #ifdef _WIN32
-                HANDLE hFile = ::CreateFileW(p.c_str(), 0,
-                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                HANDLE hFile = detail::open_file(p.c_str(), 0,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
                 handle_wrapper h(hFile);
                 if (hFile == INVALID_HANDLE_VALUE)
                     return file_time_type(-1);
@@ -2855,7 +2863,20 @@
             }
             inline void
             last_write_time(const path& p, file_time_type new_time, error_code& ec) {
-                ...
+                HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+                handle_wrapper h(hFile);
+                if (hFile == INVALID_HANDLE_VALUE) {
+                    ec.assign(UNBOOST_ERRNO, system_error());
+                    return;
+                }
+                FILETIME ft;
+                detail::to_FILETIME(new_time, ft);
+                if (::SetFileTime(hFile, NULL, NULL, &ft))
+                    ec.clear();
+                else
+                    ec.assign(UNBOOST_ERRNO, system_error());
             }
             inline file_time_type last_write_time(const path& p) {
                 error_code ec;
@@ -2876,7 +2897,26 @@
             }
 
             inline path read_symlink(const path& p, error_code& ec) {
+                path ret;
+#ifdef _WIN32
                 ...
+#else   // POSIX
+                for (size_t path_max = 64; ; path_max *= 2) {
+                    std::vector<char> array(path_max);
+                    ssize_t result = ::readlink(p.c_str(), buf.data(), path_max);
+                    if (result == -1) {
+                        ec.assign(errno, system_category());
+                        break;
+                    } else {
+                        if (result != static_cast<ssize_t>(path_max)) {
+                            ret.assign(buf.data(), buf.data() + result);
+                            ec.clear();
+                            break;
+                        }
+                    }
+                }
+#endif  // POSIX
+                return ret;
             }
             inline path read_symlink(const path& p) {
                 error_code ec;
@@ -2922,7 +2962,24 @@
             }
 
             inline bool create_directories(const path& p, error_code& ec) {
-                ...
+                error_code local_ec;
+                file_status p_status = status(p, local_ec);
+                if (p_status.type() == directory_file) {
+                    ec.clear();
+                    return false;
+                }
+                path parent = p.parent_path();
+                if (!parent.empty()) {
+                    file_status parent_status = status(parent, local_ec);
+                    if (parent_status.type() == file_not_found) {
+                        create_directories(parent, local_ec);
+                        if (local_ec) {
+                            ec = local_ec;
+                            return false;
+                        }
+                    }
+                }
+                return create_directory(p, ec);
             }
             inline bool create_directories(const path& p) {
                 error_code ec;
@@ -2933,12 +2990,9 @@
             }
 
             inline uintmax_t file_size(const path& p, error_code& ec) {
-                HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
+                HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    NULL,
-                    OPEN_EXISTING,
-                    FILE_FLAG_NO_BUFFERING | FILE_FLAG_SEQUENTIAL_SCAN,
-                    NULL);
+                    OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_SEQUENTIAL_SCAN);
                 if (hFile != INVALID_HANDLE_VALUE) {
                     ULARGE_INTEGER siz;
                     siz.LowPart = GetFileSize(hFile, &siz.HighPart);
@@ -3161,10 +3215,10 @@
 
                 inline bool
                 is_reparse_point_a_symlink(const path& p) {
-                    HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ,
+                    HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ,
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        NULL, OPEN_EXISTING,
-                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                        OPEN_EXISTING,
+                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
                     detail::handle_wrapper h(hFile);
                     if (hFile == INVALID_HANDLE_VALUE)
                         return false;
@@ -3190,9 +3244,9 @@
                         return process_status_failure(p, ec);
                     }
                     if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                        HANDLE hFile = ::CreateFileW(p.c_str(), 0,
+                        HANDLE hFile = detail::open_file(p.c_str(), 0,
                             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                            NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
                         detail::handle_wrapper h(hFile);
                         if (hFile == INVALID_HANDLE_VALUE) {
                             return process_status_failure(p, ec);
