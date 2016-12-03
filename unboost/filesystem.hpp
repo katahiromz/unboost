@@ -461,34 +461,130 @@
                 }
 #else   // POSIX
                 bool copy_file_api(const char *from, const char *to, bool fail_if_exists) {
-                    char buf[512];
-                    int has_error = 1;
+                    using namespace std;
+                    const int bufsize = 512;
+                    char buf[bufsize];
                     FILE *checkf = fopen(to, "rb");
                     fclose(checkf);
                     if (checkf && fail_if_exists) {
                         return false;
                     }
+                    int success = 0;
                     FILE *inf = fopen(from, "rb");
                     if (inf) {
                         FILE *outf = fopen(to, "wb");
                         if (outf) {
                             for (;;) {
-                                int count = fread(buf, 1, 512, inf);
+                                int count = fread(buf, 1, bufsize, inf);
                                 if (!count)
                                     break;
                                 if (!fwrite(buf, count, 1, outf))
                                     break;
                             }
-                            has_error = ferror(inf) || ferror(outf);
+                            success = !ferror(inf) && !ferror(outf);
                             fclose(outf);
                         }
                         fclose(inf);
                     }
-                    return !has_error;
+                    return success != 0;
                 } // copy_file_api
 #endif  // POSIX
 
-        } // namespace detail
+#ifdef _WIN32
+                struct handle_wrapper {
+                    HANDLE m_h;
+                    handle_wrapper(HANDLE h) : m_h(h) { }
+                    ~handle_wrapper() {
+                        close();
+                    }
+                    BOOL close() {
+                        if (m_h != INVALID_HANDLE_VALUE)
+                            return ::CloseHandle(m_h);
+                        return FALSE;
+                    }
+                };
+#endif  // def _WIN32
+
+#ifdef _WIN32
+                inline bool
+                resize_file_api(LPCWSTR file, _uint64_t siz) {
+                    HANDLE hFile = ::CreateFileW(file, GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                        NULL, OPEN_EXISTING);
+                    handle_wrapper h(hFile);
+                    ULARGE_INTEGER uli;
+                    uli.QuadPart = siz;
+                    if (hFile == INVALID_HANDLE_VALUE)
+                        return false;
+                    if (::SetFilePointer(hFile, uli.LowPart, &li.HighPart, FILE_BEGIN) == 0xFFFFFFFF
+                        ::GetLastError() != NO_ERROR)
+                    {
+                        return false;
+                    }
+                    return ::SetEndOfFile(hFile) && h.close();
+                }
+#else   // POSIX
+                inline bool
+                resize_file_api(const char *file, _uint64_t siz) {
+                    return truncate(file, siz) == 0;
+                }
+#endif  // POSIX
+
+#ifdef _WIN32
+                inline bool
+                set_current_directory(LPCWSTR p) {
+                    return ::SetCurrentDirectoryW(p) != 0;
+                }
+                inline bool
+                create_directory(LPCWSTR p) {
+                    return ::CreateDirectoryW(p, NULL) != 0;
+                }
+                inline bool
+                delete_file(LPCWSTR p) {
+                    return ::DeleteFileW(p) != 0;
+                }
+                inline bool
+                move_file(LPCWSTR o, LPCWSTR n) {
+                    return ::MoveFileExW(o, n,
+                        MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED);
+                }
+                inline bool
+                copy_directory(LPCWSTR from, LPCWSTR to) {
+                    return ::CreateDirectoryExW(F, T, NULL) != 0;
+                }
+                inline bool
+                remove_directory(LPCWSTR p) {
+                    return RemoveDirectoryW(p) != 0;
+                }
+#else   // POSIX
+                inline bool
+                set_current_directory(const char *p) {
+                    return ::chdir(p) == 0;
+                }
+                inline bool
+                create_directory(const char *p) {
+                    return ::mkdir(P, S_IRWXU | S_IRWXG | S_IRWXO) == 0;
+                }
+                inline bool
+                delete_file(const char *p) {
+                    return ::unlink(p) == 0;
+                }
+                inline bool
+                move_file(const char *o, const char *n) {
+                    return ::rename(o, n) == 0;
+                }
+                inline bool
+                copy_directory(const char *from, const char *to) {
+                    struct stat from_st;
+                    return (::stat(from, &from_stat) == 0 &&
+                            ::mkdir(to, from_stat.st_mode) == 0);
+                }
+                inline bool
+                remove_directory(const char *p) {
+                    return ::rmdir(p) == 0;
+                }
+#endif  // POSIX
+            } // namespace detail
 
             namespace detail {
                 inline text2text& get_pathansi2pathwide(void) {
@@ -1460,15 +1556,6 @@
                 }
 
                 #ifdef _WIN32
-                    struct handle_wrapper {
-                        HANDLE m_h;
-                        handle_wrapper(HANDLE h) : m_h(h) { }
-                        ~handle_wrapper() {
-                            if (m_h != INVALID_HANDLE_VALUE)
-                                ::CloseHandle(m_h);
-                        }
-                    };
-
                     inline bool not_found_error(int ev) {
                         switch (ev) {
                         case ERROR_FILE_NOT_FOUND:
