@@ -406,6 +406,61 @@
             }
 
             namespace detail {
+#ifdef _WIN32
+                typedef BOOL (WINAPI *PtrCreateHardLinkW)(
+                    LPCWSTR lpFileName,
+                    LPCWSTR lpExistingFileName,
+                    LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+
+                inline BOOL
+                create_hard_link_api(LPCWSTR lpFileName, LPCWSTR lpExistingFileName)
+                {
+                    static PtrCreateHardLinkW api = NULL;
+                    if (api == NULL) {
+                        api = PtrCreateHardLinkW(::GetProcAddress(
+                            ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW")
+                        );
+                    }
+                    if (api == NULL) {
+                        return FALSE;
+                    }
+                    return (*api)(lpFileName, lpExistingFileName, NULL);
+                }
+#else
+                inline bool
+                create_hard_link_api(const char *to, const char *from) {
+                    return ::symlink(to, from) == 0;
+                }
+#endif
+
+#ifdef _WIN32
+                typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)(
+                    LPCWSTR lpSymlinkFileName,
+                    LPCWSTR lpTargetFileName,
+                    DWORD dwFlags);
+
+                inline BOOLEAN 
+                create_symbolic_link_api(LPCWSTR to, LPCWSTR from, DWORD dwFlags) {
+                    static PtrCreateSymbolicLinkW api = NULL;
+                    if (api == NULL) {
+                        api = PtrCreateSymbolicLinkW(::GetProcAddress(
+                          ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
+                    }
+                    if (api == NULL) {
+                        return FALSE;
+                    }
+                    return (*api)(to, from, dwFlags);
+                }
+#else
+                inline bool
+                create_symbolic_link_api(const char *to, const char *from) {
+                    return ::symlink(to, from) == 0;
+                }
+#endif
+        }
+
+
+            namespace detail {
                 inline text2text& get_pathansi2pathwide(void) {
                     static text2text pathansi2pathwide;
                     if (!pathansi2pathwide.is_open())
@@ -2349,7 +2404,6 @@
             canonical(const path& p, error_code& ec) {
                 return detail::canonical(p, current_path(), &ec);
             }
-
             inline bool
             equivalent(const path& p1, const path& p2, error_code& ec) {
 #ifdef WIN32
@@ -2407,6 +2461,7 @@
                 }
                 throw filesystem_error("unboost::filesystem::equivalent", p1, p2, ec);
             }
+            
 
             inline void
             create_symlink(const path& to, const path& from, error_code& ec) {
@@ -2418,12 +2473,17 @@
                 if (detail::error(!create_symbolic_link_api,
                         error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
                         to, from, &ec, "boost::filesystem::create_symlink"))
-                return;
-
+                {
+                    return;
+                }
+                error(!create_symbolic_link_api(from.c_str(), to.c_str(), 0),
+                       to, from, &ec, "boost::filesystem::create_symlink");
 # endif
 #else
-                detail::error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY),
-                to, from, &ec, "boost::filesystem::create_directory_symlink");
+                detail::error(!
+                    create_symbolic_link_api(from.c_str(), to.c_str(),
+                                             SYMBOLIC_LINK_FLAG_DIRECTORY),
+                    to, from, &ec, "boost::filesystem::create_directory_symlink");
 #endif
             }
             inline void create_symlink(const path& to, const path& from) {
