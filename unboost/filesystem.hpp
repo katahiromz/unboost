@@ -692,13 +692,7 @@
                     convert(c_str, to);
                 }
                 inline void
-                dispatch(const directory_entry& de,
-#ifdef _WIN32
-                    std::wstring& to
-#else
-                    std::string& to
-#endif
-                );
+                dispatch(const directory_entry& de, detail::string_type& to);
             } // namespace path_traits
 
             class path {
@@ -1505,14 +1499,7 @@
 
             namespace detail {
                 inline void
-                dispatch(const directory_entry& de,
-#ifdef _WIN32
-                    std::wstring& to
-#else
-                    std::string& to
-#endif
-                )
-                {
+                dispatch(const directory_entry& de, detail::string_type& to) {
                     to = de.path().native();
                 }
 
