@@ -104,6 +104,17 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
+// UNBOOST_CONSTEXPR
+
+#ifdef UNBOOST_CXX11
+    #define UNBOOST_CONSTEXPR constexpr
+#elif (__cplusplus >= 201103L && !defined(UNBOOST_NO_CXX11))
+    #define UNBOOST_CONSTEXPR constexpr
+#else
+    #define UNBOOST_CONSTEXPR
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
 // dependencies
 
 // Unboost's filesystem depends on system-specific system
