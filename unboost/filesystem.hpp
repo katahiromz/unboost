@@ -1295,6 +1295,85 @@
             }; // class filesystem_error
 
             namespace detail {
+                inline bool
+                error(bool was_error, error_code* ec, const std::string& message) {
+                    if (!was_error) {
+                        if (ec != 0)
+                            ec->clear();
+                    } else {
+                        if (ec == 0)
+                            throw filesystem_error(message, error_code(errno, system_category()));
+                        else
+                            ec->assign(errno, system_category());
+                    }
+                    return was_error;
+                }
+
+                inline bool
+                error(bool was_error, const path& p, error_code* ec,
+                      const std::string& message)
+                {
+                    if (!was_error) {
+                        if (ec != 0)
+                            ec->clear();
+                    } else {
+                    if (ec == 0)
+                        throw filesystem_error(message, p, error_code(errno, system_category()));
+                    else
+                        ec->assign(errno, system_category());
+                    }
+                    return was_error;
+                }
+
+                inline bool
+                error(bool was_error, const path& p1, const path& p2, error_code* ec,
+                      const std::string& message)
+                {
+                    if (!was_error) {
+                        if (ec != 0)
+                            ec->clear();
+                    } else {
+                        if (ec == 0)
+                            throw filesystem_error(message, p1, p2, error_code(errno, system_category()));
+                        else
+                            ec->assign(errno, system_category());
+                    }
+                    return was_error;
+                }
+
+                inline bool
+                error(bool was_error, const error_code& result,
+                      const path& p, error_code* ec, const std::string& message)
+                {
+                    if (!was_error) {
+                        if (ec != 0)
+                            ec->clear();
+                    } else {
+                        if (ec == 0)
+                            throw filesystem_error(message, p, result);
+                        else
+                            *ec = result;
+                    }
+                    return was_error;
+                }
+
+                inline bool
+                error(bool was_error, const error_code& result,
+                      const path& p1, const path& p2, error_code* ec,
+                      const std::string& message)
+                {
+                    if (!was_error) {
+                        if (ec != 0)
+                            ec->clear();
+                    } else {
+                        if (ec == 0)
+                            throw filesystem_error(message, p1, p2, result);
+                        else
+                            *ec = result;
+                    }
+                    return was_error;
+                }
+
                 #ifdef _WIN32
                     struct handle_wrapper {
                         HANDLE m_h;
@@ -2137,7 +2216,7 @@
 
                     HANDLE hFile = ::CreateFileW(p.c_str(), GENERIC_READ, 0, 0, OPEN_EXISTING,
                         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0);
-                    handle_wrapper h(hFile);
+                    detail::handle_wrapper h(hFile);
                     if (hFile == INVALID_HANDLE_VALUE) {
                         return symlink_path;
                     }
@@ -2273,14 +2352,53 @@
 
             inline bool
             equivalent(const path& p1, const path& p2, error_code& ec) {
+#ifdef WIN32
+                HANDLE hFile1, hFile2;
+                hFile2 = CreateFileW(p2.c_str(), 0,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                hFile1 = CreateFileW(p1.c_str(), 0,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                detail::handle_wrapper h2(hFile2), h1(hFile1);
+                if (hFile1 == INVALID_HANDLE_VALUE || hFile2 == INVALID_HANDLE_VALUE) {
+                    detail::error(
+                        hFile1 == INVALID_HANDLE_VALUE && hFile2 == INVALID_HANDLE_VALUE,
+                        p1, p2, &ec, "unboost::filesystem::equivalent");
+                    return false;
+                }
+                BY_HANDLE_FILE_INFORMATION info1, info2;
+                if (detail::error(!::GetFileInformationByHandle(hFile1, &info1),
+                          p1, p2, &ec, "unboost::filesystem::equivalent"))
+                {
+                    return false;
+                }
+                if (detail::error(!::GetFileInformationByHandle(hFile2, &info2),
+                    p1, p2, &ec, "unboost::filesystem::equivalent"))
+                {
+                    return false;
+                }
+
+                return info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber &&
+                       info1.nFileIndexHigh == info2.nFileIndexHigh &&
+                       info1.nFileIndexLow == info2.nFileIndexLow &&
+                       info1.nFileSizeHigh == info2.nFileSizeHigh &&
+                       info1.nFileSizeLow == info2.nFileSizeLow &&
+                       info1.ftLastWriteTime.dwLowDateTime
+                       == info2.ftLastWriteTime.dwLowDateTime &&
+                       info1.ftLastWriteTime.dwHighDateTime
+                       == info2.ftLastWriteTime.dwHighDateTime;
+#else
                 using namespace std;
                 struct stat st1, st2;
                 if (stat(p1.c_str(), &st1) == 0 && stat(p2.c_str(), &st2) == 0) {
                     ec.clear();
-                    return st1.st_ino == st2.st_ino;
+                    return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino &&
+                           st1.st_size == st2.st_size && st1.st_mtime == st2.st_mtime;
                 }
                 ec = ENOENT;
                 return false;
+#endif
             }
             inline bool equivalent(const path& p1, const path& p2) {
                 error_code ec;
@@ -2290,20 +2408,40 @@
                 throw filesystem_error("unboost::filesystem::equivalent", p1, p2, ec);
             }
 
-            inline void create_symlink(const path& target, const path& link) {
-                ...
-            }
             inline void
-            create_symlink(const path& target, const path& link, error_code& ec) {
+            create_symlink(const path& to, const path& from, error_code& ec) {
+#ifdef _WIN32
+# if (_WIN32_WINNT < 0x0600)
+                detail::error(true, error_code(ERROR_NOT_SUPPORTED, system_category()),
+                      to, from, &ec, "unboost::filesystem::create_directory_symlink");
+# else
+                if (detail::error(!create_symbolic_link_api,
+                        error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
+                        to, from, &ec, "boost::filesystem::create_symlink"))
+                return;
 
+# endif
+#else
+                detail::error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY),
+                to, from, &ec, "boost::filesystem::create_directory_symlink");
+#endif
             }
-            inline void
-            create_directory_symlink(const path& target, const path& link) {
-                ...
+            inline void create_symlink(const path& to, const path& from) {
+                error_code ec;
+                create_symlink(to, from, ec);
+                if (ec)
+                    throw filesystem_error("unboost::filesystem::create_symlink", to, from, ec);
             }
             inline void
             create_directory_symlink(const path& target, const path& link, error_code& ec) {
                 ...
+            }
+            inline void
+            create_directory_symlink(const path& to, const path& from) {
+                error_code ec;
+                create_directory_symlink(to, from, ec);
+                if (ec)
+                    throw filesystem_error("unboost::filesystem::create_directory_symlink", to, from, ec);
             }
 
             inline void
@@ -2776,7 +2914,7 @@
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                         NULL, OPEN_EXISTING,
                         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
-                    handle_wrapper h(hFile);
+                    detail::handle_wrapper h(hFile);
                     if (hFile == INVALID_HANDLE_VALUE)
                         return false;
 
@@ -2804,7 +2942,7 @@
                         HANDLE hFile = ::CreateFileW(p.c_str(), 0,
                             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                             NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-                        handle_wrapper h(hFile);
+                        detail::handle_wrapper h(hFile);
                         if (hFile == INVALID_HANDLE_VALUE) {
                             return process_status_failure(p, ec);
                         }
