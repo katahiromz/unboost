@@ -411,6 +411,14 @@
             //
             namespace detail {
 #ifdef _WIN32
+                typedef std::wstring string_type;
+                typedef string_type::size_type size_type;
+#else
+                typedef std::string string_type;
+                typedef string_type::size_type size_type;
+#endif
+
+#ifdef _WIN32
                 typedef BOOL (WINAPI *PtrCreateHardLinkW)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
                 inline BOOL
@@ -544,6 +552,13 @@
 #endif  // POSIX
 
 #ifdef _WIN32
+                inline string_type
+                get_current_directory(LPCWSTR p) {
+                    WCHAR sz[MAX_PATH];
+                    sz[0] = 0;
+                    ::GetCurrentDirectoryW(MAX_PATH, sz);
+                    return string_type(sz);
+                }
                 inline bool
                 set_current_directory(LPCWSTR p) {
                     return ::SetCurrentDirectoryW(p) != 0;
@@ -570,6 +585,13 @@
                     return RemoveDirectoryW(p) != 0;
                 }
 #else   // POSIX
+                inline string_type
+                get_current_directory(LPCWSTR p) {
+                    char *cwd = getcwd(NULL, 0);
+                    string_type ret(cwd);
+                    free(cwd);
+                    return ret;
+                }
                 inline bool
                 set_current_directory(const char *p) {
                     return ::chdir(p) == 0;
@@ -650,8 +672,6 @@
                     static const wchar_t *preferred_sep_str = L"\\";
                     static const wchar_t question_mark = L'?';
                     static const wchar_t *seps = L"\\/";
-                    typedef std::wstring string_type;
-                    typedef string_type::size_type size_type;
                     inline bool _is_sep(wchar_t ch) {
                         return ch == L'\\' || ch == L'/';
                     }
@@ -671,8 +691,6 @@
                     static const char preferred_sep = '/';
                     static const char *preferred_sep_str = "/";
                     static const char *seps = "\\/";
-                    typedef std::string string_type;
-                    typedef string_type::size_type size_type;
                     inline bool _is_sep(char ch) {
                         return ch == '/';
                     }
@@ -2294,17 +2312,15 @@
             typedef std::time_t file_time_type;
 
             inline void current_path(const path& p, error_code& ec) {
-                if (::SetCurrentDirectoryW(p.c_str())) {
+                if (detail::set_current_directory(p.c_str())) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
                 }
             }
             inline path current_path(error_code& ec) {
-                path p;
-                WCHAR sz[MAX_PATH * 2];
-                if (::GetCurrentDirectoryW(MAX_PATH * 2, sz)) {
-                    p = sz;
+                path p(detail::get_current_directory(p.c_str()));
+                if (p.size()) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2691,7 +2707,7 @@
             }
 
             inline bool
-            copy_file(const path& from, const path& to, copy_options options,
+            copy_file(const path& from, const path& to, copy_options::inner options,
                       error_code& ec)
             {
                 if (to.exists()) {
@@ -2727,7 +2743,7 @@
                 }
             }
             inline bool
-            copy_file(const path& from, const path& to, copy_options options) {
+            copy_file(const path& from, const path& to, copy_options::inner options) {
                 error_code ec;
                 if (copy_file(from, to, options, ec)) {
                     return true;
@@ -2742,7 +2758,7 @@
             }
 
             inline void
-            copy(const path& from, const path& to, copy_options options,
+            copy(const path& from, const path& to, copy_options::inner options,
                  error_code& ec)
             {
                 file_status s1 = status(from, ec);
@@ -2803,7 +2819,7 @@
                 ec.clear();
             }
             inline void
-            copy(const path& from, const path& to, copy_options options) {
+            copy(const path& from, const path& to, copy_options::inner options) {
                 error_code ec;
                 if (copy(from, to, options, ec)) {
                     return true;
@@ -2873,19 +2889,12 @@
 
             inline bool
             create_directory(const path& p, const path& existing_p, error_code& ec) {
-                #ifdef _WIN32
-                    if (::CreateDirectoryExW(existing_p.c_str(), p.c_str(), NULL)) {
-                        ec.clear();
-                        return true;
-                    }
-                    ec = UNBOOST_ERRNO;
-                    return false;
-                #else
-                    struct stat st;
-                    stat(existing_p.c_str(), &st);
-                    ec = mkdir(p.c_str(), st.st_mode);
-                    return (ec == 0);
-                #endif
+                if (detail::create_directory(existing_p.c_str(), p.c_str())) {
+                    ec.clear();
+                    return true;
+                }
+                ec.assign(UNBOOST_ERRNO, system_category());
+                return false;
             }
             inline bool
             create_directory(const path& p, const path& existing_p) {
@@ -2896,7 +2905,6 @@
                 throw filesystem_error("unboost::filesystem::create_directory", p, ec);
             }
             inline bool create_directory(const path& p, error_code& ec) {
-                detail::create_directory
                 if (detail::create_directory(p.c_str())) {
                     ec.clear();
                     return true;
@@ -2939,7 +2947,7 @@
                         return siz.QuadPart;
                     }
                 }
-                ec = GetLastError();
+                ec.assign(UNBOOST_ERRNO, system_category());
                 return 0;
             }
             inline uintmax_t file_size(const path& p) {
@@ -2998,7 +3006,7 @@
                     ec.clear();
                     return true;
                 } else {
-                    ec = UNBOOST_ERRNO;
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return false;
                 }
             }
@@ -3028,7 +3036,7 @@
                     if (equivalent(old_p, new_p, ec))
                         return;
                     if (exists(new_p) && !is_directory(new_p)) {
-                        delete(new_p);
+                        delete_file(new_p);
                         ...
                     }
                     if (!exists(new_p)) {
@@ -3049,7 +3057,11 @@
 
             inline void
             resize_file(const path& p, uintmax_t new_size, error_code& ec) {
-                ec = truncate(p.c_str(), new_size);
+                if (detail::resize_file(p.c_str(), new_size)) {
+                    ec.clear();
+                } else {
+                    ec.assign(UNBOOST_ERRNO, system_category());
+                }
             }
             inline void
             resize_file(const path& p, uintmax_t new_size) {
@@ -3069,7 +3081,7 @@
                     info.capacity = capacity.QuadPart;
                     info.free = free.QuadPart;
                 } else {
-                    ec = UNBOOST_ERRNO;
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     info.available = static_cast<uintmax_t>(-1);
                     info.capacity = static_cast<uintmax_t>(-1);
                     info.free = static_cast<uintmax_t>(-1);
@@ -3093,14 +3105,15 @@
                         ret = sz;
                         ec.clear();
                     } else {
-                        ec = UNBOOST_ERRNO;
+                        ec.assign(UNBOOST_ERRNO, system_category());
                     }
                 #else
                     char *env = getenv("TMP");
-                    if (env == NULL) {
-                        ret = "/tmp";
-                    } else {
+                    if (env) {
                         ret = env;
+                        ec.clear();
+                    } else {
+                        ec.assign(UNBOOST_ERRNO, system_category());
                     }
                 #endif
                 return ret;
@@ -3126,7 +3139,7 @@
                         return file_status(type_unknown);
                     }
                     if (ec == NULL)
-                        throw filesystem_erorr("unboost::filesystem::status", p, ev);
+                        throw filesystem_error("unboost::filesystem::status", p, ev);
                     return file_status(status_error);
                 }
 
