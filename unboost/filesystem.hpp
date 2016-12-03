@@ -407,12 +407,14 @@
                 return s.type() == file_type::socket;
             }
 
+            // file APIs
+            //
             namespace detail {
 #ifdef _WIN32
                 typedef BOOL (WINAPI *PtrCreateHardLinkW)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
                 inline BOOL
-                create_hard_link_api(LPCWSTR to, LPCWSTR from) {
+                create_hard_link(LPCWSTR to, LPCWSTR from) {
                     static PtrCreateHardLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateHardLinkW(::GetProcAddress(
@@ -426,7 +428,7 @@
                     return (*api)(to, from, NULL);
                 }
 #else   // POSIX
-                inline bool create_hard_link_api(const char *to, const char *from) {
+                inline bool create_hard_link(const char *to, const char *from) {
                     errno = 0;
                     return ::symlink(to, from) == 0;
                 }
@@ -437,7 +439,7 @@
                     (LPCWSTR, LPCWSTR, DWORD);
 
                 inline BOOLEAN
-                create_symbolic_link_api(LPCWSTR to, LPCWSTR from, DWORD flags) {
+                create_symbolic_link(LPCWSTR to, LPCWSTR from, DWORD flags) {
                     static PtrCreateSymbolicLinkW api = NULL;
                     if (api == NULL) {
                         api = PtrCreateSymbolicLinkW(::GetProcAddress(
@@ -450,17 +452,17 @@
                     return (*api)(to, from, flags);
                 }
 #else   // POSIX
-                inline bool create_symbolic_link_api(const char *to, const char *from, int flags) {
+                inline bool create_symbolic_link(const char *to, const char *from, int flags) {
                     return ::symlink(to, from) == 0;
                 }
 #endif  // POSIX
 
 #ifdef _WIN32
-                bool copy_file_api(LPCWSTR from, LPCWSTR to, bool fail_if_exists) {
+                bool copy_file(LPCWSTR from, LPCWSTR to, bool fail_if_exists) {
                     return ::CopyFileW(from, to, fail_if_exists) != 0;
                 }
 #else   // POSIX
-                bool copy_file_api(const char *from, const char *to, bool fail_if_exists) {
+                bool copy_file(const char *from, const char *to, bool fail_if_exists) {
                     using namespace std;
                     const int bufsize = 512;
                     char buf[bufsize];
@@ -472,22 +474,32 @@
                     int success = 0;
                     FILE *inf = fopen(from, "rb");
                     if (inf) {
+                        int errno_save = 0;
                         FILE *outf = fopen(to, "wb");
                         if (outf) {
                             for (;;) {
                                 int count = fread(buf, 1, bufsize, inf);
-                                if (!count)
+                                if (!count) {
+                                    errno_save = errno;
+                                    if (feof(inf))
+                                        errno_save = 0;
                                     break;
-                                if (!fwrite(buf, count, 1, outf))
+                                }
+                                if (!fwrite(buf, count, 1, outf)) {
+                                    errno_save = errno;
                                     break;
+                                }
                             }
                             success = !ferror(inf) && !ferror(outf);
                             fclose(outf);
+                        } else {
+                            errno_save = errno;
                         }
                         fclose(inf);
+                        errno = errno_save;
                     }
                     return success != 0;
-                } // copy_file_api
+                } // copy_file
 #endif  // POSIX
 
 #ifdef _WIN32
@@ -497,17 +509,17 @@
                     ~handle_wrapper() {
                         close();
                     }
-                    BOOL close() {
+                    bool close() {
                         if (m_h != INVALID_HANDLE_VALUE)
-                            return ::CloseHandle(m_h);
-                        return FALSE;
+                            return ::CloseHandle(m_h) != 0;
+                        return false;
                     }
                 };
 #endif  // def _WIN32
 
 #ifdef _WIN32
                 inline bool
-                resize_file_api(LPCWSTR file, _uint64_t siz) {
+                resize_file(LPCWSTR file, _uint64_t siz) {
                     HANDLE hFile = ::CreateFileW(file, GENERIC_READ | GENERIC_WRITE,
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                         NULL, OPEN_EXISTING);
@@ -525,7 +537,7 @@
                 }
 #else   // POSIX
                 inline bool
-                resize_file_api(const char *file, _uint64_t siz) {
+                resize_file(const char *file, _uint64_t siz) {
                     return truncate(file, siz) == 0;
                 }
 #endif  // POSIX
@@ -584,6 +596,33 @@
                     return ::rmdir(p) == 0;
                 }
 #endif  // POSIX
+
+#ifdef _WIN32
+                inline time_t
+                to_time_t(const FILETIME & ft) {
+                    __int64 t = (__int64(ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+                    #if !defined(_MSC_VER) || _MSC_VER > 1300
+                        t -= 116444736000000000LL;
+                    #else
+                        t -= 116444736000000000;
+                    #endif
+                    t /= 10000000;
+                    return static_cast<time_t>(t);
+                }
+
+                inline void
+                to_FILETIME(time_t t, FILETIME & ft) {
+                    __int64 temp = t;
+                    temp *= 10000000;
+                    #if !defined(_MSC_VER) || _MSC_VER > 1300
+                        temp += 116444736000000000LL;
+                    #else
+                        temp += 116444736000000000;
+                    #endif
+                    ft.dwLowDateTime = DWORD(temp);
+                    ft.dwHighDateTime = DWORD(temp >> 32);
+                }
+#endif  // def _WIN32
             } // namespace detail
 
             namespace detail {
@@ -2582,7 +2621,7 @@
 
             inline void
             create_symlink(const path& to, const path& from, error_code& ec) {
-                if (create_symbolic_link_api()(from.c_str(), to.c_str(), 0)) {
+                if (create_symbolic_link()(from.c_str(), to.c_str(), 0)) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2596,7 +2635,7 @@
             }
             inline void
             create_directory_symlink(const path& to, const path& from, error_code& ec) {
-                if (create_symbolic_link_api()(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY)) {
+                if (create_symbolic_link()(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY)) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2612,7 +2651,7 @@
 
             inline void
             create_hard_link(const path& to, const path& from, error_code& ec) {
-                if (create_hard_link_api(from, to, 0)) {
+                if (create_hard_link(from, to, 0)) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2776,7 +2815,23 @@
             }
 
             inline file_time_type last_write_time(const path& p, error_code& ec) {
-                ...
+#ifdef _WIN32
+                HANDLE hFile = ::CreateFileW(p.c_str(), 0,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                handle_wrapper h(hFile);
+                if (hFile == INVALID_HANDLE_VALUE)
+                    return file_time_type(-1);
+                FILETIME ft;
+                if (!::GetFileTime(hFile, NULL, NULL, &ft))
+                    return file_time_type(-1);
+                return detail::to_time_t(ft);
+#else   // POSIX
+                struct stat st;
+                if (::stat(p.c_str(), &st) != 0)
+                    return file_time_type(-1);
+                return st.st_mtime;
+#endif  // POSIX
             }
             inline void
             last_write_time(const path& p, file_time_type new_time, error_code& ec) {
