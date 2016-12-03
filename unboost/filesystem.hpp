@@ -228,7 +228,7 @@
         #ifndef _INC_WINDOWS
             #include <windows.h>
         #endif
-        #define UNBOOST_ERRNO  GetLastError()
+        #define UNBOOST_ERRNO int(::GetLastError())
     #else
         #include <sys/types.h>
         #include <sys/stat.h>
@@ -522,13 +522,14 @@
                 resize_file(LPCWSTR file, _uint64_t siz) {
                     HANDLE hFile = ::CreateFileW(file, GENERIC_READ | GENERIC_WRITE,
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        NULL, OPEN_EXISTING);
+                        NULL, OPEN_EXISTING, 0, NULL);
                     handle_wrapper h(hFile);
                     ULARGE_INTEGER uli;
                     uli.QuadPart = siz;
                     if (hFile == INVALID_HANDLE_VALUE)
                         return false;
-                    if (::SetFilePointer(hFile, uli.LowPart, &li.HighPart, FILE_BEGIN) == 0xFFFFFFFF
+                    if (::SetFilePointer(hFile, uli.LowPart, (PLONG)&uli.HighPart,
+                                         FILE_BEGIN) == 0xFFFFFFFF &&
                         ::GetLastError() != NO_ERROR)
                     {
                         return false;
@@ -562,7 +563,7 @@
                 }
                 inline bool
                 copy_directory(LPCWSTR from, LPCWSTR to) {
-                    return ::CreateDirectoryExW(F, T, NULL) != 0;
+                    return ::CreateDirectoryExW(from, to, NULL) != 0;
                 }
                 inline bool
                 remove_directory(LPCWSTR p) {
@@ -600,7 +601,7 @@
 #ifdef _WIN32
                 inline time_t
                 to_time_t(const FILETIME & ft) {
-                    __int64 t = (__int64(ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+                    _uint64_t t = (_uint64_t(ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
                     #if !defined(_MSC_VER) || _MSC_VER > 1300
                         t -= 116444736000000000LL;
                     #else
@@ -612,7 +613,7 @@
 
                 inline void
                 to_FILETIME(time_t t, FILETIME & ft) {
-                    __int64 temp = t;
+                    _uint64_t temp = t;
                     temp *= 10000000;
                     #if !defined(_MSC_VER) || _MSC_VER > 1300
                         temp += 116444736000000000LL;
@@ -2621,7 +2622,7 @@
 
             inline void
             create_symlink(const path& to, const path& from, error_code& ec) {
-                if (create_symbolic_link()(from.c_str(), to.c_str(), 0)) {
+                if (detail::create_symbolic_link(from.c_str(), to.c_str(), 0)) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2635,7 +2636,10 @@
             }
             inline void
             create_directory_symlink(const path& to, const path& from, error_code& ec) {
-                if (create_symbolic_link()(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY)) {
+#ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+    #define SYMBOLIC_LINK_FLAG_DIRECTORY 1
+#endif
+                if (detail::create_symbolic_link(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY)) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2651,7 +2655,7 @@
 
             inline void
             create_hard_link(const path& to, const path& from, error_code& ec) {
-                if (create_hard_link(from, to, 0)) {
+                if (detail::create_hard_link(from.c_str(), to.c_str())) {
                     ec.clear();
                 } else {
                     ec.assign(UNBOOST_ERRNO, system_category());
@@ -2874,7 +2878,7 @@
                         ec.clear();
                         return true;
                     }
-                    ec = (int)UNBOOST_ERRNO;
+                    ec = UNBOOST_ERRNO;
                     return false;
                 #else
                     struct stat st;
@@ -2892,17 +2896,14 @@
                 throw filesystem_error("unboost::filesystem::create_directory", p, ec);
             }
             inline bool create_directory(const path& p, error_code& ec) {
-                #ifdef _WIN32
-                    if (::CreateDirectoryW(p.c_str(), NULL)) {
-                        ec.clear();
-                        return true;
-                    }
-                    ec = (int)UNBOOST_ERRNO;
+                detail::create_directory
+                if (detail::create_directory(p.c_str())) {
+                    ec.clear();
+                    return true;
+                } else {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return false;
-                #else
-                    ec = mkdir(p.c_str());
-                    return (ec == 0);
-                #endif
+                }
             }
             inline bool create_directory(const path& p) {
                 error_code ec;
@@ -2987,17 +2988,17 @@
             }
 
             inline bool remove(const path& p, error_code& ec) {
-                BOOL result;
+                bool result;
                 if (is_directory(p)) {
-                    result = ::RemoveDirectoryW(p.c_str());
+                    result = detail::remove_directory(p.c_str());
                 } else {
-                    result = ::DeleteFileW(p.c_str());
+                    result = detail::delete_file(p.c_str());
                 }
                 if (result) {
                     ec.clear();
                     return true;
                 } else {
-                    ec = (int)UNBOOST_ERRNO;
+                    ec = UNBOOST_ERRNO;
                     return false;
                 }
             }
@@ -3068,7 +3069,7 @@
                     info.capacity = capacity.QuadPart;
                     info.free = free.QuadPart;
                 } else {
-                    ec = (int)UNBOOST_ERRNO;
+                    ec = UNBOOST_ERRNO;
                     info.available = static_cast<uintmax_t>(-1);
                     info.capacity = static_cast<uintmax_t>(-1);
                     info.free = static_cast<uintmax_t>(-1);
@@ -3085,12 +3086,24 @@
             }
 
             inline path temp_directory_path(error_code& ec) {
-                WCHAR sz[MAX_PATH * 2];
-                if (::GetTempPathW(MAX_PATH * 2, sz)) {
-                    ec.clear();
-                } else {
-                    ec = (int)UNBOOST_ERRNO;
-                }
+                path ret;
+                #ifdef _WIN32
+                    WCHAR sz[MAX_PATH * 2];
+                    if (::GetTempPathW(MAX_PATH * 2, sz)) {
+                        ret = sz;
+                        ec.clear();
+                    } else {
+                        ec = UNBOOST_ERRNO;
+                    }
+                #else
+                    char *env = getenv("TMP");
+                    if (env == NULL) {
+                        ret = "/tmp";
+                    } else {
+                        ret = env;
+                    }
+                #endif
+                return ret;
             }
             inline path temp_directory_path() {
                 error_code ec;
@@ -3229,9 +3242,7 @@
             }
 
             inline bool is_empty(const path& p, error_code& ec) {
-                WIN32_FILE_ATTRIBUTE_DATA fad;
-                GetFileAttributesExW(p.c_str(), ::GetFileExInfoStandard, &fad);
-                ...
+                return file_size(p, ec) == 0;
             }
             inline bool is_empty(const path& p) {
                 error_code ec;
