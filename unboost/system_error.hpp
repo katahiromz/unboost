@@ -97,6 +97,11 @@
     #include <cstring>
     #include "system/error_code.hpp"    // for unboost::errc
     #include "functional/hash.hpp"      // for unboost::hash
+    #ifdef _WIN32
+        #define UNBOOST_ERRNO int(::GetLastError())
+    #else
+        #define UNBOOST_ERRNO  errno
+    #endif
     namespace unboost {
         class error_code;
         class error_condition;
