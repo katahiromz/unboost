@@ -667,6 +667,17 @@
                     ft.dwLowDateTime = DWORD(temp);
                     ft.dwHighDateTime = DWORD(temp >> 32);
                 }
+
+                inline bool
+                get_disk_space(LPCWSTR dir, ULARGE_INTEGER *avail,
+                                            ULARGE_INTEGER *capacity,
+                                            ULARGE_INTEGER *free)
+                {
+                    if (::GetDiskFreeSpaceExW(dir, avail, capacity, free)) {
+                        return true;
+                    }
+                    return false;
+                }
 #endif  // def _WIN32
             } // namespace detail
 
@@ -1544,85 +1555,6 @@
             }; // class filesystem_error
 
             namespace detail {
-                inline bool
-                error(bool was_error, error_code* ec, const std::string& message) {
-                    if (!was_error) {
-                        if (ec != 0)
-                            ec->clear();
-                    } else {
-                        if (ec == 0)
-                            throw filesystem_error(message, error_code(errno, system_category()));
-                        else
-                            ec->assign(errno, system_category());
-                    }
-                    return was_error;
-                }
-
-                inline bool
-                error(bool was_error, const path& p, error_code* ec,
-                      const std::string& message)
-                {
-                    if (!was_error) {
-                        if (ec != 0)
-                            ec->clear();
-                    } else {
-                    if (ec == 0)
-                        throw filesystem_error(message, p, error_code(errno, system_category()));
-                    else
-                        ec->assign(errno, system_category());
-                    }
-                    return was_error;
-                }
-
-                inline bool
-                error(bool was_error, const path& p1, const path& p2, error_code* ec,
-                      const std::string& message)
-                {
-                    if (!was_error) {
-                        if (ec != 0)
-                            ec->clear();
-                    } else {
-                        if (ec == 0)
-                            throw filesystem_error(message, p1, p2, error_code(errno, system_category()));
-                        else
-                            ec->assign(errno, system_category());
-                    }
-                    return was_error;
-                }
-
-                inline bool
-                error(bool was_error, const error_code& result,
-                      const path& p, error_code* ec, const std::string& message)
-                {
-                    if (!was_error) {
-                        if (ec != 0)
-                            ec->clear();
-                    } else {
-                        if (ec == 0)
-                            throw filesystem_error(message, p, result);
-                        else
-                            *ec = result;
-                    }
-                    return was_error;
-                }
-
-                inline bool
-                error(bool was_error, const error_code& result,
-                      const path& p1, const path& p2, error_code* ec,
-                      const std::string& message)
-                {
-                    if (!was_error) {
-                        if (ec != 0)
-                            ec->clear();
-                    } else {
-                        if (ec == 0)
-                            throw filesystem_error(message, p1, p2, result);
-                        else
-                            *ec = result;
-                    }
-                    return was_error;
-                }
-
                 #ifdef _WIN32
                     inline bool not_found_error(int ev) {
                         switch (ev) {
@@ -2598,23 +2530,19 @@
                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
                 detail::handle_wrapper h2(hFile2), h1(hFile1);
                 if (hFile1 == INVALID_HANDLE_VALUE || hFile2 == INVALID_HANDLE_VALUE) {
-                    detail::error(
-                        hFile1 == INVALID_HANDLE_VALUE && hFile2 == INVALID_HANDLE_VALUE,
-                        p1, p2, &ec, "unboost::filesystem::equivalent");
+                    if (hFile1 == INVALID_HANDLE_VALUE && hFile2 == INVALID_HANDLE_VALUE)
+                        ec.assign(ERROR_FILE_NOT_FOUND, system_category());
                     return false;
                 }
                 BY_HANDLE_FILE_INFORMATION info1, info2;
-                if (detail::error(!::GetFileInformationByHandle(hFile1, &info1),
-                          p1, p2, &ec, "unboost::filesystem::equivalent"))
-                {
+                if (!::GetFileInformationByHandle(hFile1, &info1)) {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return false;
                 }
-                if (detail::error(!::GetFileInformationByHandle(hFile2, &info2),
-                    p1, p2, &ec, "unboost::filesystem::equivalent"))
-                {
+                if (!::GetFileInformationByHandle(hFile2, &info2)) {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return false;
                 }
-
                 return info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber &&
                        info1.nFileIndexHigh == info2.nFileIndexHigh &&
                        info1.nFileIndexLow == info2.nFileIndexLow &&
@@ -2624,7 +2552,7 @@
                        == info2.ftLastWriteTime.dwLowDateTime &&
                        info1.ftLastWriteTime.dwHighDateTime
                        == info2.ftLastWriteTime.dwHighDateTime;
-#else
+#else   // POSIX
                 using namespace std;
                 struct stat st1, st2;
                 if (stat(p1.c_str(), &st1) == 0 && stat(p2.c_str(), &st2) == 0) {
@@ -2634,8 +2562,8 @@
                 }
                 ec = ENOENT;
                 return false;
-#endif
-            }
+#endif  // POSIX
+            } // equivalent
             inline bool equivalent(const path& p1, const path& p2) {
                 error_code ec;
                 if (equivalent(p1, p2, ec)) {
@@ -2714,16 +2642,16 @@
                     throw filesystem_error("unboost::filesystem::copy_symlink", from, to, ec);
             }
 
+            file_time_type last_write_time(const path& p);
+
             // ...
             inline bool
             copy_file(const path& from, const path& to, copy_options::inner options,
                       error_code& ec)
             {
                 if (exists(to)) {
-                    if (equivalent(to, from, ec)) {
-                        ec = ...;
+                    if (equivalent(to, from, ec))
                         return false;
-                    }
                     switch (options) {
                     case copy_options::none:
                         ec = ...;
@@ -2772,15 +2700,11 @@
             {
                 file_status s1 = status(from, ec), s2 = status(to, ec);
                 if (!exists(from, ec))
-                    throw filesystem_error("unboost::filesystem::copy", from, to, ec);
-                if (equivalent(from, to, ec)) {
-                    ec = ...;
-                    throw filesystem_error("unboost::filesystem::copy", from, to, ec);
-                }
-                if (is_directory(s1, ec) && is_regular_file(s2, ec)) {
-                    ec = ...;
-                    throw filesystem_error("unboost::filesystem::copy", from, to, ec);
-                }
+                    return;
+                if (equivalent(from, to, ec))
+                    return;
+                if (is_directory(s1, ec) && is_regular_file(s2, ec))
+                    return;
                 if (is_symlink(s1, ec)) {
                     if (options & copy_options::skip_symlinks) {
                         ec.clear();
@@ -2790,8 +2714,7 @@
                         copy_symlink(from, to, ec);
                         return;
                     }
-                    ec = ...
-                    throw filesystem_error("unboost::filesystem::copy", from, to, ec);
+                    return;
                 }
                 if (is_regular_file(s1)) {
                     if (options & copy_options::directories_only) {
@@ -2818,8 +2741,11 @@
                         options == copy_options::none)
                     {
                         if (!exists(s2)) {
-                            create_directory(to, from, ec);
-                            ...
+                            if (detail::copy_directory(to.c_str(), from.c_str())) {
+                                ec.clear();
+                            } else {
+                                ec.assign(UNBOOST_ERRNO, system_category());
+                            }
                             return;
                         }
                     }
@@ -2829,11 +2755,10 @@
             inline void
             copy(const path& from, const path& to, copy_options::inner options) {
                 error_code ec;
-                if (copy(from, to, options, ec)) {
-                    return true;
+                copy(from, to, options, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::copy", from, to, ec);
                 }
-                throw filesystem_error("unboost::filesystem::copy", from, to, ec);
-                return false;
             }
             inline void copy(const path& from, const path& to) {
                 copy(from, to, copy_options::none);
@@ -2847,7 +2772,7 @@
                 HANDLE hFile = detail::open_file(p.c_str(), 0,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
-                handle_wrapper h(hFile);
+                detail::handle_wrapper h(hFile);
                 if (hFile == INVALID_HANDLE_VALUE)
                     return file_time_type(-1);
                 FILETIME ft;
@@ -2866,9 +2791,9 @@
                 HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ | GENERIC_WRITE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
-                handle_wrapper h(hFile);
+                detail::handle_wrapper h(hFile);
                 if (hFile == INVALID_HANDLE_VALUE) {
-                    ec.assign(UNBOOST_ERRNO, system_error());
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     return;
                 }
                 FILETIME ft;
@@ -2876,7 +2801,7 @@
                 if (::SetFileTime(hFile, NULL, NULL, &ft))
                     ec.clear();
                 else
-                    ec.assign(UNBOOST_ERRNO, system_error());
+                    ec.assign(UNBOOST_ERRNO, system_category());
             }
             inline file_time_type last_write_time(const path& p) {
                 error_code ec;
@@ -2889,11 +2814,10 @@
             inline void
             last_write_time(const path& p, file_time_type new_time) {
                 error_code ec;
-                file_time_type ret = last_write_time(p, new_time, ec);
+                last_write_time(p, new_time, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::last_write_time", p, ec);
                 }
-                return ret;
             }
 
             inline path read_symlink(const path& p, error_code& ec) {
@@ -2929,7 +2853,7 @@
 
             inline bool
             create_directory(const path& p, const path& existing_p, error_code& ec) {
-                if (detail::create_directory(existing_p.c_str(), p.c_str())) {
+                if (detail::copy_directory(existing_p.c_str(), p.c_str())) {
                     ec.clear();
                     return true;
                 }
@@ -3090,11 +3014,18 @@
                     if (equivalent(old_p, new_p, ec))
                         return;
                     if (exists(new_p) && !is_directory(new_p)) {
-                        delete_file(new_p);
-                        ...
+                        if (detail::delete_file(new_p.c_str())) {
+                            ec.clear();
+                        } else {
+                            ec.assign(UNBOOST_ERRNO, system_category());
+                        }
                     }
                     if (!exists(new_p)) {
-                        rename(...);
+                        if (detail::move_file(old_p.c_str(), new_p.c_str())) {
+                            ec.clear();
+                        } else {
+                            ec.assign(UNBOOST_ERRNO, system_category());
+                        }
                     }
                 } else {
                     ...
@@ -3129,7 +3060,7 @@
             inline space_info space(const path& p, error_code& ec) {
                 space_info info;
                 ULARGE_INTEGER avail, capacity, free;
-                if (::GetDiskFreeSpaceExW(p.c_str(), &avail, &capacity, &free)) {
+                if (detail::get_disk_space(p.c_str(), &avail, &capacity, &free)) {
                     ec.clear();
                     info.available = avail.QuadPart;
                     info.capacity = capacity.QuadPart;
@@ -3162,7 +3093,7 @@
                         ec.assign(UNBOOST_ERRNO, system_category());
                     }
                 #else
-                    char *env = getenv("TMP");
+                    const char *env = getenv("TMP");
                     if (env) {
                         ret = env;
                         ec.clear();

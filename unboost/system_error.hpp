@@ -64,6 +64,11 @@
         using std::make_error_code;
         using std::make_error_condition;
     } // namespace unboost;
+    #ifdef _WIN32
+        #define UNBOOST_ERRNO   int(::GetLastError())
+    #else
+        #define UNBOOST_ERRNO   errno
+    #endif
 #elif defined(UNBOOST_USE_BOOST_SYSTEM)
     #include <boost/system/system_error.hpp>    // for boost::system::system_error
     #include <boost/system/error_code.hpp>      // for boost::system::error_code
@@ -93,14 +98,15 @@
         using boost::system::errc::make_error_code;
         using boost::system::errc::make_error_condition;
     } // namespace unboost;
+    #define UNBOOST_ERRNO BOOST_ERRNO
 #elif defined(UNBOOST_USE_WIN32_SYSTEM) || defined(UNBOOST_USE_POSIX_SYSTEM)
     #include <cstring>
     #include "system/error_code.hpp"    // for unboost::errc
     #include "functional/hash.hpp"      // for unboost::hash
     #ifdef _WIN32
-        #define UNBOOST_ERRNO int(::GetLastError())
+        #define UNBOOST_ERRNO   int(::GetLastError())
     #else
-        #define UNBOOST_ERRNO  errno
+        #define UNBOOST_ERRNO   errno
     #endif
     namespace unboost {
         class error_code;
