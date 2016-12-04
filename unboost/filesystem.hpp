@@ -2540,9 +2540,10 @@
                             if (!remove_all(p / it->path(), ans, ec))
                                 return false;
                         }
-                        if (remove_directory(p.c_str()))
+                        if (remove_directory(p.c_str())) {
                             return true;
-                        ec.assign(EPERM, generic_category());
+                        }
+                        ec.assign(UNBOOST_ERRNO, system_category());
                         return false;
                     } else {
                         if (!delete_file(p.c_str())) {
@@ -2709,20 +2710,23 @@
                 ec.clear();
                 if (does_exist) {
                     if (options == copy_options::none || equivalent(to, from, ec)) {
-                        ec.assign(EEXIST, generic_category());
+                        #ifdef _WIN32
+                            ec.assign(ERROR_ALREADY_EXISTS, system_category());
+                        #else
+                            ec.assign(EEXIST, system_category());
+                        #endif
                         return false;
                     }
                 }
-                if (ec) {
+                if (ec)
                     return false;
-                }
                 if (!does_exist || (options & copy_options::overwrite_existing)) {
                     if (detail::copy_file(from.c_str(), to.c_str(), false)) {
                         ec.clear();
                         return true;
                     }
-                }
-                if (options & copy_options::update_existing) {
+                    ec.assign(UNBOOST_ERRNO, system_category());
+                } else if (options & copy_options::update_existing) {
                     file_time_type t1 = last_write_time(from, ec);
                     if (!ec) {
                         file_time_type t2 = last_write_time(to, ec);
@@ -2732,13 +2736,13 @@
                                     ec.clear();
                                     return true;
                                 }
+                                ec.assign(UNBOOST_ERRNO, system_category());
                             }
                         }
                     }
                 }
-                ec.assign(EPERM, generic_category());
                 return false;
-            }
+            } // copy_file
             inline bool
             copy_file(const path& from, const path& to, copy_options::inner options) {
                 error_code ec;
@@ -3001,12 +3005,16 @@
 
             inline void permissions(const path& p, perms::inner mask, error_code& ec) {
                 ec.clear();
-                bool success = true;
                 perms::inner todo = mask;
                 mask = (perms::inner)(int(mask) & int(perms::mask));
                 if (todo & perms::add_perms) {
                     if (todo & perms::remove_perms) {
-                        success = false;
+                        #ifdef _WIN32
+                            ec.assign(ERROR_INVALID_PARAMETER, system_category());
+                        #else
+                            ec.assign(EPERM, system_category());
+                        #endif
+                        return;
                     } else {
                         mask = (perms::inner)(status(p).permissions() | mask);
                     }
@@ -3017,8 +3025,8 @@
                         ;
                     }
                 }
-                if (!success || !detail::do_chmod(p.c_str(), mask)) {
-                    ec.assign(EPERM, generic_category());
+                if (!detail::do_chmod(p.c_str(), mask)) {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
             }
             inline void permissions(const path& p, perms::inner mask) {
@@ -3070,11 +3078,10 @@
 
             inline void
             rename(const path& old_p, const path& new_p, error_code& ec) {
-                if (!exists(old_p)) {
-                    ec.assign(EPERM, generic_category());
+                if (!exists(old_p, ec)) {
                     return;
                 }
-                if (exists(new_p)) {
+                if (exists(new_p, ec)) {
                     if (equivalent(old_p, new_p, ec))
                         return;
                     if (!remove(new_p, ec))
