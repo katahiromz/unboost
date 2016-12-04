@@ -1605,7 +1605,7 @@
                         }
                     }
 
-                    file_status process_status_failure(const path& p, error_code *ec);
+                    file_status process_status_failure(const path& p, error_code& ec);
                     perms::inner make_permissions(const path& p, DWORD attr);
                     bool is_reparse_point_a_symlink(const path& p);
                 #else   // ndef _WIN32
@@ -2353,14 +2353,13 @@
 
             namespace detail {
                 inline file_status
-                symlink_status(const path& p, error_code* ec = NULL) {
+                symlink_status(const path& p, error_code& ec) {
 #ifdef _WIN32
                     DWORD attr = ::GetFileAttributesW(p.c_str());
                     if (attr == 0xFFFFFFFF) {
                         return process_status_failure(p, ec);
                     }
-                    if (ec != NULL)
-                        ec->clear();
+                    ec.clear();
 
                     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
                         return is_reparse_point_a_symlink(p)
@@ -2369,23 +2368,17 @@
                     return (attr & FILE_ATTRIBUTE_DIRECTORY)
                         ? file_status(directory_file, make_permissions(p, attr))
                         : file_status(regular_file, make_permissions(p, attr));
-#else
+#else   // POSIX
                     using namespace std;
                     struct stat st;
                     if (lstat(p.c_str(), &st) != 0) {
-                        if (ec != 0)
-                            ec->assign(errno, system_category());
+                        ec.assign(errno, system_category());
                         if (errno == ENOENT || errno == ENOTDIR) {
                             return file_status(file_not_found, no_perms);
                         }
-                        if (ec == NULL)
-                            throw filesystem_error(
-                                "unboost::filesystem::status",
-                                p, error_code(errno, system_category()));
                         return file_status(status_error);
                     }
-                    if (ec != NULL)
-                        ec->clear();
+                    ec.clear();
                     if (S_ISREG(st.st_mode))
                         return file_status(regular_file, static_cast<perms::inner>(st.st_mode & perms_mask));
                     if (S_ISDIR(st.st_mode))
@@ -2401,7 +2394,7 @@
                     if (S_ISSOCK(st.st_mode))
                         return file_status(socket_file, static_cast<perms::inner>(st.st_mode & perms_mask));
                     return file_status(type_unknown);
-#endif
+#endif  // POSIX
                 } // detail::symlink_status
 
                 inline path
@@ -2525,15 +2518,20 @@
 
             inline path
             canonical(const path& p, const path& base, error_code& ec) {
-                return detail::canonical(p, base, &ec);
+                return detail::canonical(p, base, ec);
             }
             inline path
             canonical(const path& p, const path& base = current_path()) {
-                return detail::canonical(p, base);
+                error_code ec;
+                path ret = canonical(p, base, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::canonical", p, base, ec);
+                }
+                return ret;
             }
             inline path
             canonical(const path& p, error_code& ec) {
-                return detail::canonical(p, current_path(), &ec);
+                return detail::canonical(p, current_path(), ec);
             }
             inline bool
             equivalent(const path& p1, const path& p2, error_code& ec) {
@@ -2845,37 +2843,6 @@
                 }
             }
 
-            inline path read_symlink(const path& p, error_code& ec) {
-                path ret;
-#ifdef _WIN32
-                ...
-#else   // POSIX
-                for (size_t path_max = 64; ; path_max *= 2) {
-                    std::vector<char> array(path_max);
-                    ssize_t result = ::readlink(p.c_str(), buf.data(), path_max);
-                    if (result == -1) {
-                        ec.assign(errno, system_category());
-                        break;
-                    } else {
-                        if (result != static_cast<ssize_t>(path_max)) {
-                            ret.assign(buf.data(), buf.data() + result);
-                            ec.clear();
-                            break;
-                        }
-                    }
-                }
-#endif  // POSIX
-                return ret;
-            }
-            inline path read_symlink(const path& p) {
-                error_code ec;
-                path ret = read_symlink(p, ec);
-                if (ec) {
-                    throw filesystem_error("unboost::filesystem::read_symlink", p, ec);
-                }
-                return ret;
-            }
-
             inline bool
             create_directory(const path& p, const path& existing_p, error_code& ec) {
                 if (detail::copy_directory(existing_p.c_str(), p.c_str())) {
@@ -3139,17 +3106,13 @@
 
             namespace detail {
                 inline file_status
-                process_status_failure(const path& p, error_code *ec) {
-                    int ev = UNBOOST_ERRNO;
-                    if (ec)
-                        *ec = ev;
+                process_status_failure(const path& p, error_code& ec) {
+                    ec.assign(UNBOOST_ERRNO, system_category());
                     if (not_found_error(ev)) {
                         return file_status(file_not_found, no_perms);
                     } else if (ev == ERROR_SHARING_VIOLATION) {
                         return file_status(type_unknown);
                     }
-                    if (ec == NULL)
-                        throw filesystem_error("unboost::filesystem::status", p, ev);
                     return file_status(status_error);
                 }
 
@@ -3258,10 +3221,15 @@
 
             inline file_status
             symlink_status(const path& p, error_code& ec) {
-                return detail::symlink_status(p, &ec);
+                return detail::symlink_status(p, ec);
             }
             inline file_status symlink_status(const path& p) {
-                return detail::symlink_status(p);
+                error_code ec;
+                file_status ret = symlink_status(p, ec);
+                if (ec) {
+                    throw filesystem_error("unboost::filesystem::symlink_status", p, ec);
+                }
+                return ret;
             }
 
             inline bool is_empty(const path& p, error_code& ec) {
