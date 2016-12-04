@@ -236,6 +236,9 @@ int main(void) {
     assert(flag);
     assert(ec.empty());
 
+    // test #13
+    assert(hard_link_count(".") >= 2);
+
     std::cout << "success" << std::endl;
     return 0;
 } // main
