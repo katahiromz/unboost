@@ -1593,8 +1593,7 @@
                     return buf;
                 } // what
             protected:
-                path m_p1;
-                path m_p2;
+                path m_p1, m_p2;
                 std::string m_what;
                 error_code m_code;
             }; // class filesystem_error
