@@ -1240,8 +1240,7 @@
                 // compare
                 //
                 int compare(const path& p) const {
-                    //...
-                    return 0;
+                    return native().compare(p.native());
                 }
                 int compare(const string_type& str) const {
                     return compare(path(str));
@@ -2514,6 +2513,31 @@
                     assert(result.is_absolute());
                     return result;
                 } // detail::canonical
+
+                bool remove_all(const path& p, uintmax_t& ans, error_code& ec) {
+                    ec.clear();
+                    if (is_directory(p)) {
+                        directory_iterator end;
+                        for (;;) {
+                            directory_iterator it(p);
+                            if (it == end)
+                                break;
+                            if (!remove_all(p / it->path(), ans, ec))
+                                return false;
+                        }
+                        if (remove_directory(p.c_str()))
+                            return true;
+                        ec.assign(EPERM, generic_category());
+                        return false;
+                    } else {
+                        if (!delete_file(p.c_str())) {
+                            ec.assign(UNBOOST_ERRNO, system_category());
+                            return false;
+                        }
+                        ++ans;
+                        return true;
+                    }
+                } // detail::remove_all
             } // namespace detail
 
             inline path
@@ -2660,47 +2684,45 @@
                     throw filesystem_error("unboost::filesystem::copy_symlink", from, to, ec);
             }
 
-            file_time_type last_write_time(const path& p);
+            inline file_time_type last_write_time(const path& p, error_code& ec);
 
-            // ...
             inline bool
             copy_file(const path& from, const path& to, copy_options::inner options,
                       error_code& ec)
             {
-                if (exists(to)) {
-                    if (equivalent(to, from, ec))
+                bool does_exist = exists(to);
+                ec.clear();
+                if (does_exist) {
+                    if (options == copy_options::none || equivalent(to, from, ec)) {
+                        ec.assign(EEXIST, generic_category());
                         return false;
-                    switch (options) {
-                    case copy_options::none:
-                        ec = ...;
-                        break;
-                    case copy_options::skip_existing:
-                        ec.clear();
-                        return true;
-                    case copy_options::update_existing:
-                        if (last_write_time(from) >= last_write_time(to)) {
-                            ec.clear();
-                            return true;
-                        }
-                        // FALL THROUGH
-                    case copy_options::overwrite_existing:
-                        if (detail::copy_file(from.c_str(), to.c_str(), false)) {
-                            ec.clear();
-                            return true;
-                        } else {
-                            ec.assign(UNBOOST_ERRNO, system_category());
-                        }
-                        break;
                     }
+                }
+                if (ec) {
                     return false;
-                } else {
+                }
+                if (!does_exist || (options & copy_options::overwrite_existing)) {
                     if (detail::copy_file(from.c_str(), to.c_str(), false)) {
                         ec.clear();
                         return true;
-                    } else {
-                        ec.assign(UNBOOST_ERRNO, system_category());
                     }
                 }
+                if (options & copy_options::update_existing) {
+                    file_time_type t1 = last_write_time(from, ec);
+                    if (!ec) {
+                        file_time_type t2 = last_write_time(to, ec);
+                        if (!ec) {
+                            if (t2 < t1) {
+                                if (detail::copy_file(from.c_str(), to.c_str(), false)) {
+                                    ec.clear();
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                ec.assign(EPERM, generic_category());
+                return false;
             }
             inline bool
             copy_file(const path& from, const path& to, copy_options::inner options) {
@@ -2745,7 +2767,7 @@
                         return;
                     }
                     if (options & copy_options::create_symlinks) {
-                        create_symlink(...);
+                        create_symlink(from, to, ec);
                         return;
                     }
                     if (options & copy_options::create_hard_links) {
@@ -2930,8 +2952,30 @@
             }
 
             uintmax_t hard_link_count(const path& p, error_code& ec) {
-                ...
-            }
+#ifdef _WIN32
+                BY_HANDLE_FILE_INFORMATION info;
+                HANDLE hFile = detail::open_file(p.c_str(), 0,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+                detail::handle_wrapper h(hFile);
+                if (hFile == INVALID_HANDLE_VALUE ||
+                    !::GetFileInformationByHandle(hFile, &info))
+                {
+                    ec.assign(UNBOOST_ERRNO, system_category());
+                }
+                ec.clear();
+                return info.nNumberOfLinks;
+#else   // POSIX
+                using namespace std;
+                struct stat st;
+                if (::stat(p.c_str(), &st) == 0) {
+                    ec.clear();
+                    return st.st_nlink;
+                }
+                ec.assign(UNBOOST_ERRNO, system_category());
+                return 0;
+#endif  // POSIX
+            } // hard_link_count
             uintmax_t hard_link_count(const path& p) {
                 error_code ec;
                 uintmax_t ret = hard_link_count(p, ec);
@@ -2989,7 +3033,11 @@
             }
 
             uintmax_t remove_all(const path& p, error_code& ec) {
-                ...
+                uintmax_t ans;
+                if (!detail::remove_all(p, ans, ec)) {
+                    ans = uintmax_t(-1);
+                }
+                return ans;
             }
             uintmax_t remove_all(const path& p) {
                 error_code ec;
