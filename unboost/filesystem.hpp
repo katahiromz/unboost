@@ -2453,8 +2453,9 @@
                         } else {
                             if (result != static_cast<ssize_t>(path_max)) {
                                 symlink_path.assign(buf.get(), buf.get() + result);
-                            ec.clear();
-                            break;
+                                ec.clear();
+                                break;
+                            }
                         }
                     }
 #endif
@@ -2756,7 +2757,6 @@
             copy(const path& from, const path& to, copy_options::inner options,
                  error_code& ec)
             {
-                file_status s1 = status(from, ec), s2 = status(to, ec);
                 if (!exists(from, ec))
                     return;
                 if (equivalent(from, to, ec))
@@ -2798,7 +2798,7 @@
                     if ((options & copy_options::recursive) ||
                         options == copy_options::none)
                     {
-                        if (!exists(s2)) {
+                        if (!exists(to)) {
                             if (detail::copy_directory(to.c_str(), from.c_str())) {
                                 ec.clear();
                             } else {
@@ -3269,6 +3269,17 @@
                     return true;
                 }
                 throw system_error(ec);
+            }
+
+            inline void
+            detail::directory_iterator_construct(directory_iterator& it,
+                const path& p, system::error_code* ec)
+            {
+            }
+            inline void
+            detail::directory_iterator_increment(directory_iterator& it,
+                system::error_code* ec)
+            {
             }
         } // namespace filesystem
     } // namespace unboost
