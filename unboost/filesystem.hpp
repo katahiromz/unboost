@@ -237,6 +237,39 @@
     #include "text2text.hpp"        // for unboost::text2text
     namespace unboost {
         namespace filesystem {
+            #if (defined(_WIN32) && !defined(REPARSE_DATA_BUFFER_HEADER_SIZE))
+                #define SYMLINK_FLAG_RELATIVE 1
+
+                typedef struct _REPARSE_DATA_BUFFER {
+                    ULONG  ReparseTag;
+                    USHORT  ReparseDataLength;
+                    USHORT  Reserved;
+                    union {
+                        struct {
+                            USHORT  SubstituteNameOffset;
+                            USHORT  SubstituteNameLength;
+                            USHORT  PrintNameOffset;
+                            USHORT  PrintNameLength;
+                            ULONG  Flags;
+                            WCHAR  PathBuffer[1];
+                        } SymbolicLinkReparseBuffer;
+                        struct {
+                            USHORT  SubstituteNameOffset;
+                            USHORT  SubstituteNameLength;
+                            USHORT  PrintNameOffset;
+                            USHORT  PrintNameLength;
+                            WCHAR  PathBuffer[1];
+                        } MountPointReparseBuffer;
+                        struct {
+                            UCHAR  DataBuffer[1];
+                        } GenericReparseBuffer;
+                    };
+                } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+                #define REPARSE_DATA_BUFFER_HEADER_SIZE \
+                    FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+            #endif  // (defined(_WIN32) && !defined(REPARSE_DATA_BUFFER_HEADER_SIZE))
+
             struct symlink_option {
                 enum inner {
                     none,
@@ -2372,13 +2405,9 @@
                 } // detail::symlink_status
 
                 inline path
-                read_symlink(const path& p, system::error_code* ec = NULL) {
+                read_symlink(const path& p, system::error_code& ec) {
                     path symlink_path;
 #ifdef _WIN32
-# if _WIN32_WINNT < 0x0600
-                    throw filesystem_error("boost::filesystem::read_symlink",
-                        p, error_code(ERROR_NOT_SUPPORTED, system_category()));
-# else
                     union info_t {
                         char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
                         REPARSE_DATA_BUFFER rdb;
@@ -2388,13 +2417,17 @@
                         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
                     detail::handle_wrapper h(hFile);
                     if (hFile == INVALID_HANDLE_VALUE) {
+                        ec.assign(UNBOOST_ERRNO, system_category());
                         return symlink_path;
                     }
 
                     DWORD sz;
-                    if (!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
-                        0, 0, info.buf, sizeof(info), &sz, 0) == 0, p, ec,
-                        "boost::filesystem::read_symlink")
+                    if (!::DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT,
+                            0, 0, info.buf, sizeof(info), &sz, 0))
+                    {
+                        ec.assign(UNBOOST_ERRNO, system_category());
+                        return symlink_path;
+                    }
 
                     symlink_path.assign(
                         static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
@@ -2402,7 +2435,7 @@
                         static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
                         + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(wchar_t)
                         + info.rdb.SymbolicLinkReparseBuffer.PrintNameLength / sizeof(wchar_t));
-# endif
+                    ec.clear();
 #else
                     using namespace std;
                     for (size_t path_max = 64;; path_max *= 2) {
@@ -2410,17 +2443,12 @@
                         ssize_t result;
                         result = readlink(p.c_str(), buf.get(), path_max);
                         if (result == -1) {
-                            if (ec == NULL)
-                                throw filesystem_error("boost::filesystem::read_symlink",
-                                    p, error_code(errno, system_category()));
-                            else
-                                ec->assign(errno, system_category());
+                            ec.assign(errno, system_category());
                             break;
                         } else {
                             if (result != static_cast<ssize_t>(path_max)) {
                                 symlink_path.assign(buf.get(), buf.get() + result);
-                            if (ec != 0)
-                                ec->clear();
+                            ec.clear();
                             break;
                         }
                     }
@@ -2429,7 +2457,7 @@
                 }
 
                 inline path
-                canonical(const path& p, const path& base, system::error_code* ec = NULL) {
+                canonical(const path& p, const path& base, error_code& ec) {
                     path result;
                     path source = (p.is_absolute() ? p : absolute(p, base));
 
@@ -2437,25 +2465,14 @@
                     file_status stat(status(source, local_ec));
 
                     if (stat.type() == file_not_found) {
-                        error_code code;
                         #ifdef _WIN32
-                            code.assign(ERROR_PATH_NOT_FOUND, system_category());
+                            ec.assign(ERROR_PATH_NOT_FOUND, system_category());
                         #else
-                            code.assign(ENOENT, system_category());
+                            ec.assign(ENOENT, system_category());
                         #endif
-                        if (ec == NULL)  {
-                            throw filesystem_error(
-                                "unboost::filesystem::canonical", source, code);
-                        } else {
-                            *ec = code;
-                        }
                         return result;
                     } else if (local_ec) {
-                        if (ec == 0) {
-                            throw filesystem_error(
-                                "unboost::filesystem::canonical", source, local_ec);
-                        }
-                        *ec = local_ec;
+                        ec = local_ec;
                         return result;
                     }
 
@@ -2473,12 +2490,12 @@
 
                             result /= *itr;
                             bool is_sym = is_symlink(detail::symlink_status(result, ec));
-                            if (ec && *ec)
+                            if (ec)
                                 return path();
 
                             if (is_sym) {
                                 path link(read_symlink(result, ec));
-                                if (ec && *ec)
+                                if (ec)
                                     return path();
                                 result.remove_filename();
 
@@ -2500,8 +2517,7 @@
                             }
                         }
                     }
-                    if (ec != 0)
-                        ec->clear();
+                    ec.clear();
                     assert(result.is_absolute());
                     return result;
                 } // detail::canonical
@@ -2621,11 +2637,15 @@
                     throw filesystem_error("unboost::filesystem::create_hard_link", to, from, ec);
             }
 
-            inline path read_symlink(const path& p) {
-                return detail::read_symlink(p);
-            }
             inline path read_symlink(const path& p, error_code& ec) {
-                return detail::read_symlink(p, &ec);
+                return detail::read_symlink(p, ec);
+            }
+            inline path read_symlink(const path& p) {
+                error_code ec;
+                path ret = read_symlink(p, ec);
+                if (ec)
+                    throw filesystem_error("unboost::filesystem::read_symlink", p, ec);
+                return ret;
             }
             inline void
             copy_symlink(const path& from, const path& to, error_code& ec) {
@@ -2666,17 +2686,22 @@
                         }
                         // FALL THROUGH
                     case copy_options::overwrite_existing:
-                        if (::CopyFileW(from.c_str(), to.c_str(), FALSE)) {
+                        if (detail::copy_file(from.c_str(), to.c_str(), false)) {
                             ec.clear();
                             return true;
                         } else {
-                            ec = ...;
+                            ec.assign(UNBOOST_ERRNO, system_category());
                         }
                         break;
                     }
                     return false;
                 } else {
-                    return ::CopyFileW(from.c_str(), to.c_str(), FALSE);
+                    if (detail::copy_file(from.c_str(), to.c_str(), false)) {
+                        ec.clear();
+                        return true;
+                    } else {
+                        ec.assign(UNBOOST_ERRNO, system_category());
+                    }
                 }
             }
             inline bool
