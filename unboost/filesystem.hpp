@@ -290,8 +290,7 @@
                     character = 5,
                     fifo = 6,
                     socket = 7,
-                    unknown = 8,
-                    reparse = 9
+                    unknown = 8
                 };
             }; // struct file_type
             static const file_type::inner status_error = file_type::none;
@@ -303,7 +302,6 @@
             static const file_type::inner character_file = file_type::character;
             static const file_type::inner fifo_file = file_type::fifo;
             static const file_type::inner socket_file = file_type::socket;
-            static const file_type::inner reparse_file = file_type::reparse;
             static const file_type::inner type_unknown = file_type::unknown;
 
             struct perms {
@@ -675,6 +673,17 @@
                 }
 #endif  // POSIX
 
+#ifdef WIN32
+                inline bool do_chmod(LPCWSTR p, int mode) {
+                    // FIXME:
+                    return true;
+                }
+#else   // POSIX
+                inline bool do_chmod(const char *p, int mode) {
+                    return ::chmod(p, mode) == 0;
+                }
+#endif  // POSIX
+
 #ifdef _WIN32
                 inline time_t
                 to_time_t(const FILETIME & ft) {
@@ -969,21 +978,18 @@
                         convert(&*c.begin(), &*c.begin() + c.size(), to);
                 }
 
-                template <typename Container, typename U>
-                inline void
-                dispatch(const Container& c, U& to) {
-                    if (!c.empty()) {
-                        std::basic_string<typename Container::value_type>
-                            s(c.begin(), c.end());
-                        convert(s.c_str(), s.c_str() + s.size(), to);
-                    }
-                }
                 template <typename T, typename U>
                 inline void
                 dispatch(T * const & c_str, U& to) {
                     assert(c_str);
                     convert(c_str, to);
                 }
+                template <typename T, typename U, size_t N>
+                inline void
+                dispatch(const T (&c_str)[N], U& to) {
+                    convert(c_str, to);
+                }
+
                 inline void
                 dispatch(const directory_entry& de, detail::string_type& to);
             } // namespace path_traits
@@ -1007,11 +1013,6 @@
                 path(const value_type *str) : m_pathname(str) { }
                 path(const std::basic_string<value_type>& str)
                     : m_pathname(str) {}
-                template <typename Source>
-                path(const Source& source) {
-                    assert(path_traits::is_pathable<Source>::value);
-                    path_traits::dispatch(source, m_pathname);
-                }
 
                 template <typename InputIt>
                 path(InputIt first, InputIt last) {
@@ -1426,6 +1427,23 @@
                     return temp;
                 }
 
+                bool operator==(const iterator& it) const {
+                    if (m_element.compare(it.m_element) != 0)
+                        return false;
+                    if (m_path_ptr == NULL && it.m_path_ptr == NULL) {
+                        return m_pos == it.m_pos;
+                    } else {
+                        if (m_path_ptr == NULL || it.m_path_ptr == NULL)
+                            return false;
+                        if (m_path_ptr->compare(*it.m_path_ptr) != 0)
+                            return false;
+                        return m_pos == it.m_pos;
+                    }
+                }
+                bool operator!=(const iterator& it) const {
+                    return !(*this == it);
+                }
+
                 path                m_element;
                 const path*         m_path_ptr;
                 size_type           m_pos;
@@ -1606,7 +1624,6 @@
 
                     file_status process_status_failure(const path& p, error_code& ec);
                     perms::inner make_permissions(const path& p, DWORD attr);
-                    bool is_reparse_point_a_symlink(const path& p);
                 #else   // ndef _WIN32
                     inline bool not_found_error(int errval) {
                         return errno == ENOENT || errno == ENOTDIR;
@@ -1840,20 +1857,15 @@
                         return error_code(::GetLastError(), unboost::system_category());
                     }
                     target = data.cFileName;
-                    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-                        sf.type(status_error);
-                        symlink_sf.type(status_error);
+                    if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                        sf.type(directory_file);
+                        symlink_sf.type(directory_file);
                     } else {
-                        if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                            sf.type(directory_file);
-                            symlink_sf.type(directory_file);
-                        } else {
-                            sf.type(regular_file);
-                            symlink_sf.type(regular_file);
-                        }
-                        sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-                        symlink_sf.permissions(sf.permissions());
+                        sf.type(regular_file);
+                        symlink_sf.type(regular_file);
                     }
+                    sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+                    symlink_sf.permissions(sf.permissions());
                     return error_code();
                 } // dir_itr_first
 
@@ -1870,20 +1882,15 @@
                         return error_code(error, system_category());
                     }
                     target = data.cFileName;
-                    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-                        sf.type(status_error);
-                        symlink_sf.type(status_error);
+                    if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+                        sf.type(directory_file);
+                        symlink_sf.type(directory_file);
                     } else {
-                        if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                            sf.type(directory_file);
-                            symlink_sf.type(directory_file);
-                        } else {
-                            sf.type(regular_file);
-                            symlink_sf.type(regular_file);
-                        }
-                        sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-                        symlink_sf.permissions(sf.permissions());
+                        sf.type(regular_file);
+                        symlink_sf.type(regular_file);
                     }
+                    sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+                    symlink_sf.permissions(sf.permissions());
                     return error_code();
                 }
 #else   // ndef _WIN32
@@ -2062,6 +2069,13 @@
                     directory_iterator it = *this;
                     increment();
                     return it;
+                }
+
+                bool operator==(const directory_iterator& it) const {
+                    return m_imp == it.m_imp;
+                }
+                bool operator!=(const directory_iterator& it) const {
+                    return m_imp != it.m_imp;
                 }
 
             protected:
@@ -2360,10 +2374,9 @@
                     }
                     ec.clear();
 
-                    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
-                        return is_reparse_point_a_symlink(p)
-                            ? file_status(symlink_file, make_permissions(p, attr))
-                            : file_status(reparse_file, make_permissions(p, attr));
+                    if (is_symlink(p)) {
+                        return file_status(symlink_file, make_permissions(p, attr));
+                    }
                     return (attr & FILE_ATTRIBUTE_DIRECTORY)
                         ? file_status(directory_file, make_permissions(p, attr))
                         : file_status(regular_file, make_permissions(p, attr));
@@ -2748,20 +2761,20 @@
                     return;
                 if (equivalent(from, to, ec))
                     return;
-                if (is_directory(s1, ec) && is_regular_file(s2, ec))
+                if (is_directory(from, ec) && is_regular_file(to, ec))
                     return;
-                if (is_symlink(s1, ec)) {
+                if (is_symlink(from, ec)) {
                     if (options & copy_options::skip_symlinks) {
                         ec.clear();
                         return;
                     }
-                    if (exists(s2) && (options & copy_options::copy_symlinks)) {
+                    if (exists(to) && (options & copy_options::copy_symlinks)) {
                         copy_symlink(from, to, ec);
                         return;
                     }
                     return;
                 }
-                if (is_regular_file(s1)) {
+                if (is_regular_file(from)) {
                     if (options & copy_options::directories_only) {
                         ec.clear();
                         return;
@@ -2774,14 +2787,14 @@
                         create_hard_link(to, from, ec);
                         return;
                     }
-                    if (is_directory(s2)) {
+                    if (is_directory(to)) {
                         copy_file(from, to / from.filename(), options, ec);
                         return;
                     }
                     copy_file(from, to, options, ec);
                     return;
                 }
-                if (is_directory(s1)) {
+                if (is_directory(from)) {
                     if ((options & copy_options::recursive) ||
                         options == copy_options::none)
                     {
@@ -2985,25 +2998,31 @@
                 return ret;
             }
 
-            inline void permissions(const path& p, perms::inner prms, error_code& ec) {
-                path p0 = p;
-                if (prms & perms::resolve_symlinks)
-                    p0 = ...
-                if ((prms & perms::add_perms) && (prms & perms::remove_perms)) {
-                    ec = ...;
-                    ...
-                } else if (prms & perms::add_perms) {
-                    ...
-                } else if (prms & perms::remove_perms) {
-                    ...
+            inline void permissions(const path& p, perms::inner mask, error_code& ec) {
+                ec.clear();
+                bool success = true;
+                perms::inner todo = mask;
+                mask = (perms::inner)(int(mask) & int(perms::mask));
+                if (todo & perms::add_perms) {
+                    if (todo & perms::remove_perms) {
+                        success = false;
+                    } else {
+                        mask = (perms::inner)(status(p).permissions() | mask);
+                    }
                 } else {
-                    ...
+                    if (todo & perms::remove_perms) {
+                        mask = (perms::inner)(status(p).permissions() & ~mask);
+                    } else {
+                        ;
+                    }
                 }
-                //fchmodat ...
+                if (!success || !detail::do_chmod(p.c_str(), mask)) {
+                    ec.assign(EPERM, generic_category());
+                }
             }
-            inline void permissions(const path& p, perms::inner prms) {
+            inline void permissions(const path& p, perms::inner mask) {
                 error_code ec;
-                permissions(p, prms, ec);
+                permissions(p, mask, ec);
                 if (ec) {
                     throw filesystem_error("unboost::filesystem::permissions", p, ec);
                 }
@@ -3050,25 +3069,20 @@
 
             inline void
             rename(const path& old_p, const path& new_p, error_code& ec) {
-                if (!is_directory(old_p)) {
+                if (!exists(old_p)) {
+                    ec.assign(EPERM, generic_category());
+                    return;
+                }
+                if (exists(new_p)) {
                     if (equivalent(old_p, new_p, ec))
                         return;
-                    if (exists(new_p) && !is_directory(new_p)) {
-                        if (detail::delete_file(new_p.c_str())) {
-                            ec.clear();
-                        } else {
-                            ec.assign(UNBOOST_ERRNO, system_category());
-                        }
-                    }
-                    if (!exists(new_p)) {
-                        if (detail::move_file(old_p.c_str(), new_p.c_str())) {
-                            ec.clear();
-                        } else {
-                            ec.assign(UNBOOST_ERRNO, system_category());
-                        }
-                    }
+                    if (!remove(new_p, ec))
+                        return;
+                }
+                if (detail::move_file(old_p.c_str(), new_p.c_str())) {
+                    ec.clear();
                 } else {
-                    ...
+                    ec.assign(UNBOOST_ERRNO, system_category());
                 }
             }
             inline void
@@ -3156,9 +3170,9 @@
                 inline file_status
                 process_status_failure(const path& p, error_code& ec) {
                     ec.assign(UNBOOST_ERRNO, system_category());
-                    if (not_found_error(ev)) {
+                    if (not_found_error(ec.value())) {
                         return file_status(file_not_found, no_perms);
-                    } else if (ev == ERROR_SHARING_VIOLATION) {
+                    } else if (ec.value() == ERROR_SHARING_VIOLATION) {
                         return file_status(type_unknown);
                     }
                     return file_status(status_error);
@@ -3179,54 +3193,20 @@
                     }
                     return static_cast<perms::inner>(prms);
                 }
-
-                inline bool
-                is_reparse_point_a_symlink(const path& p) {
-                    HANDLE hFile = detail::open_file(p.c_str(), GENERIC_READ,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        OPEN_EXISTING,
-                        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
-                    detail::handle_wrapper h(hFile);
-                    if (hFile == INVALID_HANDLE_VALUE)
-                        return false;
-
-                    std::vector<BYTE> buf(MAXIMUM_REPARSE_DATA_BUFFER_SIZE);
-
-                    DWORD dwRetLen;
-                    BOOL result = ::DeviceIoControl(h.m_h, FSCTL_GET_REPARSE_POINT,
-                        NULL, 0, buf.data(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
-                    if (!result)
-                        return false;
-
-                    REPARSE_DATA_BUFFER *pData;
-                    pData = reinterpret_cast<REPARSE_DATA_BUFFER *>(buf.data());
-                    return pData->ReparseTag == IO_REPARSE_TAG_SYMLINK;
-                }
             } // namespace detail
 
             inline file_status status(const path& p, error_code& ec) {
                 #ifdef _WIN32
                     DWORD attrs = ::GetFileAttributesW(p.c_str());
                     if (attrs == 0xFFFFFFFF) {
-                        return process_status_failure(p, ec);
-                    }
-                    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT) {
-                        HANDLE hFile = detail::open_file(p.c_str(), 0,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
-                        detail::handle_wrapper h(hFile);
-                        if (hFile == INVALID_HANDLE_VALUE) {
-                            return process_status_failure(p, ec);
-                        }
-                        if (!is_reparse_point_a_symlink(p))
-                            return file_status(reparse_file, make_permissions(p, attrs));
+                        return detail::process_status_failure(p, ec);
                     }
                     if (ec)
                         ec.clear();
                     if (attrs & FILE_ATTRIBUTE_DIRECTORY)
-                        return file_status(directory_file, make_permissions(p, attrs));
+                        return file_status(directory_file, detail::make_permissions(p, attrs));
                     else
-                        return file_status(regular_file, make_permissions(p, attrs));
+                        return file_status(regular_file, detail::make_permissions(p, attrs));
                 #else   // ndef _WIN32
                     using namespace std;
                     struct stat st;
