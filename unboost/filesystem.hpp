@@ -485,7 +485,8 @@
 #endif  // def _WIN32
 
 #ifdef _WIN32
-                typedef BOOL (WINAPI *PtrCreateHardLinkW)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
+                typedef BOOL (WINAPI *PtrCreateHardLinkW)
+                    (LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
                 inline BOOL
                 create_hard_link(LPCWSTR to, LPCWSTR from) {
@@ -688,11 +689,7 @@
                 inline time_t
                 to_time_t(const FILETIME & ft) {
                     _uint64_t t = (_uint64_t(ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
-                    #if !defined(_MSC_VER) || _MSC_VER > 1300
-                        t -= 116444736000000000LL;
-                    #else
-                        t -= 116444736000000000;
-                    #endif
+                    t -= 116444736000000000;
                     t /= 10000000;
                     return static_cast<time_t>(t);
                 }
@@ -701,11 +698,7 @@
                 to_FILETIME(time_t t, FILETIME& ft) {
                     _uint64_t temp = t;
                     temp *= 10000000;
-                    #if !defined(_MSC_VER) || _MSC_VER > 1300
-                        temp += 116444736000000000LL;
-                    #else
-                        temp += 116444736000000000;
-                    #endif
+                    temp += 116444736000000000;
                     ft.dwLowDateTime = DWORD(temp);
                     ft.dwHighDateTime = DWORD(temp >> 32);
                 }
@@ -1749,7 +1742,7 @@
             }
 
             struct directory_entry {
-                  directory_entry() { }
+                directory_entry() { }
                 explicit directory_entry(const path& p) : m_path(p) { }
                 ~directory_entry() { }
                 void assign(const path& p) {
