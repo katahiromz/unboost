@@ -1329,8 +1329,10 @@
                 iterator begin() const;
                 iterator end() const;
 
+                #if 0
                 path(path&& p);
                 path& operator=(path&& p);
+                #endif
 
             protected:
                 typedef string_type::size_type          size_type;
@@ -2039,7 +2041,7 @@
                 explicit directory_iterator(const path& p)
                     : m_imp(new detail::dir_itr_imp)
                 {
-                    detail::directory_iterator_construct(*this, p, 0);
+                    detail::directory_iterator_construct(*this, p, NULL);
                 }
                 directory_iterator(const path& p, error_code& ec)
                     : m_imp(new detail::dir_itr_imp)
@@ -2078,7 +2080,6 @@
                     return m_imp != it.m_imp;
                 }
 
-            protected:
                 unboost::shared_ptr<detail::dir_itr_imp>  m_imp;
             }; // class directory_iterator
 
@@ -3272,15 +3273,67 @@
             }
 
             inline void
-            detail::directory_iterator_construct(directory_iterator& it,
-                const path& p, system::error_code* ec)
+            detail::directory_iterator_construct(
+                directory_iterator& it, const path& p, error_code* ec)
             {
-            }
+                path::string_type filename;
+                file_status file_stat, symlink_file_stat;
+                error_code result = dir_itr_first(it.m_imp->handle,
+#ifndef _WIN32  // POSIX
+                    it.m_imp->buffer,
+#endif  // POSIX
+                    p.c_str(), filename, file_stat, symlink_file_stat);
+
+                if (result) {
+                    it.m_imp.reset();
+                    return;
+                }
+
+                if (it.m_imp->handle == NULL) {
+                    it.m_imp.reset();
+                } else {
+                    it.m_imp->dir_entry.assign(p / filename);
+                    if (filename == dot_str || filename == dot_dot_str) {
+                        it.increment(*ec);
+                    }
+                }
+            } // detail::directory_iterator_construct
+
             inline void
-            detail::directory_iterator_increment(directory_iterator& it,
-                system::error_code* ec)
+            detail::directory_iterator_increment(
+                directory_iterator& it, error_code* ec)
             {
-            }
+                path::string_type filename;
+                file_status file_stat, symlink_file_stat;
+                error_code temp_ec;
+
+                for (;;) {
+                    temp_ec = dir_itr_increment(it.m_imp->handle,
+#ifndef _WIN32  // POSIX
+                        it.m_imp->buffer,
+#endif  // POSIX
+                        filename, file_stat, symlink_file_stat);
+                    if (temp_ec) {
+                        path error_path(it.m_imp->dir_entry.path().parent_path());
+                        it.m_imp.reset();
+                        if (ec != NULL)
+                            ec->assign(UNBOOST_ERRNO, system_category());
+                        return;
+                    } else if (ec != NULL) {
+                        ec->clear();
+                    }
+
+                    if (it.m_imp->handle == NULL) {
+                        it.m_imp.reset();
+                        return;
+                    }
+
+                    if (filename == dot_str || filename == dot_dot_str) {
+                        it.m_imp->dir_entry.replace_filename(filename);
+                        return;
+                    }
+                }
+            } // detail::directory_iterator_increment
         } // namespace filesystem
     } // namespace unboost
 #else
