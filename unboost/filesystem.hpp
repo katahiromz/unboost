@@ -847,7 +847,7 @@
                 template <typename Container>
                 inline bool
                 empty(const Container & c) {
-                    return std::begin(c) == end(c);
+                    return std::begin(c) == std::end(c);
                 }
 
                 template <typename T>
@@ -980,7 +980,7 @@
                 template <typename T, typename U, size_t N>
                 inline void
                 dispatch(const T (&c_str)[N], U& to) {
-                    convert(c_str, to);
+                    convert(c_str, NULL, to);
                 }
 
                 inline void
@@ -1004,6 +1004,16 @@
                 path(const path& p) : m_pathname(p.m_pathname) { }
 
                 path(const value_type *str) : m_pathname(str) { }
+
+                template <size_t N>
+                path(const char (&array)[N]) {
+                    path_traits::convert(array, m_pathname);
+                }
+                template <size_t N>
+                path(const wchar_t (&array)[N]) {
+                    path_traits::convert(array, m_pathname);
+                }
+
                 path(const std::basic_string<value_type>& str)
                     : m_pathname(str) {}
 
@@ -1062,11 +1072,6 @@
                 path& operator+=(value_type x) {
                     m_pathname += x;
                     return *this;
-                }
-                template <typename Source>
-                path& operator+=(const Source& source) {
-                    assert(path_traits::is_pathable<Source>::value);
-                    return concat(source);
                 }
                 template <typename CharT>
                 path& operator+=(CharT x) {
@@ -1206,12 +1211,9 @@
                 template <typename CharT, typename Traits>
                 std::basic_string<CharT, Traits>
                 string() const {
-                    if (sizeof(CharT) == 1)
-                        return string();
-                    if (sizeof(CharT) == 2)
-                        return wstring();
-                    assert(0);
-                    return std::basic_string<CharT, Traits>();
+                    std::basic_string<CharT, Traits> ret;
+                    path_traits::dispatch(m_pathname, ret);
+                    return ret;
                 }
 
                 // generic format observers
