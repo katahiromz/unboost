@@ -1,9 +1,6 @@
 // thread.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <thread>
     #include <mutex>
@@ -15,6 +12,9 @@
     #include <unboost/ref.hpp>  // for unboost::ref, unboost::cref, ...
     #include <unboost/thread.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 bool checked = false;
 
@@ -272,8 +272,7 @@ void test_threading(void) {
     assert(checked);
 
     std::cout << "sleep 2 seconds" << std::endl;
-    auto two_sec_later =
-        system_clock::now() + seconds(2);
+    unboost_auto_time_point two_sec_later = system_clock::now() + seconds(2);
     sleep_until(two_sec_later);
     checked = false;
     int m = 3;

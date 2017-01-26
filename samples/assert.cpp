@@ -1,8 +1,6 @@
 // assert.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
 #ifdef CXX11
     #include <cassert>
 #elif defined(BOOST)
@@ -10,6 +8,8 @@
 #else
     #include <unboost/assert.hpp>
 #endif
+
+#include <iostream>
 
 int main(void) {
     std::cout << "assert" << std::endl;

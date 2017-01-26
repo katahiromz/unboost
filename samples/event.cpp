@@ -1,12 +1,12 @@
 // emplace.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 // Unboost only
 #include <unboost/thread.hpp>
 #include <unboost/event.h>
+
+#include <iostream>
+#include <cassert>
 
 unboost::event ev;
 

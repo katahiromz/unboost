@@ -1,16 +1,16 @@
 // string_algorithm.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <string>
-
 #ifdef BOOST
     #include <boost/algorithm/string.hpp>
 #else   // Unboost
     #include <unboost/algorithm/string.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
+#include <vector>
+#include <string>
 
 int main(void) {
     std::cout << "string algorithms" << std::endl;

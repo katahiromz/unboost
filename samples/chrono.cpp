@@ -1,10 +1,6 @@
 // chrono.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-#include <vector>
-
 #ifdef CXX11
     #include <ratio>
     #include <chrono>
@@ -18,6 +14,10 @@
     #include <unboost/chrono.hpp>
     #include <unboost/thread.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
+#include <vector>
 
 int main(void) {
     std::cout << "chrono" << std::endl;

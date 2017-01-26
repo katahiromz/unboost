@@ -5,11 +5,14 @@
 #define UNBOOST_SYSTEM_ERROR_CODE_HPP_
 
 #include "../unboost.h"
+#include <cerrno>
 
 namespace unboost {
     namespace errc {
         enum errc_t {
-            success = 0,
+            success = 0
+#if __cplusplus >= 201103L
+            ,
             address_family_not_supported = EAFNOSUPPORT,
             address_in_use = EADDRINUSE,
             address_not_available = EADDRNOTAVAIL,
@@ -88,6 +91,7 @@ namespace unboost {
             too_many_symbolic_link_levels = ELOOP,
             value_too_large = EOVERFLOW,
             wrong_protocol_type = EPROTOTYPE
+#endif  // __cplusplus >= 201103L
         }; // enum errc_t
     } // namespace errc
 } // namespace unboost

@@ -1,9 +1,6 @@
 // array.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <array>
 #elif defined(BOOST)
@@ -11,6 +8,9 @@
 #else
     #include <unboost/array.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 int main(void) {
     std::cout << "array" << std::endl;

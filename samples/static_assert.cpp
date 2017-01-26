@@ -1,9 +1,6 @@
 // static_assert.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     //
 #elif defined(BOOST)
@@ -11,6 +8,9 @@
 #else   // Unboost
     #include <unboost/static_assert.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 #ifdef CXX11
     static_assert(1, "OK");

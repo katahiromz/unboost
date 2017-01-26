@@ -1,9 +1,6 @@
 // forward_list.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <forward_list>
     using std::forward_list;
@@ -11,6 +8,9 @@
     #include <unboost/forward_list.hpp>
     using unboost::forward_list;
 #endif
+
+#include <iostream>
+#include <cassert>
 
 struct creature {
     static int s_count;

@@ -59,7 +59,7 @@
             static void *operator new(size_t, void *ptr) {
                 return ptr;
             }
-            static void operator delete(void *) { }
+            static void operator delete(void *, void *ptr) { }
         }; // _ctor_helper<T>
 
         template <typename T>
@@ -445,7 +445,7 @@
             struct _node_compare {
                 bool operator()(const node_type *n1, const node_type *n2) const {
                     Compare cmp;
-                    return !cmp(*n1->get(), *n2->get());
+                    return cmp(*n1->get(), *n2->get());
                 };
             };
 

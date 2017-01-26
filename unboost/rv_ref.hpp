@@ -113,7 +113,7 @@
             #define UNBOOST_FWD_REF(type)   type
             #define UNBOOST_FWD(value)      (value)
         #else
-            #define UNBOOST_RV_REF(...)     const unboost::rv<__VA_ARGS__>&
+            #define UNBOOST_RV_REF(...)     unboost::rv<__VA_ARGS__>&
             #define UNBOOST_RV(...)         (__VA_ARGS__).m_ref
             #define UNBOOST_FWD_REF(...)    __VA_ARGS__
             #define UNBOOST_FWD(...)        (__VA_ARGS__)
@@ -130,11 +130,13 @@
         template <typename T>
         struct remove_reference<const rv<T>&>   { typedef T type; };
 
+#if 0
         template <typename T>
         inline rv<typename remove_reference<T>::type>
         move(const T& t) {
             return static_cast<rv<typename remove_reference<T>::type> >(t);
         }
+#endif
         template <typename T>
         inline rv<typename remove_reference<T>::type>
         move(T t) {

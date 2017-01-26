@@ -68,20 +68,20 @@
 
         inline bool close_event(event_handle eh) {
             assert(eh != NULL);
-            return (bool)CloseHandle(eh);
+            return !!CloseHandle(eh);
         }
 
         inline bool set_event(event_handle eh) {
             assert(eh != NULL);
-            return (bool)SetEvent(eh);
+            return !!SetEvent(eh);
         }
         inline bool reset_event(event_handle eh) {
             assert(eh != NULL);
-            return (bool)ResetEvent(eh);
+            return !!ResetEvent(eh);
         }
         inline bool pulse_event(event_handle eh) {
             assert(eh != NULL);
-            return (bool)PulseEvent(eh);
+            return !!PulseEvent(eh);
         }
     #ifdef __cplusplus
     } // namespace unboost

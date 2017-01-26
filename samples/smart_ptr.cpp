@@ -1,9 +1,6 @@
 // smart_ptr.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <memory>
 #elif defined(BOOST)
@@ -14,6 +11,9 @@
 #else   // Unboost
     #include <unboost/smart_ptr.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 //////////////////////////////////////////////////////////////////////////////
 

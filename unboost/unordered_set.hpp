@@ -33,11 +33,8 @@
                 #endif
             #elif (_MSC_VER >= 1500)
                 // Visual C++ 2008
-                #ifndef UNBOOST_NO_TR1
-                    #define UNBOOST_USE_TR1_UNORDERED_SET
-                #else
-                    #define UNBOOST_USE_UNBOOST_UNORDERED_SET
-                #endif
+                // TR1 is not useful.
+                #define UNBOOST_USE_UNBOOST_UNORDERED_SET
             #else
                 #define UNBOOST_USE_BOOST_UNORDERED_SET
             #endif

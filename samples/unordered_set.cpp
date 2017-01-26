@@ -1,10 +1,6 @@
 // unordered_set.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <string>
-#include <cassert>
-
 #ifdef CXX11
     #include <unordered_set>
 #elif defined(BOOST)
@@ -12,6 +8,10 @@
 #else   // Unboost
     #include <unboost/unordered_set.hpp>
 #endif
+
+#include <iostream>
+#include <string>
+#include <cassert>
 
 void test_unordered_set(void) {
     std::cout << "unorderd_set" << std::endl;

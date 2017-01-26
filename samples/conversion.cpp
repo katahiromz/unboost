@@ -1,9 +1,6 @@
 // conversion.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <string>
 #elif defined(BOOST)
@@ -11,6 +8,9 @@
 #else
     #include <unboost/exception/to_string.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 int main(void) {
     std::cout << "conversion" << std::endl;

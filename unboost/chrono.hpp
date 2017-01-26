@@ -380,8 +380,10 @@
             {
                 auto_ratio period1 = ad1.get_period();
                 auto_ratio period2 = ad2.get_period();
-                _ratio_intmax_t _gcd_num = _gcd(period1.num, period2.num);
-                _ratio_intmax_t _gcd_den = _gcd(period1.den, period2.den);
+                _ratio_intmax_t _gcd_num = 
+                    (_ratio_intmax_t)_gcd(period1.num, period2.num);
+                _ratio_intmax_t _gcd_den = 
+                    (_ratio_intmax_t)_gcd(period1.den, period2.den);
                 auto_ratio r(_gcd_num, (period1.den / _gcd_den) * period2.den);
                 return auto_duration(0, r);
             }

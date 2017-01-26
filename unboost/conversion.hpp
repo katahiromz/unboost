@@ -8,12 +8,12 @@
     #pragma once
 #endif
 
+#include "unboost.h"
+#include "exception.hpp"    // for unboost::invalid_argument, ...
+
 #include <cstdlib>
 #include <string>       // for std::string, std::wstring, std::to_string
 #include <sstream>      // for std::stringstream
-
-#include "unboost.h"
-#include "exception.hpp"    // for unboost::invalid_argument, ...
 
 // If not choosed, choose one
 #if ((defined(UNBOOST_USE_CXX11_CONVERSION) + defined(UNBOOST_USE_BOOST_CONVERSION) + defined(UNBOOST_USE_UNBOOST_CONVERSION)) == 0)

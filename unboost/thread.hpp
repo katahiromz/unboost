@@ -571,7 +571,7 @@
                 using namespace unboost::chrono;
                 milliseconds ms = duration_cast<milliseconds>(timeout_duration);
                 if (ms.count() > 0) {
-                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
+                    DWORD dwWait = ::WaitForSingleObject(m_hMutex, DWORD(ms.count()));
                     return (dwWait == WAIT_OBJECT_0);
                 } else {
                     return try_lock();
@@ -733,7 +733,7 @@
                 DWORD dwWait = WAIT_TIMEOUT;
                 if (ms.count() > 0) {
                     if (m_thread_id != ::GetCurrentThreadId()) {
-                        dwWait = ::WaitForSingleObject(m_hMutex, ms.count());
+                        dwWait = ::WaitForSingleObject(m_hMutex, DWORD(ms.count()));
                     }
                 } else {
                     if (m_thread_id != ::GetCurrentThreadId()) {

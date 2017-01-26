@@ -1,11 +1,6 @@
 // system_error.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <string>
-
 #ifdef CXX11
     #include <system_error>
     #include <thread>
@@ -16,6 +11,11 @@
     #include <unboost/system_error.hpp>
     #include <unboost/thread.hpp>
 #endif  // Unboost
+
+#include <iostream>
+#include <cassert>
+#include <vector>
+#include <string>
 
 int main(void) {
     bool flag = false;
@@ -35,7 +35,7 @@ int main(void) {
     #else
         try {
             unboost::thread().detach();
-        } catch (const unboost::system_error& e) {
+        } catch (const unboost::system_error&) {
             flag = true;
         }
     #endif

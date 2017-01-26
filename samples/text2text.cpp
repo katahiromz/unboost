@@ -1,12 +1,13 @@
 // text2text.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
+// Unboost only
+#include <unboost/text2text.hpp>
+
 #include <iostream>
 #include <cassert>
 #include <string>
-#include <locale>
-
-#include <unboost/text2text.hpp>
+#include <clocale>
 
 int main(void) {
     std::ios_base::sync_with_stdio(false);

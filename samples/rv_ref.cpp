@@ -1,9 +1,6 @@
 // rv_ref.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <utility>                      // for std::move, std::forward
     #define UNBOOST_RV_REF(type)    type&&
@@ -21,6 +18,9 @@
     #include "unboost/move/core.hpp"        // for unboost::move
     #include "unboost/move/utility.hpp"     // for unboost::forward
 #endif
+
+#include <iostream>
+#include <cassert>
 
 #ifdef CXX11
     using std::move;

@@ -1,9 +1,6 @@
 // ratio.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <ratio>
 #elif defined(BOOST)
@@ -11,6 +8,9 @@
 #else   // Unboost
     #include <unboost/ratio.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 int main(void) {
     std::cout << "ratio" << std::endl;

@@ -1,9 +1,6 @@
 // unordered_map.cpp --- Unboost sample
 //////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <cassert>
-
 #ifdef CXX11
     #include <unordered_map>
 #elif defined(BOOST)
@@ -11,6 +8,9 @@
 #else   // Unboost
     #include <unboost/unordered_map.hpp>
 #endif
+
+#include <iostream>
+#include <cassert>
 
 void test_unordered_map(void) {
     std::cout << "unorderd_map" << std::endl;

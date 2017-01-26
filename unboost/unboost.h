@@ -8,11 +8,15 @@
     #pragma once
 #endif
 
-#define UNBOOST_VERSION             37
-#define UNBOOST_VERSION_STRING      "Unboost 37 by Katayama Hirofumi MZ"
+#define UNBOOST_VERSION             38
+#define UNBOOST_VERSION_STRING      "Unboost 38 by Katayama Hirofumi MZ"
 
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#ifndef _CRT_NON_CONFORMING_SWPRINTFS
+    #define _CRT_NON_CONFORMING_SWPRINTFS
 #endif
 
 #ifdef __cplusplus
