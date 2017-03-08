@@ -31,11 +31,17 @@ vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
 #ifdef UNBOOST_SNPRINTF_USE_HEAP
     char *buf = malloc(UNBOOST_SNPRINTF_MAX_SIZE);
     if (buf == NULL)
+    {
+        if (bufptr && size)
+            *bufptr = 0;
         return 0;
+    }
 #else
     char buf[UNBOOST_SNPRINTF_MAX_SIZE];
 #endif
 
+    assert(bufptr);
+    assert(fmt);
     n = vsprintf(buf, fmt, va);
     if (size > n)
     {
@@ -61,11 +67,17 @@ vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
 #ifdef UNBOOST_SNPRINTF_USE_HEAP
     wchar_t *buf = (wchar_t *)malloc(UNBOOST_SNPRINTF_MAX_SIZE / sizeof(wchar_t));
     if (buf == NULL)
+    {
+        if (bufptr && size)
+            *bufptr = 0;
         return 0;
+    }
 #else
     wchar_t buf[UNBOOST_SNPRINTF_MAX_SIZE / sizeof(wchar_t)];
 #endif
 
+    assert(bufptr);
+    assert(fmt);
     n = vswprintf(buf, fmt, va);
     if (size > n)
     {
@@ -90,6 +102,8 @@ snprintf(char *bufptr, size_t size, const char *fmt, ...)
     int n;
     va_list va;
     va_start(va, fmt);
+    assert(bufptr);
+    assert(fmt);
     n = vsnprintf(bufptr, size, fmt, va);
     va_end(va);
     return n;
@@ -101,6 +115,8 @@ snwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, ...)
     int n;
     va_list va;
     va_start(va, fmt);
+    assert(bufptr);
+    assert(fmt);
     n = vsnwprintf(bufptr, size, fmt, va);
     va_end(va);
     return n;
