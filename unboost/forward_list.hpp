@@ -59,7 +59,7 @@
             static void *operator new(size_t, void *ptr) {
                 return ptr;
             }
-            static void operator delete(void *, void *ptr) { }
+            //static void operator delete(void *, void *ptr) { }
         }; // _ctor_helper<T>
 
         template <typename T>

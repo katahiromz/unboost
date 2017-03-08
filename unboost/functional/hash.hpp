@@ -67,17 +67,20 @@
         inline size_t _hash_value(unsigned int n) {
             return n;
         }
+        inline size_t _hash_value(wchar_t ch) {
+            return ch;
+        }
         inline size_t _hash_value(_int64_t n) {
             return size_t(n ^ (n >> 32));
         }
         inline size_t _hash_value(_uint64_t n) {
             return size_t(n ^ (n >> 32));
         }
-        inline size_t _hash_value(float e) {
-            return _hash_value(*reinterpret_cast<const int *>(&e));
+        inline size_t _hash_value(float& e) {
+            return _hash_value(reinterpret_cast<int&>(e));
         }
-        inline size_t _hash_value(double e) {
-            return _hash_value(*reinterpret_cast<const _uint64_t *>(&e));
+        inline size_t _hash_value(double& e) {
+            return _hash_value(reinterpret_cast<_uint64_t&>(e));
         }
         inline size_t _hash_value(long double e) {
             size_t ret = 0;
@@ -87,8 +90,8 @@
             }
             return ret;
         }
-        inline size_t _hash_value(const void *p) {
-            return *reinterpret_cast<const size_t *>(&p);
+        inline size_t _hash_value(const void *& p) {
+            return reinterpret_cast<size_t&>(p);
         }
 
         inline size_t _hash_value(const std::string& str) {
@@ -148,6 +151,7 @@
         UNBOOST_HASH_SPECIALIZE(unsigned long);
         UNBOOST_HASH_SPECIALIZE(int);
         UNBOOST_HASH_SPECIALIZE(unsigned int);
+        UNBOOST_HASH_SPECIALIZE(wchar_t);
         UNBOOST_HASH_SPECIALIZE(_int64_t);
         UNBOOST_HASH_SPECIALIZE(_uint64_t);
         UNBOOST_HASH_SPECIALIZE(float);
