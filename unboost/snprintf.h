@@ -38,7 +38,7 @@ vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
         memcpy(bufptr, buf, n * sizeof(char));
         bufptr[n] = 0;
     }
-    else
+    else if (size > 0)
     {
         memcpy(bufptr, buf, size * sizeof(char));
         bufptr[size - 1] = 0;
@@ -68,7 +68,7 @@ vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
         memcpy(bufptr, buf, n * sizeof(char));
         bufptr[n] = 0;
     }
-    else
+    else if (size > 0)
     {
         memcpy(bufptr, buf, size * sizeof(char));
         bufptr[size - 1] = 0;
