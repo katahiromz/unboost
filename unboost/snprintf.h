@@ -1,4 +1,4 @@
-// snprintf.hpp --- Unboost snprintf
+// snprintf.hpp --- Unboost snprintf (hack)
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef UNBOOST_SNPRINTF_H_
