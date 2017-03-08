@@ -12,6 +12,10 @@
     #define UNBOOST_SNPRINTF_MAX_SIZE   1024
 #endif
 
+#if !defined(UNBOOST_SNPRINTF_USE_HEAP) && (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
+    #define UNBOOST_SNPRINTF_USE_HEAP
+#endif
+
 #ifdef __cplusplus
 namespace unboost {
     using std::vsprintf;
@@ -24,7 +28,7 @@ inline int
 vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
 {
     int n;
-#if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
+#ifdef UNBOOST_SNPRINTF_USE_HEAP
     char *buf = malloc(UNBOOST_SNPRINTF_MAX_SIZE);
     if (buf == NULL)
         return 0;
@@ -44,7 +48,7 @@ vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
         bufptr[size - 1] = 0;
     }
 
-#if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
+#ifdef UNBOOST_SNPRINTF_USE_HEAP
     free(buf);
 #endif
     return n;
@@ -54,7 +58,7 @@ inline int
 vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
 {
     int n;
-#if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
+#ifdef UNBOOST_SNPRINTF_USE_HEAP
     wchar_t *buf = (wchar_t *)malloc(UNBOOST_SNPRINTF_MAX_SIZE / sizeof(wchar_t));
     if (buf == NULL)
         return 0;
@@ -74,7 +78,7 @@ vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
         bufptr[size - 1] = 0;
     }
 
-#if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
+#ifdef UNBOOST_SNPRINTF_USE_HEAP
     free(buf);
 #endif
     return n;
