@@ -31,6 +31,7 @@ vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
 #else
     char buf[UNBOOST_SNPRINTF_MAX_SIZE];
 #endif
+
     n = vsprintf(buf, fmt, va);
     if (size > n)
     {
@@ -42,6 +43,7 @@ vsnprintf(char *bufptr, size_t size, const char *fmt, va_list va)
         memcpy(bufptr, buf, size * sizeof(char));
         bufptr[size - 1] = 0;
     }
+
 #if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
     free(buf);
 #endif
@@ -59,6 +61,7 @@ vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
 #else
     wchar_t buf[UNBOOST_SNPRINTF_MAX_SIZE / sizeof(wchar_t)];
 #endif
+
     n = vswprintf(buf, fmt, va);
     if (size > n)
     {
@@ -70,6 +73,7 @@ vsnwprintf(wchar_t *bufptr, size_t size, const wchar_t *fmt, va_list va)
         memcpy(bufptr, buf, size * sizeof(char));
         bufptr[size - 1] = 0;
     }
+
 #if (UNBOOST_SNPRINTF_MAX_SIZE >= 2048)
     free(buf);
 #endif
