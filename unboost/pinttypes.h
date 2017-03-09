@@ -23,7 +23,7 @@ namespace unboost {
 } // namespace unboost
 #endif
 
-#if (!defined(__cplusplus) || defined(__STDC_FORMAT_MACROS))
+#if defined(__STDC_FORMAT_MACROS)
 #define PRId8 "d"
 #define PRId16 "d"
 #define PRId32 "d"
@@ -197,34 +197,146 @@ namespace unboost {
 #define SCNuMAX "I64u"
 
 #ifdef _WIN64
-#define PRIdPTR "I64d"
-#define PRIiPTR "I64i"
-#define PRIoPTR "I64o"
-#define PRIuPTR "I64u"
-#define PRIxPTR "I64x"
-#define PRIXPTR "I64X"
-#define SCNdPTR "I64d"
-#define SCNiPTR "I64i"
-#define SCNoPTR "I64o"
-#define SCNxPTR "I64x"
-#define SCNuPTR "I64u"
+    #define PRIdPTR "I64d"
+    #define PRIiPTR "I64i"
+    #define PRIoPTR "I64o"
+    #define PRIuPTR "I64u"
+    #define PRIxPTR "I64x"
+    #define PRIXPTR "I64X"
+    #define SCNdPTR "I64d"
+    #define SCNiPTR "I64i"
+    #define SCNoPTR "I64o"
+    #define SCNxPTR "I64x"
+    #define SCNuPTR "I64u"
 #else
-#define PRIdPTR "d"
-#define PRIiPTR "i"
-#define PRIoPTR "o"
-#define PRIuPTR "u"
-#define PRIxPTR "x"
-#define PRIXPTR "X"
-#define SCNdPTR "d"
-#define SCNiPTR "i"
-#define SCNoPTR "o"
-#define SCNxPTR "x"
-#define SCNuPTR "u"
+    #define PRIdPTR "d"
+    #define PRIiPTR "i"
+    #define PRIoPTR "o"
+    #define PRIuPTR "u"
+    #define PRIxPTR "x"
+    #define PRIXPTR "X"
+    #define SCNdPTR "d"
+    #define SCNiPTR "i"
+    #define SCNoPTR "o"
+    #define SCNxPTR "x"
+    #define SCNuPTR "u"
 #endif
 
-/* FIXME & TODO */
+#if (defined(__cplusplus) && __cplusplus >= 201103L) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L)
+#undef PRId64
+#undef PRIdLEAST64
+#undef PRIdFAST64
+#undef PRIdMAX
+#undef PRIi64
+#undef PRIiLEAST64
+#undef PRIiFAST64
+#undef PRIiMAX
+#undef PRIo64
+#undef PRIoLEAST64
+#undef PRIoFAST64
+#undef PRIoMAX
+#undef PRIu64
+#undef PRIuLEAST64
+#undef PRIuFAST64
+#undef PRIuMAX
+#undef PRIx64
+#undef PRIxLEAST64
+#undef PRIxFAST64
+#undef PRIxMAX
+#undef PRIX64
+#undef PRIXLEAST64
+#undef PRIXFAST64
+#undef PRIXMAX
+#undef SCNd64
+#undef SCNdLEAST64
+#undef SCNdFAST64
+#undef SCNdMAX
+#undef SCNi64
+#undef SCNiLEAST64
+#undef SCNiFAST64
+#undef SCNiMAX
+#undef SCNo64
+#undef SCNoLEAST64
+#undef SCNoFAST64
+#undef SCNoMAX
+#undef SCNx64
+#undef SCNxLEAST64
+#undef SCNxFAST64
+#undef SCNxMAX
+#undef SCNu64
+#undef SCNuLEAST64
+#undef SCNuFAST64
+#undef SCNuMAX
+#define PRId64 "lld"
+#define PRIdLEAST64 "lld"
+#define PRIdFAST64 "lld"
+#define PRIdMAX "lld"
+#define PRIi64 "lli"
+#define PRIiLEAST64 "lli"
+#define PRIiFAST64 "lli"
+#define PRIiMAX "lli"
+#define PRIo64 "llo"
+#define PRIoLEAST64 "llo"
+#define PRIoFAST64 "llo"
+#define PRIoMAX "llo"
+#define PRIu64 "llu"
+#define PRIuLEAST64 "llu"
+#define PRIuFAST64 "llu"
+#define PRIuMAX "llu"
+#define PRIx64 "llx"
+#define PRIxLEAST64 "llx"
+#define PRIxFAST64 "llx"
+#define PRIxMAX "llx"
+#define PRIX64 "llX"
+#define PRIXLEAST64 "llX"
+#define PRIXFAST64 "llX"
+#define PRIXMAX "llX"
+#define SCNd64 "lld"
+#define SCNdLEAST64 "lld"
+#define SCNdFAST64 "lld"
+#define SCNdMAX "lld"
+#define SCNi64 "lli"
+#define SCNiLEAST64 "lli"
+#define SCNiFAST64 "lli"
+#define SCNiMAX "lli"
+#define SCNo64 "llo"
+#define SCNoLEAST64 "llo"
+#define SCNoFAST64 "llo"
+#define SCNoMAX "llo"
+#define SCNx64 "llx"
+#define SCNxLEAST64 "llx"
+#define SCNxFAST64 "llx"
+#define SCNxMAX "llx"
+#define SCNu64 "llu"
+#define SCNuLEAST64 "llu"
+#define SCNuFAST64 "llu"
+#define SCNuMAX "llu"
+#ifdef _WIN64
+    #undef PRIdPTR
+    #undef PRIiPTR
+    #undef PRIoPTR
+    #undef PRIuPTR
+    #undef PRIxPTR
+    #undef PRIXPTR
+    #undef SCNdPTR
+    #undef SCNiPTR
+    #undef SCNoPTR
+    #undef SCNxPTR
+    #undef SCNuPTR
+    #define PRIdPTR "lld"
+    #define PRIiPTR "lli"
+    #define PRIoPTR "llo"
+    #define PRIuPTR "llu"
+    #define PRIxPTR "llx"
+    #define PRIXPTR "llX"
+    #define SCNdPTR "lld"
+    #define SCNiPTR "lli"
+    #define SCNoPTR "llo"
+    #define SCNxPTR "llx"
+    #define SCNuPTR "llu"
+#endif
 
-#endif  /* (!defined(__cplusplus) || defined(__STDC_FORMAT_MACROS)) */
+#endif  /* defined(__STDC_FORMAT_MACROS) */
 
 #ifdef __cplusplus
 namespace unboost {
