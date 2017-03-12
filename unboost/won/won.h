@@ -98,6 +98,27 @@
 #endif
 
 /****************************************************************************/
+/* for non-Windows OS */
+
+#ifndef _WON32
+    #ifndef TEXT
+        #ifdef UNICODE
+            #define TEXT(x) L##x
+        #else
+            #define TEXT(x) x
+        #endif
+    #endif
+
+    #ifndef _T
+        #ifdef _UNICODE
+            #define _T(x) L##x
+        #else
+            #define _T(x) x
+        #endif
+    #endif
+#endif
+
+/****************************************************************************/
 
 #ifndef WON_H_INCLUDED
     #define WON_H_INCLUDED  1
