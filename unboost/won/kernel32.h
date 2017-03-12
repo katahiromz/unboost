@@ -78,6 +78,26 @@ namespace won {
         return strcpy(ptr1, ptr2);
     }
 
+    inline WONBASEAPI char * WONAPI WON(lstrcpynA)(char *psz1, const char *psz2, int cchMax)
+    {
+        char *d = psz1;
+        const char *s = psz2;
+        UINT count = cchMax;
+        char *Ret = NULL;
+
+        while (count > 1 && *s)
+        {
+            count--;
+            *d++ = *s++;
+        }
+
+        if (count)
+            *d = 0;
+
+        Ret = psz1;
+        return Ret;
+    }
+
     inline WONBASEAPI int WONAPI WON(lstrlenA)(const char *ptr)
     {
     #ifdef __cplusplus
@@ -156,6 +176,26 @@ namespace won {
         return wcscpy(ptr1, ptr2);
     }
 
+    inline WONBASEAPI wchar_t * WONAPI WON(lstrcpynW)(wchar_t *psz1, const wchar_t *psz2, int cchMax)
+    {
+        wchar_t *d = psz1;
+        const wchar_t *s = psz2;
+        UINT count = cchMax;
+        wchar_t *Ret = NULL;
+
+        while (count > 1 && *s)
+        {
+            count--;
+            *d++ = *s++;
+        }
+
+        if (count)
+            *d = 0;
+
+        Ret = psz1;
+        return Ret;
+    }
+
     inline WONBASEAPI_NT int WONAPI WON(lstrlenW)(const wchar_t *ptr)
     {
     #ifdef __cplusplus
@@ -205,6 +245,7 @@ namespace won {
             #define lstrcmpA        won::WON(lstrcmpA)
             #define lstrcmpiA       won::WON(lstrcmpiA)
             #define lstrcpyA        won::WON(lstrcpyA)
+            #define lstrcpynA       won::WON(lstrcpynA)
             #define lstrlenA        won::WON(lstrlenA)
         #else
             #define CopyMemory      WON(CopyMemory)
@@ -215,6 +256,7 @@ namespace won {
             #define lstrcmpA        WON(lstrcmpA)
             #define lstrcmpiA       WON(lstrcmpiA)
             #define lstrcpyA        WON(lstrcpyA)
+            #define lstrcpynA       WON(lstrcpynA)
             #define lstrlenA        WON(lstrlenA)
         #endif
     #endif
@@ -225,12 +267,14 @@ namespace won {
             #define lstrcmpW        won::WON(lstrcmpW)
             #define lstrcmpiW       won::WON(lstrcmpiW)
             #define lstrcpyW        won::WON(lstrcpyW)
+            #define lstrcpynW       won::WON(lstrcpynW)
             #define lstrlenW        won::WON(lstrlenW)
         #else
             #define lstrcatW        WON(lstrcatW)
             #define lstrcmpW        WON(lstrcmpW)
             #define lstrcmpiW       WON(lstrcmpiW)
             #define lstrcpyW        WON(lstrcpyW)
+            #define lstrcpynW       WON(lstrcpynW)
             #define lstrlenW        WON(lstrlenW)
         #endif
     #endif
@@ -242,12 +286,14 @@ namespace won {
             #define lstrcmp         lstrcmpW
             #define lstrcmpi        lstrcmpiW
             #define lstrcpy         lstrcpyW
+            #define lstrcpyn        lstrcpynW
             #define lstrlen         lstrlenW
         #else
             #define lstrcat         lstrcatA
             #define lstrcmp         lstrcmpA
             #define lstrcmpi        lstrcmpiA
             #define lstrcpy         lstrcpyA
+            #define lstrcpyn        lstrcpynA
             #define lstrlen         lstrlenA
         #endif
     #endif
