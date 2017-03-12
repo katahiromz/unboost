@@ -174,7 +174,7 @@ namespace won {
         return wcscpy(ptr1, ptr2);
     }
 
-    inline WONBASEAPI wchar_t * WONAPI WON(lstrcpynW)(wchar_t *psz1, const wchar_t *psz2, int cchMax)
+    inline WONBASEAPI_NT wchar_t * WONAPI WON(lstrcpynW)(wchar_t *psz1, const wchar_t *psz2, int cchMax)
     {
         wchar_t *d = psz1;
         const wchar_t *s = psz2;
