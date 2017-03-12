@@ -83,7 +83,6 @@ namespace won {
         char *d = psz1;
         const char *s = psz2;
         UINT count = cchMax;
-        char *Ret = NULL;
 
         while (count > 1 && *s)
         {
@@ -94,8 +93,7 @@ namespace won {
         if (count)
             *d = 0;
 
-        Ret = psz1;
-        return Ret;
+        return psz1;
     }
 
     inline WONBASEAPI int WONAPI WON(lstrlenA)(const char *ptr)
@@ -181,7 +179,6 @@ namespace won {
         wchar_t *d = psz1;
         const wchar_t *s = psz2;
         UINT count = cchMax;
-        wchar_t *Ret = NULL;
 
         while (count > 1 && *s)
         {
@@ -192,8 +189,7 @@ namespace won {
         if (count)
             *d = 0;
 
-        Ret = psz1;
-        return Ret;
+        return psz1;
     }
 
     inline WONBASEAPI_NT int WONAPI WON(lstrlenW)(const wchar_t *ptr)
