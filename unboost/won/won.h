@@ -11,9 +11,9 @@
 
 #ifndef WON
     #ifdef __cplusplus
-        #define WON(name) name
+        #define WON(name)   name
     #else
-        #define WON(name) Won_##name
+        #define WON(name)   Won_##name
     #endif
 #endif
 
