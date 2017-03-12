@@ -18,13 +18,13 @@
 /****************************************************************************/
 
 #ifndef WONBASEAPI
-    #ifndef _WIN32
+    #ifndef _WON32
         #define WONBASEAPI
     #endif
 #endif
 
 #ifndef WONBASEAPI_NT
-    #if !defined(_WIN32) || ((_WIN32_NT > 0) && (_WON32_NT == 0))
+    #if !defined(_WON32) || ((_WIN32_NT > 0) && (_WON32_NT == 0))
         #define WONBASEAPI_NT       /* NT runtime */
     #endif
 #endif
