@@ -25,6 +25,13 @@
     #endif
 #endif
 
+#ifdef va_start
+    #error You should #include "unboost/unboost.h" before standard C/C++ headers.
+#endif
+#ifdef _INC_WINDOWS
+    #error You should #include "unboost/unboost.h" before <windows.h>.
+#endif
+
 #ifdef __cplusplus
     #include <cassert>      // for the assert macro
     #include <string>       // for std::string and std::wstring, ...
