@@ -118,6 +118,17 @@ namespace won {
         prc->bottom = bottom;
         return TRUE;
     }
+
+    inline WONUSERAPI BOOL WONAPI WON(SetRectEmpty)(LPRECT prc)
+    {
+#ifndef WON_SPEED
+        assert(prc);
+        if (prc == NULL)
+            return FALSE;
+#endif
+        prc->left = prc->right = prc->top = prc->bottom = 0;
+        return TRUE;
+    }
 #endif  /* def WONUSERAPI */
 
 /****************************************************************************/
@@ -159,6 +170,7 @@ namespace won {
             #define OffsetRect      won::WON(OffsetRect)
             #define PtInRect        won::WON(PtInRect)
             #define SetRect         won::WON(SetRect)
+            #define SetRectEmpty    won::WON(SetRectEmpty)
         #else
             #define CopyRect        WON(CopyRect)
             #define EqualRect       WON(EqualRect)
@@ -167,6 +179,7 @@ namespace won {
             #define OffsetRect      WON(OffsetRect)
             #define PtInRect        WON(PtInRect)
             #define SetRect         WON(SetRect)
+            #define SetRectEmpty    WON(SetRectEmpty)
         #endif
     #endif
 #endif  /* ndef WON_NO_WRAP_FN */
