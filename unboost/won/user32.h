@@ -130,67 +130,110 @@ namespace won {
         return TRUE;
     }
 
-    inline WONUSERAPI BOOL WONAPI WON(IntersectRect)(LPRECT prcDst, const RECT *prcSrc1, const RECT *prcSrc2)
+    inline WONUSERAPI BOOL WONAPI WON(IntersectRect)(LPRECT dest, const RECT *src1, const RECT *src2)
     {
 #ifndef WON_SPEED
-        assert(prcDst);
-        assert(prcSrc1);
-        assert(prcSrc2);
-        if (prcDst == NULL || prcSrc1 == NULL || prcSrc2 == NULL)
+        assert(dest);
+        assert(src1);
+        assert(src2);
+        if (dest == NULL || src1 == NULL || src2 == NULL)
             return FALSE;
 #endif
 
-        if (WON(IsRectEmpty)(prcSrc1) || WON(IsRectEmpty)(prcSrc2) ||
-            prcSrc1->left >= prcSrc2->right ||
-            prcSrc2->left >= prcSrc1->right ||
-            prcSrc1->top >= prcSrc2->bottom ||
-            prcSrc2->top >= prcSrc1->bottom)
+        if (WON(IsRectEmpty)(src1) || WON(IsRectEmpty)(src2) ||
+            src1->left >= src2->right || src2->left >= src1->right ||
+            src1->top >= src2->bottom || src2->top >= src1->bottom)
         {
-            WON(SetRectEmpty)(prcDst);
+            WON(SetRectEmpty)(dest);
             return FALSE;
         }
 
-        prcDst->left = max(prcSrc1->left, prcSrc2->left);
-        prcDst->right = min(prcSrc1->right, prcSrc2->right);
-        prcDst->top = max(prcSrc1->top, prcSrc2->top);
-        prcDst->bottom = min(prcSrc1->bottom, prcSrc2->bottom);
+        dest->left = max(src1->left, src2->left);
+        dest->right = min(src1->right, src2->right);
+        dest->top = max(src1->top, src2->top);
+        dest->bottom = min(src1->bottom, src2->bottom);
         return TRUE;
     }
 
-    inline WONUSERAPI BOOL WONAPI WON(SubtractRect)(LPRECT prcDst, const RECT *prcSrc1, const RECT *prcSrc2)
+    inline WONUSERAPI BOOL WONAPI WON(SubtractRect)(LPRECT dest, const RECT *src1, const RECT *src2)
     {
         RECT TempRect;
 
-        if (prcDst == NULL || prcSrc1 == NULL || prcSrc2 == NULL)
+#ifndef WON_SPEED
+        assert(dest);
+        assert(src1);
+        assert(src2);
+        if (dest == NULL || src1 == NULL || src2 == NULL)
             return FALSE;
+#endif
 
-        if (!IntersectRect(&TempRect, prcSrc1, prcSrc2))
+        if (!WON(IntersectRect)(&TempRect, src1, src2))
         {
-            *prcDst = *prcSrc1;
+            *dest = *src1;
             return TRUE;
         }
 
-        if (EqualRect(&TempRect, prcSrc1))
+        if (WON(EqualRect)(&TempRect, src1))
         {
-            SetRectEmpty(prcDst);
+            WON(SetRectEmpty)(dest);
             return FALSE;
         }
 
-        *prcDst = *prcSrc1;
+        *dest = *src1;
 
-        if (prcDst->top == TempRect.top && prcDst->bottom == TempRect.bottom)
+        if (dest->top == TempRect.top && dest->bottom == TempRect.bottom)
         {
-            if (prcDst->left == TempRect.left)
-                prcDst->left = TempRect.right;
-            else if (prcDst->right == TempRect.right)
-                prcDst->right = TempRect.left;
+            if (dest->left == TempRect.left)
+                dest->left = TempRect.right;
+            else if (dest->right == TempRect.right)
+                dest->right = TempRect.left;
         }
-        else if (prcDst->left == TempRect.left && prcDst->right == TempRect.right)
+        else if (dest->left == TempRect.left && dest->right == TempRect.right)
         {
-            if (prcDst->top == TempRect.top)
-                prcDst->top = TempRect.bottom;
-            else if (prcDst->bottom == TempRect.bottom)
-                prcDst->bottom = TempRect.top;
+            if (dest->top == TempRect.top)
+                dest->top = TempRect.bottom;
+            else if (dest->bottom == TempRect.bottom)
+                dest->bottom = TempRect.top;
+        }
+
+        return TRUE;
+    }
+
+    inline WONUSERAPI BOOL WONAPI WON(UnionRect)(LPRECT dest, const RECT *src1, const RECT *src2)
+    {
+#ifndef WON_SPEED
+        assert(dest);
+        assert(src1);
+        assert(src2);
+        if (dest == NULL || src1 == NULL || src2 == NULL)
+            return FALSE;
+#endif
+
+        if (WON(IsRectEmpty)(src1))
+        {
+            if (WON(IsRectEmpty)(src2))
+            {
+                WON(SetRectEmpty)(dest);
+                return FALSE;
+            }
+            else
+            {
+                *dest = *src2;
+            }
+        }
+        else
+        {
+            if (WON(IsRectEmpty)(src2))
+            {
+                *dest = *src1;
+            }
+            else
+            {
+                dest->left = min(src1->left, src2->left);
+                dest->top = min(src1->top, src2->top);
+                dest->right = max(src1->right, src2->right);
+                dest->bottom = max(src1->bottom, src2->bottom);
+            }
         }
 
         return TRUE;
@@ -240,6 +283,7 @@ namespace won {
             #define SetRect         won::WON(SetRect)
             #define SetRectEmpty    won::WON(SetRectEmpty)
             #define SubtractRect    won::WON(SubtractRect)
+            #define UnionRect       won::WON(UnionRect)
         #else
             #define CopyRect        WON(CopyRect)
             #define EqualRect       WON(EqualRect)
@@ -251,6 +295,7 @@ namespace won {
             #define SetRect         WON(SetRect)
             #define SetRectEmpty    WON(SetRectEmpty)
             #define SubtractRect    WON(SubtractRect)
+            #define UnionRect       WON(UnionRect)
         #endif
     #endif
 #endif  /* ndef WON_NO_WRAP_FN */
