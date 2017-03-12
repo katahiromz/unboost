@@ -77,7 +77,7 @@ namespace won {
 #endif
         return (prc->left >= prc->right || prc->top >= prc->bottom);
     }
-#endif
+#endif  /* def WONUSERAPI */
 
 /****************************************************************************/
 
