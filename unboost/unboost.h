@@ -8,8 +8,8 @@
     #pragma once
 #endif
 
-#define UNBOOST_VERSION             39
-#define UNBOOST_VERSION_STRING      "Unboost 39 by Katayama Hirofumi MZ"
+#define UNBOOST_VERSION             40
+#define UNBOOST_VERSION_STRING      "Unboost 40 by Katayama Hirofumi MZ"
 
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
@@ -17,6 +17,18 @@
 
 #ifndef _CRT_NON_CONFORMING_SWPRINTFS
     #define _CRT_NON_CONFORMING_SWPRINTFS
+#endif
+
+#ifdef WON_H_
+    #ifdef WON_H_INCLUDED
+        #error You should #include "unboost/won.h" before "unboost/..." if using Won.
+    #endif
+    #ifndef COBJMACROS
+        #define COBJMACROS
+    #endif
+    #ifndef CINTERFACE
+        #define CINTERFACE
+    #endif
 #endif
 
 #ifdef __cplusplus
