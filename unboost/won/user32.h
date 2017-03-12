@@ -129,6 +129,73 @@ namespace won {
         prc->left = prc->right = prc->top = prc->bottom = 0;
         return TRUE;
     }
+
+    inline WONUSERAPI BOOL WONAPI WON(IntersectRect)(LPRECT prcDst, const RECT *prcSrc1, const RECT *prcSrc2)
+    {
+#ifndef WON_SPEED
+        assert(prcDst);
+        assert(prcSrc1);
+        assert(prcSrc2);
+        if (prcDst == NULL || prcSrc1 == NULL || prcSrc2 == NULL)
+            return FALSE;
+#endif
+
+        if (WON(IsRectEmpty)(prcSrc1) || WON(IsRectEmpty)(prcSrc2) ||
+            prcSrc1->left >= prcSrc2->right ||
+            prcSrc2->left >= prcSrc1->right ||
+            prcSrc1->top >= prcSrc2->bottom ||
+            prcSrc2->top >= prcSrc1->bottom)
+        {
+            WON(SetRectEmpty)(prcDst);
+            return FALSE;
+        }
+
+        prcDst->left = max(prcSrc1->left, prcSrc2->left);
+        prcDst->right = min(prcSrc1->right, prcSrc2->right);
+        prcDst->top = max(prcSrc1->top, prcSrc2->top);
+        prcDst->bottom = min(prcSrc1->bottom, prcSrc2->bottom);
+        return TRUE;
+    }
+
+    inline WONUSERAPI BOOL WONAPI WON(SubtractRect)(LPRECT prcDst, const RECT *prcSrc1, const RECT *prcSrc2)
+    {
+        RECT TempRect;
+
+        if (prcDst == NULL || prcSrc1 == NULL || prcSrc2 == NULL)
+            return FALSE;
+
+        if (!IntersectRect(&TempRect, prcSrc1, prcSrc2))
+        {
+            *prcDst = *prcSrc1;
+            return TRUE;
+        }
+
+        if (EqualRect(&TempRect, prcSrc1))
+        {
+            SetRectEmpty(prcDst);
+            return FALSE;
+        }
+
+        *prcDst = *prcSrc1;
+
+        if (prcDst->top == TempRect.top && prcDst->bottom == TempRect.bottom)
+        {
+            if (prcDst->left == TempRect.left)
+                prcDst->left = TempRect.right;
+            else if (prcDst->right == TempRect.right)
+                prcDst->right = TempRect.left;
+        }
+        else if (prcDst->left == TempRect.left && prcDst->right == TempRect.right)
+        {
+            if (prcDst->top == TempRect.top)
+                prcDst->top = TempRect.bottom;
+            else if (prcDst->bottom == TempRect.bottom)
+                prcDst->bottom = TempRect.top;
+        }
+
+        return TRUE;
+    }
+
 #endif  /* def WONUSERAPI */
 
 /****************************************************************************/
@@ -166,20 +233,24 @@ namespace won {
             #define CopyRect        won::WON(CopyRect)
             #define EqualRect       won::WON(EqualRect)
             #define InflateRect     won::WON(InflateRect)
+            #define IntersectRect   won::WON(IntersectRect)
             #define IsRectEmpty     won::WON(IsRectEmpty)
             #define OffsetRect      won::WON(OffsetRect)
             #define PtInRect        won::WON(PtInRect)
             #define SetRect         won::WON(SetRect)
             #define SetRectEmpty    won::WON(SetRectEmpty)
+            #define SubtractRect    won::WON(SubtractRect)
         #else
             #define CopyRect        WON(CopyRect)
             #define EqualRect       WON(EqualRect)
             #define InflateRect     WON(InflateRect)
+            #define IntersectRect   WON(IntersectRect)
             #define IsRectEmpty     WON(IsRectEmpty)
             #define OffsetRect      WON(OffsetRect)
             #define PtInRect        WON(PtInRect)
             #define SetRect         WON(SetRect)
             #define SetRectEmpty    WON(SetRectEmpty)
+            #define SubtractRect    WON(SubtractRect)
         #endif
     #endif
 #endif  /* ndef WON_NO_WRAP_FN */
