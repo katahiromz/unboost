@@ -88,7 +88,7 @@ namespace won {
 /****************************************************************************/
 /* for non-Windows OS */
 
-#ifndef _WIN32
+#ifndef _WON32
     #ifndef TEXT
         #ifdef UNICODE
             #define TEXT(x) L##x

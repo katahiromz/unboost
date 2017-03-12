@@ -6,7 +6,7 @@
 
 #include "won.h"
 
-#ifndef _WIN32
+#ifndef _WON32
     #error Windows only
 #endif
 
