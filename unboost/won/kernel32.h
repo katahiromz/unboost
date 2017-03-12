@@ -82,7 +82,7 @@ namespace won {
     {
         char *d = psz1;
         const char *s = psz2;
-        UINT count = cchMax;
+        unsigned int count = cchMax;
 
         while (count > 1 && *s)
         {
@@ -178,7 +178,7 @@ namespace won {
     {
         wchar_t *d = psz1;
         const wchar_t *s = psz2;
-        UINT count = cchMax;
+        unsigned int count = cchMax;
 
         while (count > 1 && *s)
         {
