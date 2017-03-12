@@ -12,7 +12,7 @@
 
 #include <shlobj.h>
 #include <shlwapi.h>
-#include <objidl.h>         /* for IStream_... */
+#include <objidl.h>         /* for IStream... */
 
 /****************************************************************************/
 
@@ -264,14 +264,26 @@ namespace won {
         CoTaskMemFree(*ppPidl);
         *ppPidl = NULL;
 
-        IStream_AddRef(pStream);
+        #ifdef __cplusplus
+            pStream->AddRef();
+        #else
+            IStream_AddRef(pStream);
+        #endif
 
-        if (SUCCEEDED(IStream_Read(pStream, &wLen, 2, &dwBytesRead)))
+        #ifdef __cplusplus
+            if (SUCCEEDED(pStream->Read(&wLen, 2, &dwBytesRead)))
+        #else
+            if (SUCCEEDED(IStream_Read(pStream, &wLen, 2, &dwBytesRead)))
+        #endif
         {
             if (wLen != 0)
             {
                 *ppPidl = (LPITEMIDLIST)CoTaskMemAlloc(wLen);
-                if (SUCCEEDED(IStream_Read(pStream, *ppPidl , wLen, &dwBytesRead)))
+                #ifdef __cplusplus
+                    if (SUCCEEDED(pStream->Read(*ppPidl , wLen, &dwBytesRead)))
+                #else
+                    if (SUCCEEDED(IStream_Read(pStream, *ppPidl , wLen, &dwBytesRead)))
+                #endif
                 {
                     ret = S_OK;
                 }
@@ -294,7 +306,11 @@ namespace won {
             *ppPidl = NULL;
         }
 
-        IStream_Release(pStream);
+        #ifdef __cplusplus
+            pStream->Release();
+        #else
+            IStream_Release(pStream);
+        #endif
         return ret;
     }
 
@@ -303,15 +319,28 @@ namespace won {
         WORD        wLen = 0;
         HRESULT     ret = E_FAIL;
 
-        IStream_AddRef(pStream);
+        #ifdef __cplusplus
+            pStream->AddRef();
+        #else
+            IStream_AddRef(pStream);
+        #endif
 
         wLen = WON(ILGetSize)(pPidl);
-        if (SUCCEEDED(IStream_Write(pStream, &wLen, 2, NULL)))
-        {
-            if (SUCCEEDED(IStream_Write(pStream, pPidl, wLen, NULL)))
-                ret = S_OK;
-        }
-        IStream_Release(pStream);
+        #ifdef __cplusplus
+            if (SUCCEEDED(pStream->Write(&wLen, 2, NULL)))
+            {
+                if (SUCCEEDED(pStream->Write(pPidl, wLen, NULL)))
+                    ret = S_OK;
+            }
+            pStream->Release();
+        #else
+            if (SUCCEEDED(IStream_Write(pStream, &wLen, 2, NULL)))
+            {
+                if (SUCCEEDED(IStream_Write(pStream, pPidl, wLen, NULL)))
+                    ret = S_OK;
+            }
+            IStream_Release(pStream);
+        #endif
 
         return ret;
     }

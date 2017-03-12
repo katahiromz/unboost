@@ -19,15 +19,9 @@
     #define _CRT_NON_CONFORMING_SWPRINTFS
 #endif
 
-#ifdef WON_H_
-    #ifdef WON_H_INCLUDED
-        #error You should #include "unboost/won.h" before "unboost/..." if using Won.
-    #endif
+#ifndef __cplusplus
     #ifndef COBJMACROS
         #define COBJMACROS
-    #endif
-    #ifndef CINTERFACE
-        #define CINTERFACE
     #endif
 #endif
 
