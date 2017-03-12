@@ -1,5 +1,5 @@
-// unboost.h --- Unboost core
-//////////////////////////////////////////////////////////////////////////////
+/* unboost.h --- Unboost core */
+/****************************************************************************/
 
 #ifndef UNBOOST_CORE_H_
 #define UNBOOST_CORE_H_
@@ -39,11 +39,11 @@
     #include <iostream>     // for std::cout, std::endl, ...
     #include <algorithm>    // for std::swap
 #else
-    #include <assert.h>     // for the assert macro
+    #include <assert.h>     /* for the assert macro */
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// old compiler supports
+/****************************************************************************/
+/* old compiler supports */
 
 #if defined(__BORLANDC__) && (__BORLANDC__ <= 0x0551)
     #ifndef UNBOOST_OLD_BORLAND
@@ -63,11 +63,11 @@
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// Is Unboost on C++11? (UNBOOST_CXX11)
+/****************************************************************************/
+/* Is Unboost on C++11? (UNBOOST_CXX11) */
 
 #ifndef UNBOOST_CXX11
-    #if (__cplusplus >= 201103L)    // C++11
+    #if (__cplusplus >= 201103L)    /* C++11 */
         #define UNBOOST_CXX11
     #endif
 #endif
@@ -84,8 +84,8 @@
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// _char16_t, _char32_t, u16string, u32string
+/****************************************************************************/
+/* _char16_t, _char32_t, u16string, u32string */
 
 #ifdef __cplusplus
     #if (__cplusplus >= 201103L) || defined(UNBOOST_HAVE_CHARXX_T)
@@ -109,10 +109,10 @@
             typedef std::basic_string<_char32_t>    u32string;
         } // namespace unboost
     #endif
-#endif  // def __cplusplus
+#endif  /* def __cplusplus */
 
-//////////////////////////////////////////////////////////////////////////////
-// treat GNU extension
+/****************************************************************************/
+/* treat GNU extension */
 
 #ifndef __extension__
     #if !defined(__GNUC__) && !defined(__clang__)
@@ -120,8 +120,8 @@
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// UNBOOST_CONSTEXPR
+/****************************************************************************/
+/* UNBOOST_CONSTEXPR */
 
 #ifdef UNBOOST_CXX11
     #define UNBOOST_CONSTEXPR constexpr
@@ -131,10 +131,10 @@
     #define UNBOOST_CONSTEXPR
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// dependencies
+/****************************************************************************/
+/* dependencies */
 
-// Unboost's filesystem depends on system-specific system
+/} Unboost's filesystem depends on system-specific system */
 #ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
     #ifdef _WIN32
         #ifndef UNBOOST_USE_WIN32_SYSTEM
@@ -147,7 +147,7 @@
     #endif
 #endif
 
-// thread and chrono depends on each other
+/* thread and chrono depends on each other */
 #ifdef UNBOOST_USE_CXX11_THREAD
     #ifndef UNBOOST_USE_CXX11_CHRONO
         #define UNBOOST_USE_CXX11_CHRONO
@@ -189,7 +189,7 @@
     #endif
 #endif
 
-// Unboost's chrono depends on Unboost's type_traits and ratio
+/* Unboost's chrono depends on Unboost's type_traits and ratio */
 #ifdef UNBOOST_USE_UNBOOST_CHRONO
     #ifndef UNBOOST_USE_UNBOOST_RATIO
         #define UNBOOST_USE_UNBOOST_RATIO
@@ -199,28 +199,28 @@
     #endif
 #endif
 
-// Unboost's filesystem depends on Unboost's smart_ptr
+/* Unboost's filesystem depends on Unboost's smart_ptr */
 #ifdef UNBOOST_USE_UNBOOST_FILESYSTEM
     #ifndef UNBOOST_USE_UNBOOST_SMART_PTR
         #define UNBOOST_USE_UNBOOST_SMART_PTR
     #endif
 #endif
 
-// Unboost's smart_ptr depends on Unboost's type_traits
+/* Unboost's smart_ptr depends on Unboost's type_traits */
 #ifdef UNBOOST_USE_UNBOOST_SMART_PTR
     #ifndef UNBOOST_USE_UNBOOST_TYPE_TRAITS
         #define UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #endif
 #endif
 
-// Unboost's ratio depends on Unboost's static_assert
+/* Unboost's ratio depends on Unboost's static_assert */
 #ifdef UNBOOST_USE_UNBOOST_RATIO
     #ifndef UNBOOST_USE_UNBOOST_STATIC_ASSERT
         #define UNBOOST_USE_UNBOOST_STATIC_ASSERT
     #endif
 #endif
 
-// win32/posix thread and win32/posix event depends each other
+/* win32/posix thread and win32/posix event depends each other */
 #ifdef UNBOOST_USE_WIN32_THREAD
     #ifndef UNBOOST_USE_WIN32_EVENT
         #define UNBOOST_USE_WIN32_EVENT
@@ -242,7 +242,7 @@
     #endif
 #endif
 
-// win32/posix thread depends on win32/posix system
+/* win32/posix thread depends on win32/posix system */
 #ifdef UNBOOST_USE_WIN32_THREAD
     #ifndef UNBOOST_USE_WIN32_SYSTEM
         #define UNBOOST_USE_WIN32_SYSTEM
@@ -254,38 +254,38 @@
     #endif
 #endif
 
-// Unboost's type_traits depends on Unboost's rvref
+/* Unboost's type_traits depends on Unboost's rvref */
 #ifdef UNBOOST_USE_UNBOOST_TYPE_TRAITS
     #ifndef UNBOOST_USE_UNBOOST_RV_REF
         #define UNBOOST_USE_UNBOOST_RV_REF
     #endif
 #endif
 
-// Unboost's unordered_set depends on Unboost's forward_list
+/* Unboost's unordered_set depends on Unboost's forward_list */
 #ifdef UNBOOST_USE_UNBOOST_UNORDERED_SET
     #ifndef UNBOOST_USE_UNBOOST_FORWARD_LIST
         #define UNBOOST_USE_UNBOOST_FORWARD_LIST
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// consistency checks
+/****************************************************************************/
+/* consistency checks */
 
 #if ((defined(UNBOOST_USE_CXX11) + defined(UNBOOST_USE_TR1) + defined(UNBOOST_USE_BOOST)) >= 2)
     #error Choose one or none of UNBOOST_USE_CXX11, UNBOOST_USE_TR1 and UNBOOST_USE_BOOST. You lose.
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// swapping
+/****************************************************************************/
+/* swapping */
 
 #ifdef __cplusplus
     namespace unboost {
         using std::swap;
     } // namespace unboost
-#endif  // def __cplusplus
+#endif  /* def __cplusplus */
 
-//////////////////////////////////////////////////////////////////////////////
-// 64-bit integer
+/****************************************************************************/
+/* 64-bit integer */
 
 #ifdef _WIN32
     #ifndef _INC_WINDOWS
@@ -310,8 +310,8 @@ namespace unboost {
 } // namespace unboost
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-// _countof
+/****************************************************************************/
+/* _countof */
 
 #ifndef _countof
     #ifdef __cplusplus
@@ -327,8 +327,6 @@ namespace unboost {
     #endif
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
 
-#endif  // ndef UNBOOST_CORE_H_
-
-//////////////////////////////////////////////////////////////////////////////
+#endif  /* ndef UNBOOST_CORE_H_ */
