@@ -32,7 +32,7 @@ namespace won {
 
     inline WONUSERAPI BOOL WONAPI WON(IsRectEmpty)(LPCRECT prc)
     {
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(prc);
         if (prc == NULL)
             return FALSE;
@@ -45,7 +45,7 @@ namespace won {
     #ifdef __cplusplus
         using namespace std;
     #endif
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(prc1);
         assert(prc2);
         if (prc1 == NULL || prc2 == NULL)
@@ -56,7 +56,7 @@ namespace won {
 
     inline WONUSERAPI BOOL WONAPI WON(CopyRect)(LPRECT dest, const RECT *src)
     {
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(dest);
         assert(src);
         if (dest == NULL || src == NULL)
@@ -68,7 +68,7 @@ namespace won {
 
     inline WONUSERAPI BOOL WONAPI WON(OffsetRect)(LPRECT prc, int dx, int dy)
     {
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(prc);
         if (prc == NULL)
             return FALSE;
@@ -82,7 +82,7 @@ namespace won {
 
     inline WONUSERAPI BOOL WONAPI WON(InflateRect)(LPRECT prc, int dx, int dy)
     {
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(prc);
         if (prc == NULL)
             return FALSE;
@@ -96,13 +96,27 @@ namespace won {
 
     inline WONUSERAPI BOOL WONAPI WON(PtInRect)(const RECT *prc, POINT pt)
     {
-#ifdef WON_SPEED
+#ifndef WON_SPEED
         assert(prc);
         if (prc == NULL)
             return FALSE;
 #endif
         return (pt.x >= prc->left && pt.x < prc->right &&
                 pt.y >= prc->top && pt.y < prc->bottom);
+    }
+
+    inline WONUSERAPI BOOL WONAPI WON(SetRect)(LPRECT prc, int left, int top, int right, int bottom)
+    {
+#ifndef WON_SPEED
+        assert(prc);
+        if (prc == NULL)
+            return FALSE;
+#endif
+        prc->left = left;
+        prc->top = top;
+        prc->right = right;
+        prc->bottom = bottom;
+        return TRUE;
     }
 #endif  /* def WONUSERAPI */
 
@@ -144,6 +158,7 @@ namespace won {
             #define IsRectEmpty     won::WON(IsRectEmpty)
             #define OffsetRect      won::WON(OffsetRect)
             #define PtInRect        won::WON(PtInRect)
+            #define SetRect         won::WON(SetRect)
         #else
             #define CopyRect        WON(CopyRect)
             #define EqualRect       WON(EqualRect)
@@ -151,6 +166,7 @@ namespace won {
             #define IsRectEmpty     WON(IsRectEmpty)
             #define OffsetRect      WON(OffsetRect)
             #define PtInRect        WON(PtInRect)
+            #define SetRect         WON(SetRect)
         #endif
     #endif
 #endif  /* ndef WON_NO_WRAP_FN */
