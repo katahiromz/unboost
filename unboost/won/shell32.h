@@ -12,7 +12,7 @@
 
 #include <shlobj.h>
 #include <shlwapi.h>
-#include <objidl.h>
+#include <objidl.h>         /* for IStream_... */
 
 /****************************************************************************/
 
