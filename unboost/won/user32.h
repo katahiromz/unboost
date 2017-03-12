@@ -30,6 +30,16 @@ namespace won {
         typedef const RECT *LPCRECT;
     #endif
 
+    inline WONUSERAPI BOOL WONAPI WON(IsRectEmpty)(LPCRECT prc)
+    {
+#ifdef WON_SPEED
+        assert(prc);
+        if (prc == NULL)
+            return FALSE;
+#endif
+        return (prc->left >= prc->right || prc->top >= prc->bottom);
+    }
+
     inline WONUSERAPI BOOL WONAPI WON(EqualRect)(const RECT *prc1, const RECT *prc2)
     {
     #ifdef __cplusplus
@@ -60,6 +70,8 @@ namespace won {
     {
 #ifdef WON_SPEED
         assert(prc);
+        if (prc == NULL)
+            return FALSE;
 #endif
         prc->left += dx;
         prc->right += dx;
@@ -68,14 +80,18 @@ namespace won {
         return prc != NULL;
     }
 
-    inline WONUSERAPI BOOL WONAPI WON(IsRectEmpty)(LPCRECT prc)
+    inline WONUSERAPI BOOL WONAPI WON(InflateRect)(LPRECT prc, int dx, int dy)
     {
 #ifdef WON_SPEED
         assert(prc);
         if (prc == NULL)
             return FALSE;
 #endif
-        return (prc->left >= prc->right || prc->top >= prc->bottom);
+        prc->left -= dx;
+        prc->top -= dy;
+        prc->right += dx;
+        prc->bottom += dy;
+        return TRUE;
     }
 #endif  /* def WONUSERAPI */
 
@@ -113,11 +129,13 @@ namespace won {
         #ifdef __cplusplus
             #define CopyRect        won::WON(CopyRect)
             #define EqualRect       won::WON(EqualRect)
+            #define InflateRect     won::WON(InflateRect)
             #define IsRectEmpty     won::WON(IsRectEmpty)
             #define OffsetRect      won::WON(OffsetRect)
         #else
             #define CopyRect        WON(CopyRect)
             #define EqualRect       WON(EqualRect)
+            #define InflateRect     WON(InflateRect)
             #define IsRectEmpty     WON(IsRectEmpty)
             #define OffsetRect      WON(OffsetRect)
         #endif
