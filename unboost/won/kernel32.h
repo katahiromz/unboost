@@ -10,9 +10,15 @@
 #ifdef __cplusplus
     #include <cstring>
     #include <cctype>
+    #include <cwchar>
 #else
     #include <string.h>
     #include <ctype.h>
+    #include <wchar.h>
+#endif
+
+#ifndef _WON32
+    #include <strings.h>    /* for strcasecmp */
 #endif
 
 /****************************************************************************/
@@ -50,6 +56,18 @@ namespace won {
         using namespace std;
     #endif
         return strcmp(ptr1, ptr2);
+    }
+
+    inline WONBASEAPI int WONAPI WON(lstrcmpiA)(const char *ptr1, const char *ptr2)
+    {
+    #ifdef __cplusplus
+        using namespace std;
+    #endif
+        #ifdef _WON32
+            return stricmp(ptr1, ptr2);
+        #else
+            return strcasecmp(ptr1, ptr2);
+        #endif
     }
 
     inline WONBASEAPI int WONAPI WON(lstrcpyA)(char *ptr1, const char *ptr2)
@@ -118,6 +136,18 @@ namespace won {
         return wcscmp(ptr1, ptr2);
     }
 
+    inline WONBASEAPI_NT int WONAPI WON(lstrcmpiW)(const wchar_t *ptr1, const wchar_t *ptr2)
+    {
+    #ifdef __cplusplus
+        using namespace std;
+    #endif
+        #ifdef _WON32
+            return wcsicmp(ptr1, ptr2);
+        #else
+            return wcscasecmp(ptr1, ptr2);
+        #endif
+    }
+
     inline WONBASEAPI_NT int WONAPI WON(lstrcpyW)(wchar_t *ptr1, const wchar_t *ptr2)
     {
     #ifdef __cplusplus
@@ -172,6 +202,8 @@ namespace won {
             #define MoveMemory      won::WON(MoveMemory)
             #define ZeroMemory      won::WON(ZeroMemory)
             #define lstrcatA        won::WON(lstrcatA)
+            #define lstrcmpA        won::WON(lstrcmpA)
+            #define lstrcmpiA       won::WON(lstrcmpiA)
             #define lstrcpyA        won::WON(lstrcpyA)
             #define lstrlenA        won::WON(lstrlenA)
         #else
@@ -180,6 +212,8 @@ namespace won {
             #define MoveMemory      WON(MoveMemory)
             #define ZeroMemory      WON(ZeroMemory)
             #define lstrcatA        WON(lstrcatA)
+            #define lstrcmpA        WON(lstrcmpA)
+            #define lstrcmpiA       WON(lstrcmpiA)
             #define lstrcpyA        WON(lstrcpyA)
             #define lstrlenA        WON(lstrlenA)
         #endif
@@ -189,11 +223,13 @@ namespace won {
         #ifdef __cplusplus
             #define lstrcatW        won::WON(lstrcatW)
             #define lstrcmpW        won::WON(lstrcmpW)
+            #define lstrcmpiW       won::WON(lstrcmpiW)
             #define lstrcpyW        won::WON(lstrcpyW)
             #define lstrlenW        won::WON(lstrlenW)
         #else
             #define lstrcatW        WON(lstrcatW)
             #define lstrcmpW        WON(lstrcmpW)
+            #define lstrcmpiW       WON(lstrcmpiW)
             #define lstrcpyW        WON(lstrcpyW)
             #define lstrlenW        WON(lstrlenW)
         #endif
@@ -204,11 +240,13 @@ namespace won {
         #ifdef UNICODE
             #define lstrcat         lstrcatW
             #define lstrcmp         lstrcmpW
+            #define lstrcmpi        lstrcmpiW
             #define lstrcpy         lstrcpyW
             #define lstrlen         lstrlenW
         #else
             #define lstrcat         lstrcatA
             #define lstrcmp         lstrcmpA
+            #define lstrcmpi        lstrcmpiA
             #define lstrcpy         lstrcpyA
             #define lstrlen         lstrlenA
         #endif
