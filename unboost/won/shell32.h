@@ -255,7 +255,7 @@ namespace won {
         return TRUE;
     }
 
-    inline WONSHELLAPI_XP HRESULT WONAPI ILLoadFromStream(IStream *pStream, LPITEMIDLIST *ppPidl)
+    inline WONSHELLAPI_XP HRESULT WONAPI WON(ILLoadFromStream)(IStream *pStream, LPITEMIDLIST *ppPidl)
     {
         WORD        wLen = 0;
         DWORD       dwBytesRead;
@@ -327,11 +327,11 @@ namespace won {
 #ifndef WON_NO_WRAP_FN
     #ifdef WONSHELLAPI_2K
         #ifdef __cplusplus
-            #define SHAlloc         won::WON(SHAlloc)
-            #define SHFree          won::WON(SHFree)
+            #define SHAlloc             won::WON(SHAlloc)
+            #define SHFree              won::WON(SHFree)
         #else
-            #define SHAlloc         WON(SHAlloc)
-            #define SHFree          WON(SHFree)
+            #define SHAlloc             WON(SHAlloc)
+            #define SHFree              WON(SHFree)
         #endif
     #endif
     #ifdef WONSHELLAPI_XP
