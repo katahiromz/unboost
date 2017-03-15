@@ -404,7 +404,16 @@ strtoimax(const char *nptr, char **endptr, int base)
     {
         ++nptr;
         if (*nptr == 'x' || *nptr == 'X')
+        {
             ++nptr;
+            if (base == 0)
+                base = 16;
+        }
+        else
+        {
+            if (base == 0)
+                base = 8;
+        }
     }
 
     while (isdigit(*nptr))
@@ -436,7 +445,16 @@ strtoumax(const char *nptr, char **endptr, int base)
     {
         ++nptr;
         if (*nptr == 'x' || *nptr == 'X')
+        {
             ++nptr;
+            if (base == 0)
+                base = 16;
+        }
+        else
+        {
+            if (base == 0)
+                base = 8;
+        }
     }
 
     while (isdigit(*nptr))
@@ -478,7 +496,16 @@ wcstoimax(const wchar_t *nptr, wchar_t **endptr, int base)
     {
         ++nptr;
         if (*nptr == L'x' || *nptr == L'X')
+        {
             ++nptr;
+            if (base == 0)
+                base = 16;
+        }
+        else
+        {
+            if (base == 0)
+                base = 8;
+        }
     }
 
     while (iswdigit(*nptr))
@@ -510,7 +537,16 @@ wcstoumax(const wchar_t *nptr, wchar_t **endptr, int base)
     {
         ++nptr;
         if (*nptr == L'x' || *nptr == L'X')
+        {
             ++nptr;
+            if (base == 0)
+                base = 16;
+        }
+        else
+        {
+            if (base == 0)
+                base = 8;
+        }
     }
 
     while (iswdigit(*nptr))
