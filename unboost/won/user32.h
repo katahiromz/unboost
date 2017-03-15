@@ -24,6 +24,12 @@ namespace won {
 #ifdef WONUSERAPI
     #ifndef _WON32
         /* NOTE: In Linux, a long can be 64-bit value */
+        typedef struct tagPOINT {
+            int x, y;
+        } POINT, *PPOINT, *LPPOINT;
+        typedef struct tagSIZE {
+            int cx, cy;
+        } SIZE, *PSIZE, *LPSIZE;
         typedef struct tagRECT {
             int left, top, right, bottom;
         } RECT, *PRECT, *LPRECT;
